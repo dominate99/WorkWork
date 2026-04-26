@@ -19,8 +19,8 @@ Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad
 - Do not assign personas from keywords alone. Derive them from the working brief.
 - Do not create any subagent packet until all three gates are true:
   - `estimation_complete: true`
-  - `working_brief_ready: true`
-  - `dispatch_decision: approved`
+  - `brief_status: ready`
+  - dispatch plan `plan_state: approved`
 - Bind a Superpowers workflow at every stage and inside every subagent packet.
 - Every section must have a reviewer subagent, then orchestrator synthesis, then human judgment.
 - Reviewer subagents point out problems only. They do not rewrite the draft or make the final decision.
@@ -53,14 +53,14 @@ Follow this sequence every time:
 
 Use the template in `references/working-brief-template.md`.
 
-The working brief is the only valid basis for:
+The working brief is the analysis snapshot for one dispatch round. It is the only valid basis for:
 
 - orchestrator choice
 - persona selection
 - workflow bindings
 - dispatch recommendation
 
-Do not dispatch from a rough idea or a quick summary.
+Its job is to capture context and recommendations, not runtime approval state. Do not dispatch from a rough idea or a quick summary.
 
 ## Persona Planning
 
@@ -80,6 +80,8 @@ If a task spans multiple categories, choose the top-level orchestrator by the pr
 ## Subagent Packet Contract
 
 Use the contract in `references/subagent-packet-contract.md`.
+
+Packets are execution artifacts, not planning artifacts. Create them only from an approved dispatch plan section.
 
 Required packet fields:
 
@@ -104,17 +106,18 @@ Before real dispatch, write a tracked Markdown file using `assets/dispatch-plan-
 
 `docs/superpowers/dispatch-plans/YYYY-MM-DD-topic.md`
 
-The dispatch plan must:
+The dispatch plan is the canonical runtime state for the dispatch round. The dispatch plan must:
 
-- record the active gate state
-- list proposed subagents and rationales
+- reference the working brief version it was derived from
+- record the active approval state
+- list planned sections and planned personas
 - encode per-section review loops
-- expose one approval state aligned to `Approve / Revise / Stop`
-- record whether real dispatch has started
+- expose one canonical plan state
+- let `plan_state` represent whether dispatch has started
 
 If the user chooses `Stop`, preserve the working brief and the dispatch plan file, and do not dispatch any new subagents.
 
-If the user chooses `Revise`, return to orchestrator editing, update the working brief and dispatch plan, keep `Real Dispatch Started: false`, and request `Approve / Revise / Stop` again before any launch.
+If the user chooses `Revise`, return to orchestrator editing, keep the last approved revision as the rollback baseline, increment the plan revision, and request `Approve / Revise / Stop` again before any launch.
 
 ## Review Loop
 
@@ -132,14 +135,39 @@ Never skip the orchestrator synthesis step.
 
 ## Approval Lifecycle
 
-Use one approval path throughout the run:
+Use one global plan state throughout the run:
 
-- `pending` while the plan is under review
-- `approved` after `Approve`
-- `revise-requested` after `Revise`
-- `stopped` after `Stop`
+- `draft`
+- `awaiting-approval`
+- `approved`
+- `revising`
+- `stopped`
+- `dispatched`
+- `completed`
 
 `approved` is the only state that allows packet creation or real dispatch.
+
+Use a separate section state for each section review:
+
+- `drafted`
+- `under-review`
+- `accepted`
+- `revision-requested`
+- `stopped`
+
+Do not reuse section decisions as the global plan state.
+
+## Rollback Rules
+
+On `Revise`:
+
+- freeze real dispatch for the affected plan revision
+- preserve the last approved revision as the rollback baseline
+- update the working brief if the analysis changed
+- regenerate the dispatch plan against the new working brief version
+- re-request approval before creating any packet for the new revision
+
+If a section enters `revision-requested`, the global plan state returns to `revising` until a revised plan is approved again.
 
 ## References
 

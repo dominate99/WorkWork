@@ -3,11 +3,14 @@
 Create a packet only after:
 
 - `estimation_complete: true`
-- `working_brief_ready: true`
-- `dispatch_decision: approved`
+- `brief_status: ready`
+- dispatch plan state: `approved`
 
 ## Required Fields
 
+- `source_dispatch_plan`
+- `source_plan_revision`
+- `source_section_id`
 - `orchestrator_type`
 - `stage`
 - `subagent_persona`
@@ -25,6 +28,7 @@ Create a packet only after:
 
 ## Packet Rules
 
+- Packets are derived from approved dispatch plan sections, not drafted directly from the working brief.
 - `workflow_bindings[]` may contain more than one Superpowers skill when a stage legitimately requires it.
 - `handoff_rule` must route reviewer results back to the orchestrator before human judgment.
 - `requires_human_judgment` must be `true` for reviewer packets.

@@ -22,10 +22,11 @@ skills/
     assets/
 
 docs/
-  superpowers/
-    personas/
+  maintainers/
     specs/
     plans/
+  superpowers/
+    personas/
 ```
 
 ## Included Skill
@@ -42,18 +43,22 @@ Key files:
 - `skills/ww-subagent-orchestrator/references/subagent-packet-contract.md`
 - `skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md`
 - `docs/superpowers/personas/registry.yaml`
+- `docs/maintainers/specs/2026-04-25-ww-subagent-orchestrator-design.md`
+- `docs/maintainers/plans/2026-04-25-ww-subagent-orchestrator.md`
 
 ## What `$ww` Does
 
 When triggered, the skill is designed to:
 
 1. estimate the task first
-2. route to the correct orchestrator
-3. generate a working brief
-4. write a dispatch plan file
+2. generate a working brief
+3. route to the correct orchestrator
+4. write a dispatch plan file to `docs/superpowers/dispatch-plans/`
 5. request `Approve / Revise / Stop`
 6. dispatch subagents only after approval
 7. enforce reviewer findings -> orchestrator synthesis -> human judgment
+
+`docs/superpowers/dispatch-plans/` is a runtime-generated output location. It is not part of the checked-in repository structure by default.
 
 ## Install Manually
 
@@ -119,6 +124,15 @@ It shows how to define:
 - non-engineering orchestrators and reviewers for product and creative work
 
 You can copy that file into another project and tailor the personas, priorities, and workflow preferences to your team.
+
+## Maintainer Docs
+
+Design history and implementation planning for this repository live under:
+
+- `docs/maintainers/specs/`
+- `docs/maintainers/plans/`
+
+Those files are for contributors and maintainers. They are separate from the runtime-facing `docs/superpowers/personas/` path that the skill references inside real projects.
 
 ## Validation
 

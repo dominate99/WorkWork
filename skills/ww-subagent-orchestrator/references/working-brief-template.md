@@ -5,8 +5,8 @@ Use this template after estimation and before any persona dispatch.
 ## Gate State
 
 - `estimation_complete: true|false`
-- `working_brief_ready: true|false`
-- `dispatch_decision: pending|approved|revise-requested|stopped`
+- `brief_status: draft|ready`
+- `brief_version`
 
 ## Routing
 
@@ -38,5 +38,6 @@ Use this template after estimation and before any persona dispatch.
 
 - Recommended personas are provisional until dispatch approval.
 - Persona selection must cite the working brief, not just task keywords.
-- No packet creation until all dispatch gates are satisfied.
-- If the user requests `Revise`, update the working brief first, then regenerate the dispatch plan and ask for approval again.
+- The working brief is an analysis artifact, not the runtime approval record.
+- No packet creation until the referenced dispatch plan is in `approved` state.
+- If the user requests `Revise`, update the working brief only if the analysis changed, then issue a new brief version for the next dispatch plan revision.
