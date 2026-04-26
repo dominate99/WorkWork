@@ -1,0 +1,4 @@
+interface:
+  display_name: "WW Subagent Orchestrator"
+  short_description: "Plan and dispatch subagent work"
+  default_prompt: "Use $ww to estimate the task, write the working brief, generate a dispatch plan file, and orchestrate persona-bound subagents until implementation finishes."
