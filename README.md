@@ -23,6 +23,7 @@ skills/
 
 docs/
   superpowers/
+    personas/
     specs/
     plans/
 ```
@@ -40,6 +41,7 @@ Key files:
 - `skills/ww-subagent-orchestrator/references/persona-registry.md`
 - `skills/ww-subagent-orchestrator/references/subagent-packet-contract.md`
 - `skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md`
+- `docs/superpowers/personas/registry.yaml`
 
 ## What `$ww` Does
 
@@ -75,17 +77,48 @@ If this repository is published to GitHub, Codex users can install it with the s
 skills/ww-subagent-orchestrator
 ```
 
-Example shape:
+Standard command template:
 
 ```bash
 python path/to/install-skill-from-github.py --repo <owner>/<repo> --path skills/ww-subagent-orchestrator
 ```
 
-Or with a GitHub tree URL:
+Example for this repository:
+
+```bash
+python path/to/install-skill-from-github.py --repo dominate99/WorkWork --path skills/ww-subagent-orchestrator
+```
+
+Standard GitHub URL template:
 
 ```text
 https://github.com/<owner>/<repo>/tree/main/skills/ww-subagent-orchestrator
 ```
+
+This repository's skill URL:
+
+```text
+https://github.com/dominate99/WorkWork/tree/main/skills/ww-subagent-orchestrator
+```
+
+If your Codex environment already includes the `skill-installer` helper, the same repo/path can be installed through that workflow instead of copying files manually.
+
+After installing, restart Codex to pick up the new skill.
+
+## Persona Registry Example
+
+This repository includes a starter project persona registry at:
+
+`docs/superpowers/personas/registry.yaml`
+
+It shows how to define:
+
+- engineering reviewers like `secure-software-engineer`
+- implementation specialists like `senior-backend-engineer`
+- language specialists like `java-pro-engineer`
+- non-engineering orchestrators and reviewers for product and creative work
+
+You can copy that file into another project and tailor the personas, priorities, and workflow preferences to your team.
 
 ## Validation
 
