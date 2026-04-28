@@ -22,8 +22,11 @@ Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad
   - `brief_status: ready`
   - dispatch plan `plan_state: approved`
 - Bind a Superpowers workflow at every stage and inside every subagent packet.
+- Every `$ww` reply must end with a `Document Summary` block covering `working brief`, `dispatch plan`, `design spec`, and `implementation plan`.
+- If any of those documents do not exist yet, say `not created yet` in the summary instead of omitting the item.
 - Every section must have a reviewer subagent, then orchestrator synthesis, then human judgment.
 - Reviewer subagents point out problems only. They do not rewrite the draft or make the final decision.
+- Reviewer subagents must stay narrow and convergent: only inspect the assigned artifact against its stated scope, list the highest-signal issues, and stop.
 
 ## Required Stage Order
 
@@ -119,12 +122,80 @@ If the user chooses `Stop`, preserve the working brief and the dispatch plan fil
 
 If the user chooses `Revise`, return to orchestrator editing, keep the last approved revision as the rollback baseline, increment the plan revision, and request `Approve / Revise / Stop` again before any launch.
 
+## Document Summary Contract
+
+At the end of every `$ww` response, output a short `Document Summary` section. This is mandatory during estimation, approval, revision, dispatch, review, and closure updates.
+
+Always include exactly these four entries:
+
+- `working brief`
+- `dispatch plan`
+- `design spec`
+- `implementation plan`
+
+Each entry should briefly report the current state and, when known, the active file path or version. Never omit an entry because the document has not been started.
+
+Default document references:
+
+- `working brief`: current brief artifact for the dispatch round; if no saved file exists yet, report the current brief state and say file is `not created yet`
+- `dispatch plan`: `docs/superpowers/dispatch-plans/YYYY-MM-DD-topic.md`
+- `design spec`: `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
+- `implementation plan`: `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
+
+Missing-document rule:
+
+- If a document has not been created yet, write `not created yet`
+- Do not replace that phrase with softer wording such as `pending`, `later`, or `to be created`
+
+Preferred format:
+
+```markdown
+## Document Summary
+
+- `working brief`: ready, version 2, file `not created yet`
+- `dispatch plan`: awaiting-approval, `docs/superpowers/dispatch-plans/2026-04-27-topic.md`
+- `design spec`: not created yet
+- `implementation plan`: not created yet
+```
+
+## Reviewer Convergence Rules
+
+Reviewer subagents exist to reduce decision noise, not to expand the work. Make reviewers strict, narrow, and easy to synthesize.
+
+Reviewer requirements:
+
+- Review only the assigned artifact or section, not the whole project
+- Compare against the declared scope, stated goals, and current stage requirements
+- Return findings only; no rewrites, no speculative redesign, no new scope creation
+- Report at most `5` findings, ordered by severity
+- Prefer blockers, contradictions, missing requirements, unsafe assumptions, and likely regressions
+- If there are no material findings, explicitly say `no material findings`
+- Keep findings short enough that the orchestrator can synthesize them inline without a second condensation pass
+
+Reviewer anti-patterns:
+
+- brainstorming new features
+- proposing alternate architectures when the current one is in-scope and viable
+- rewriting the draft
+- adding implementation details that belong to a later stage
+- widening the review surface beyond the assigned artifact
+- returning verbose review essays
+
+Preferred reviewer output shape:
+
+```markdown
+## Reviewer Findings
+
+- Severity: high | Scope: requirement mismatch | Finding: ...
+- Severity: medium | Scope: missing edge case | Finding: ...
+```
+
 ## Review Loop
 
 For each section:
 
 1. Orchestrator drafts the section
-2. Reviewer subagent returns findings only
+2. Reviewer subagent returns a narrow findings-only review under the convergence rules
 3. Orchestrator outputs:
    - `section draft`
    - `reviewer findings`
