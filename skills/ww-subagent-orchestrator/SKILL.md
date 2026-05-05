@@ -22,7 +22,7 @@ Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad
   - `brief_status: ready`
   - dispatch plan `plan_state: approved`
 - Bind a Superpowers workflow at every stage and inside every subagent packet.
-- Every `$ww` reply must end with a `Document Summary` block covering `working brief`, `dispatch plan`, `design spec`, and `implementation plan`.
+- Every `$ww` reply must follow the `User-Facing Reply Contract`.
 - If any of those documents do not exist yet, say `not created yet` in the summary instead of omitting the item.
 - Every section must have a reviewer subagent, then orchestrator synthesis, then human judgment.
 - Reviewer subagents point out problems only. They do not rewrite the draft or make the final decision.
@@ -122,18 +122,47 @@ If the user chooses `Stop`, preserve the working brief and the dispatch plan fil
 
 If the user chooses `Revise`, return to orchestrator editing, keep the last approved revision as the rollback baseline, increment the plan revision, and request `Approve / Revise / Stop` again before any launch.
 
-## Document Summary Contract
+## User-Facing Reply Contract
 
-At the end of every `$ww` response, output a short `Document Summary` section. This is mandatory during estimation, approval, revision, dispatch, review, and closure updates.
+Every `$ww` reply must use these four sections in this order:
 
-Always include exactly these four entries:
+1. `Status Summary`
+2. `Subagent Progress`
+3. `Decision Block`
+4. `Document Summary`
 
-- `working brief`
-- `dispatch plan`
-- `design spec`
-- `implementation plan`
+The dispatch plan is the canonical runtime state source. Update the dispatch plan first, then render the chat reply from the updated persisted state in the same turn.
 
-Each entry should briefly report the current state and, when known, the active file path or version. Never omit an entry because the document has not been started.
+### Status Summary
+
+- Always include:
+  - `current stage`
+  - `primary owner`
+  - `waiting on`
+  - `next action`
+  - `user decision needed`
+- Derive all five fields from the critical-path workstream recorded in the dispatch plan.
+
+### Subagent Progress
+
+- Always include the section, even when no subagents are active.
+- If no subagents have launched, output `no subagents launched`.
+- Otherwise render each workstream from the dispatch plan `Progress Board`.
+
+### Decision Block
+
+- Always include the section.
+- If `user decision needed` is `yes`, enumerate the available choice set.
+- If `user decision needed` is `no`, output `No decision required right now`.
+
+### Document Summary
+
+- Always include:
+  - `working brief`
+  - `dispatch plan`
+  - `design spec`
+  - `implementation plan`
+- Use `not created yet` for missing documents.
 
 Default document references:
 
@@ -157,6 +186,19 @@ Preferred format:
 - `design spec`: not created yet
 - `implementation plan`: not created yet
 ```
+
+## Runtime Rendering Rules
+
+- `current stage`, `waiting on`, and `next action` must all derive from the same critical-path workstream.
+- `waiting on` precedence:
+  - human choice
+  - orchestrator synthesis or routing
+  - blocker owner or unresolved dependency
+  - active workstream owner
+  - queue gate
+  - `nobody`
+- `Decision Block` must derive from the same dispatch-plan state as `user decision needed`.
+- Do not emit a rendered state that is more advanced than the persisted dispatch plan.
 
 ## Reviewer Convergence Rules
 
