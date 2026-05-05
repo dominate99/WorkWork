@@ -99,6 +99,16 @@ Rules:
   - active execution on the critical path
   - queued work on the critical path
 - when the round is complete, `current stage` should describe the completion handoff
+- `waiting on` and `next action` must also be derived from the same critical-path workstream used to compute `current stage`
+- `waiting on` should be computed with this precedence:
+  - if the critical path requires a human choice -> the specific user decision owner and choice context
+  - else if the critical path requires orchestrator synthesis or routing -> the orchestrator
+  - else if a non-user blocker prevents progress -> the named blocker owner or unresolved dependency
+  - else if execution is active -> the active workstream owner
+  - else if work is queued -> the queue gate that must clear before start
+  - else -> `nobody`
+- `next action` should describe the next visible handoff on the critical path using persisted state only
+- if there is no pending handoff because the round is complete, `next action` should describe the completion handoff or say that no further action is required
 
 Example:
 
@@ -109,7 +119,7 @@ Example:
 - Primary owner: PM orchestrator
 - Waiting on: nobody
 - Next action: finish the written spec and hand it to you for review
-- User decision needed: not yet
+- User decision needed: no
 ```
 
 ## Section 2: Subagent Progress
@@ -274,12 +284,18 @@ The dispatch plan template should gain a dedicated progress surface instead of r
 Required additions:
 
 - a `Progress Board` section
-- per-workstream owner
-- internal state reference
-- displayed status
-- last update text
-- blocker text
-- next handoff
+- exact per-workstream fields:
+  - `workstream_id`
+  - `source_section_id`
+  - `source_plan_revision`
+  - `workstream_type`
+  - `owner`
+  - `internal_state_reference`
+  - `display_status`
+  - `last_update`
+  - `blocker`
+  - `next_handoff`
+  - `review_pass_id` when the workstream is a reviewer pass
 
 The `Progress Board` is the canonical store for rendered-progress inputs. The chat reply should not invent runtime values that are absent from this section.
 
@@ -290,6 +306,8 @@ Reviewer-progress persistence rule:
 - reviewer progress is persisted in the dispatch plan `Progress Board`
 - the packet contract remains execution-oriented and does not become a second progress store
 - packet fields should continue to identify scope and handoff contract, while the dispatch plan records live progress for rendering
+- reviewer workstreams must be keyed by `source_section_id + review_pass_id` so repeated reviews for the same section remain distinguishable across revisions
+- if more than one reviewer is used for the same section and review pass, append a stable reviewer-specific suffix to `workstream_id`
 
 ## Reviewer And Orchestrator Visibility Rules
 
