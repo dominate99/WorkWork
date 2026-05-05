@@ -88,6 +88,11 @@ Packets are execution artifacts, not planning artifacts. Create them only from a
 
 Required packet fields:
 
+- `source_dispatch_plan`
+- `source_plan_revision`
+- `source_section_id`
+- `workstream_id`
+- `review_pass_id` (required for reviewer packets; omit or set `none` for non-review workstreams)
 - `orchestrator_type`
 - `stage`
 - `subagent_persona`
@@ -116,6 +121,8 @@ The dispatch plan is the canonical runtime state for the dispatch round. The dis
 - list planned sections and planned personas
 - encode per-section review loops
 - expose one canonical plan state
+- persist the critical-path workstream used to render `Status Summary`
+- persist deterministic per-workstream `Display Status` values from the approved vocabulary
 - let `plan_state` represent whether dispatch has started
 
 If the user chooses `Stop`, preserve the working brief and the dispatch plan file, and do not dispatch any new subagents.
@@ -148,6 +155,15 @@ The dispatch plan is the canonical runtime state source. Update the dispatch pla
 - Always include the section, even when no subagents are active.
 - If no subagents have launched, output `no subagents launched`.
 - Otherwise render each workstream from the dispatch plan `Progress Board`.
+- Allowed `Display Status` values:
+  - `not started`
+  - `queued`
+  - `running`
+  - `waiting on orchestrator`
+  - `waiting on user`
+  - `blocked`
+  - `completed`
+  - `failed`
 
 ### Decision Block
 
@@ -168,8 +184,8 @@ Default document references:
 
 - `working brief`: current brief artifact for the dispatch round; if no saved file exists yet, report the current brief state and say file is `not created yet`
 - `dispatch plan`: `docs/superpowers/dispatch-plans/YYYY-MM-DD-topic.md`
-- `design spec`: `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
-- `implementation plan`: `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
+- `design spec`: `docs/maintainers/specs/YYYY-MM-DD-<topic>-design.md`
+- `implementation plan`: `docs/maintainers/plans/YYYY-MM-DD-<feature-name>.md`
 
 Missing-document rule:
 
@@ -190,6 +206,7 @@ Preferred format:
 ## Runtime Rendering Rules
 
 - `current stage`, `waiting on`, and `next action` must all derive from the same critical-path workstream.
+- The dispatch plan must mark the critical-path workstream explicitly in the `Progress Board`; do not infer it outside persisted state.
 - `waiting on` precedence:
   - human choice
   - orchestrator synthesis or routing
@@ -197,6 +214,15 @@ Preferred format:
   - active workstream owner
   - queue gate
   - `nobody`
+- `Display Status` precedence:
+  - `failed`
+  - `completed`
+  - `blocked`
+  - `waiting on user`
+  - `waiting on orchestrator`
+  - `running`
+  - `queued`
+  - `not started`
 - `Decision Block` must derive from the same dispatch-plan state as `user decision needed`.
 - Do not emit a rendered state that is more advanced than the persisted dispatch plan.
 
