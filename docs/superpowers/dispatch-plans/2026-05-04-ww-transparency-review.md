@@ -1,11 +1,11 @@
 # Dispatch Plan: WW Transparency Review
 
 - Date: 2026-05-04
-- Plan Revision: 1
-- Working Brief Version: 1
-- Plan State: approved
+- Plan Revision: 2
+- Working Brief Version: 2
+- Plan State: awaiting-approval
 - Last Approved Revision: 1
-- Rollback Baseline Revision: none
+- Rollback Baseline Revision: 1
 - Task Routing: design/ads/product
 - Main Orchestrator: PM orchestrator
 
@@ -23,10 +23,10 @@
 
 ## Dispatch Summary
 
-- Goal: Produce a written PM design spec that upgrades the `ww` skill from artifact-heavy orchestration to status-visible orchestration.
-- Relevant Context: The current skill exposes gates and document summaries, but it does not clearly show current stage, waiting state, blocker state, or per-subagent progress in the chat reply itself.
-- Constraints: Keep the existing approval lifecycle, reviewer convergence rules, and document summary contract. Improve transparency without turning replies into raw execution logs.
-- Risks: Adding status detail can create noisy replies, duplicate document content, or confuse users if internal states are shown without translation.
+- Goal: Produce a revised written PM design spec that upgrades the `ww` skill from artifact-heavy orchestration to status-visible orchestration and resolves the engineering review findings.
+- Relevant Context: The current skill exposes gates and document summaries, but it does not clearly show current stage, waiting state, blocker state, or per-subagent progress in the chat reply itself. The first spec draft also left ambiguity around canonical runtime state, display-state mapping, and update semantics.
+- Constraints: Keep the existing approval lifecycle, reviewer convergence rules, and document summary contract. Improve transparency without turning replies into raw execution logs or creating unsynchronized state sources.
+- Risks: Adding status detail can create noisy replies, duplicate document content, confuse users if internal states are shown without translation, or drift if rendered reply state is not anchored to a canonical persisted source.
 - Reviewer Rule: Every section returns to the orchestrator before human judgment.
 
 ## Planned Sections
@@ -34,12 +34,12 @@
 ### Section: PM Transparency Redesign Spec
 
 - Section ID: section-pm-transparency-redesign
-- Section State: drafted
+- Section State: revision-requested
 - Draft Author Role: PM orchestrator
-- Planned Reviewer Persona: PM reviewer (findings only; not launched in this round)
+- Planned Reviewer Persona: staff engineer reviewer findings already incorporated; no new reviewer launch in this revision round
 - Planned Specialist Personas: none
-- Planned Scope: Define the user-facing response contract, subagent progress visibility model, decision prompt model, and state-language translation for the `ww` skill.
-- Planning Rationale: This round is a single PM design artifact with low implementation ambiguity, so a single-orchestrator pass is the highest-signal path.
+- Planned Scope: Define the user-facing response contract, subagent progress visibility model, decision prompt model, canonical runtime source, display-state mapping, and update semantics for the `ww` skill.
+- Planning Rationale: This round remains a single PM design artifact, but the spec must now explicitly close the engineering gaps around state ownership, synchronization, and refresh rules before implementation planning starts.
 - Planned Workflow Bindings: `superpowers:brainstorming`
 - Packet Created: false
 
@@ -48,11 +48,16 @@
 ### Section: PM Transparency Redesign Spec
 
 - Section ID: section-pm-transparency-redesign
-- Review Status: not-started
+- Review Status: revision-requested
 - Reviewer Findings:
+- Resolve the contradiction between a fixed four-section reply shape and a conditional `Decision Block`
+- Define the canonical source of runtime truth and how the chat reply derives from it
+- Add explicit mapping rules between internal lifecycle states and user-facing display states
+- Define when progress fields such as `last update` are refreshed and by whom
 - Orchestrator Synthesis:
 - Human Decision: none
 - Revision Notes:
+- Revision 2 updates the design to make the dispatch plan the canonical runtime store and the chat reply a rendered view, preserves a fixed four-section reply shape, and adds display-state and refresh rules.
 - Rollup Rule:
   - Approve -> section state becomes `accepted`
   - Revise -> section state becomes `revision-requested` and plan state becomes `revising`
@@ -60,7 +65,7 @@
 
 ## Ordering And Parallelism
 
-- Blocking work first: write the design spec, self-review it, then pause for user review before any implementation planning
+- Blocking work first: revise the design spec using the staff engineer findings, self-review it, then pause for user review before any implementation planning
 - Parallel sections: none
 - Review loop per section: draft -> reviewer findings -> orchestrator synthesis -> human judgment
 
@@ -70,17 +75,17 @@
 
 - Owner: PM orchestrator
 - Status: awaiting user review
-- Last Update: written spec completed and self-reviewed; waiting for user review before implementation planning
+- Last Update: revised spec completed and self-reviewed after staff engineer feedback; waiting for user review before implementation planning
 - Blocker: none
 - Next Handoff: user reviews the written spec
 
 ## Approval Block
 
 - Required Human Choice: `Approve` | `Revise` | `Stop`
-- Current Choice: Approve
-- Approved By: user
-- Approval Time: 2026-05-04
-- Notes: Approval covers the PM direction for the redesign proposal. It does not yet approve implementation.
+- Current Choice: none
+- Approved By:
+- Approval Time:
+- Notes: Revision 2 incorporates staff engineer review findings and is ready for renewed user approval. It does not yet approve implementation.
 - Choice Mapping:
   - Approve -> `Plan State: approved`
   - Revise -> `Plan State: revising`
@@ -91,11 +96,14 @@
 - Revision 1 Created From Brief Version: 1
 - Revision Reason: initial PM transparency redesign dispatch
 - Supersedes Revision:
+- Revision 2 Created From Brief Version: 2
+- Revision Reason: revise the spec based on staff engineer review findings
+- Supersedes Revision: 1
 
 ## Dispatch Log
 
 - Agents Launched: none
 - Launch Time:
-- Revisions Since Approval: 0
+- Revisions Since Approval: 1
 - Stop State Preserves Files: true
 - No Launch Before Approval: true

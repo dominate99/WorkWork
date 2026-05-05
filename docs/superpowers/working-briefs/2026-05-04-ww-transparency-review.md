@@ -6,7 +6,7 @@ Use this brief after estimation and before any persona dispatch.
 
 - `estimation_complete: true`
 - `brief_status: ready`
-- `brief_version: 1`
+- `brief_version: 2`
 
 ## Routing
 
@@ -17,12 +17,12 @@ Use this brief after estimation and before any persona dispatch.
 
 - `goal`: Improve the `ww-subagent-orchestrator` skill so users can see current state, next action, and subagent progress without reading internal artifacts.
 - `artifact_type`: product interaction design spec
-- `relevant_context`: Current skill exposes document summaries and workflow gates but does not yet make live execution state, blocker state, or subagent progress visible in a consistent user-facing format.
-- `constraints`: Preserve the existing approval gates, reviewer convergence rules, and document tracking. Add transparency without turning replies into noisy logs.
+- `relevant_context`: Current skill exposes document summaries and workflow gates but does not yet make live execution state, blocker state, or subagent progress visible in a consistent user-facing format. Staff engineer review also identified ambiguity around the canonical runtime source, conflicting reply-shape rules, and missing update semantics for progress fields.
+- `constraints`: Preserve the existing approval gates, reviewer convergence rules, and document tracking. Add transparency without turning replies into noisy logs, and avoid introducing multiple unsynchronized state machines.
 
 ## Risk And Structure
 
-- `risk_lenses`: user confusion during waits; hidden blockers; weak trust in persona and subagent choices; verbosity bloat if transparency is implemented as raw logs
+- `risk_lenses`: user confusion during waits; hidden blockers; weak trust in persona and subagent choices; verbosity bloat if transparency is implemented as raw logs; drift between chat replies and persisted runtime artifacts; stale progress fields
 - `parallelism_assessment`: low; this round is a single PM design artifact and does not require parallel worker dispatch
 - `blocking_dependencies`: user approval of the written spec before any implementation plan is created
 - `section_or_workstream_map`: interaction model; user-facing status contract; subagent progress model; artifact and state model
@@ -30,9 +30,9 @@ Use this brief after estimation and before any persona dispatch.
 ## Persona And Workflow Guidance
 
 - `recommended_personas`: `PM orchestrator`
-- `persona_selection_notes`: The primary artifact is a product-facing interaction redesign for transparency and progress visibility, so the PM orchestrator is the strongest match. No specialist or reviewer subagent is necessary before the written spec review gate.
+- `persona_selection_notes`: The primary artifact is a product-facing interaction redesign for transparency and progress visibility, so the PM orchestrator is the strongest match. The revision is informed by a staff engineer review, but this round still stays in a single-orchestrator design pass until the user re-approves the written spec.
 - `workflow_bindings_by_stage`: framing -> `superpowers:brainstorming`; later planning -> `superpowers:writing-plans`
-- `dispatch_recommendation`: Stay in a single-orchestrator design pass until the written spec is reviewed. Do not launch subagents in this round unless the scope expands beyond interaction design.
+- `dispatch_recommendation`: Stay in a single-orchestrator design pass until the revised written spec is reviewed. Do not launch subagents in this round unless the scope expands beyond interaction design or implementation planning begins.
 
 ## Rules
 

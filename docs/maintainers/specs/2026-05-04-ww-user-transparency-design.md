@@ -57,6 +57,14 @@ Every `$ww` response should use four ordered sections:
 
 This order is mandatory. The current `Document Summary` remains useful, but it should stop acting as the primary status surface.
 
+The chat reply is a rendered view, not the canonical runtime store. The canonical runtime source remains the persisted orchestration artifacts:
+
+- the dispatch plan is the canonical runtime state source
+- the working brief is the canonical routing and analysis source
+- the chat reply renders a concise view derived from those sources for the current turn
+
+If a rendered reply conflicts with the dispatch plan, the dispatch plan wins and the reply must be corrected on the next update.
+
 ## Section 1: Status Summary
 
 `Status Summary` is the new top-level interface. It answers the user's first questions before anything else.
@@ -64,7 +72,7 @@ This order is mandatory. The current `Document Summary` remains useful, but it s
 Required fields:
 
 - `current stage`
-- `owner`
+- `primary owner`
 - `waiting on`
 - `next action`
 - `user decision needed`
@@ -75,6 +83,8 @@ Rules:
 - if the system is blocked, say what the blocker is
 - if the system is waiting on the user, say exactly what decision is needed
 - if the system is waiting on internal work, say who owns the next move
+- when multiple workstreams are active, `primary owner` means the owner of the critical-path next move, not every active worker
+- if ownership is split across parallel workstreams, call that out in `Subagent Progress` rather than overloading `Status Summary`
 
 Example:
 
@@ -82,7 +92,7 @@ Example:
 ## Status Summary
 
 - Current stage: writing the PM design spec
-- Owner: PM orchestrator
+- Primary owner: PM orchestrator
 - Waiting on: nobody
 - Next action: finish the written spec and hand it to you for review
 - User decision needed: not yet
@@ -98,12 +108,20 @@ Rules:
 - if subagents are active, list each by section or workstream, not by opaque internal ID
 - each row or bullet must include:
   - `scope`
-  - `status`
+  - `display status`
   - `last update`
   - `blocker`
   - `next handoff`
+- every displayed entry must be traceable back to one persisted runtime source in the dispatch plan
+- `last update` changes only when one of these happens:
+  - the workstream changes status
+  - ownership changes
+  - the blocker changes
+  - the next handoff changes
+  - materially new progress is made that affects user understanding
+- the orchestrator is responsible for refreshing `last update` whenever it emits a reply that reflects one of those changes
 
-Recommended statuses:
+Recommended display statuses:
 
 - `not started`
 - `queued`
@@ -127,19 +145,20 @@ Example with active work:
 ```md
 ## Subagent Progress
 
-- Section: authentication review | Status: running | Last update: checking auth edge cases | Blocker: none | Next handoff: reviewer findings -> orchestrator
-- Section: UI copy refinement | Status: waiting on user | Last update: option set prepared | Blocker: pending direction on tone | Next handoff: user decision -> orchestrator
+- Section: authentication review | Display status: running | Last update: checking auth edge cases | Blocker: none | Next handoff: reviewer findings -> orchestrator
+- Section: UI copy refinement | Display status: waiting on user | Last update: option set prepared | Blocker: pending direction on tone | Next handoff: user decision -> orchestrator
 ```
 
 ## Section 3: Decision Block
 
-`Decision Block` should appear only when a real user decision is required. It must not be used for generic progress chatter.
+`Decision Block` is part of the fixed four-section reply shape. It must appear in every `$ww` response, but its content changes based on whether a real user decision is required.
 
 Rules:
 
 - keep the choices explicit and finite
 - say what happens after each choice
-- if no decision is needed, omit the section
+- if no decision is needed, explicitly say `no decision required right now`
+- do not omit the section, because the fixed reply shape should remain stable across all states
 
 For plan approval, the block remains:
 
@@ -157,6 +176,14 @@ But the copy should explain the consequence:
 - `Stop`: I will stop this dispatch round and preserve the existing artifacts.
 ```
 
+Example when no decision is needed:
+
+```md
+## Decision Block
+
+- No decision required right now
+```
+
 ## Section 4: Document Summary
 
 `Document Summary` remains mandatory, but it becomes a secondary artifact index rather than the primary runtime surface.
@@ -171,10 +198,16 @@ Rules:
 - if a document does not exist, write `not created yet`
 - when a file exists, show the active path
 - when helpful, show version or state, but do not repeat runtime status already covered above
+- if the dispatch plan and rendered reply disagree, the dispatch plan is the source that must be fixed or re-rendered from
 
 ## State Translation Model
 
 The skill should preserve internal states for process integrity, but it should translate them before showing them to the user.
+
+Use a two-layer model:
+
+- internal state: persisted workflow state used for gating and orchestration logic
+- display state: user-facing wording derived from internal state for chat replies
 
 Recommended mappings:
 
@@ -193,6 +226,19 @@ Section-level states should also be translated:
 - `revision-requested` -> `revision requested`
 - `stopped` -> `stopped`
 
+Subagent progress uses display states derived from dispatch-plan data rather than introducing a separate independent runtime state machine.
+
+Recommended derivation rules:
+
+- if packet not created and section not started -> `not started`
+- if packet created but work has not begun -> `queued`
+- if work is active and no blocker exists -> `running`
+- if a handoff is pending orchestrator synthesis -> `waiting on orchestrator`
+- if a human decision is the next required handoff -> `waiting on user`
+- if a blocker is present and prevents progress -> `blocked`
+- if the workstream has satisfied its handoff contract -> `completed`
+- if the orchestrator records an unrecoverable failure -> `failed`
+
 ## Dispatch Plan Changes
 
 The dispatch plan template should gain a dedicated progress surface instead of relying on a minimal dispatch log.
@@ -201,10 +247,13 @@ Required additions:
 
 - a `Progress Board` section
 - per-workstream owner
+- internal state reference
 - displayed status
 - last update text
 - blocker text
 - next handoff
+
+The `Progress Board` is the canonical store for rendered-progress inputs. The chat reply should not invent runtime values that are absent from this section.
 
 The existing `Dispatch Log` can remain for audit purposes, but it should not be the only place where runtime movement is recorded.
 
@@ -218,6 +267,8 @@ Rules:
 - orchestrator must translate reviewer output into a user-readable takeaway
 - the user should see whether a reviewer has started, is running, is blocked, or has returned findings
 - the user should not see raw reviewer verbosity dumped without synthesis
+
+To support this, the dispatch plan and reviewer packet contract should expose reviewer progress as a structured workstream, not just a narrative note.
 
 ## Failure And Wait States
 
@@ -246,6 +297,8 @@ The redesign is successful when a user can read any `$ww` response and answer al
 4. Are any subagents running?
 5. If something is blocked, what is the blocker?
 6. Which artifacts exist already?
+
+It is also successful when an implementer can derive the reply from persisted state without inventing a second unsynchronized state machine.
 
 ## Testing Focus
 
