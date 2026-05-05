@@ -3,9 +3,9 @@
 - Date: 2026-05-04
 - Plan Revision: 5
 - Working Brief Version: 5
-- Plan State: awaiting-approval
-- Last Approved Revision: 1
-- Rollback Baseline Revision: 1
+- Plan State: completed
+- Last Approved Revision: 5
+- Rollback Baseline Revision: 5
 - Task Routing: design/ads/product
 - Main Orchestrator: PM orchestrator
 
@@ -34,7 +34,7 @@
 ### Section: PM Transparency Redesign Spec
 
 - Section ID: section-pm-transparency-redesign
-- Section State: revision-requested
+- Section State: accepted
 - Draft Author Role: PM orchestrator
 - Planned Reviewer Persona: staff engineer reviewer findings already incorporated; no new reviewer launch in this revision round
 - Planned Specialist Personas: none
@@ -48,7 +48,7 @@
 ### Section: PM Transparency Redesign Spec
 
 - Section ID: section-pm-transparency-redesign
-- Review Status: revision-requested
+- Review Status: accepted
 - Reviewer Findings:
 - Resolve the contradiction between a fixed four-section reply shape and a conditional `Decision Block`
 - Define the canonical source of runtime truth and how the chat reply derives from it
@@ -66,12 +66,13 @@
 - Add `scope` to the exact `Progress Board` schema so the reply can be rendered from persisted state only
 - Require `SKILL.md`, `dispatch-plan-template.md`, and `subagent-packet-contract.md` to migrate in lockstep with the design
 - Orchestrator Synthesis:
-- Human Decision: none
+- Human Decision: Approve
 - Revision Notes:
 - Revision 2 updates the design to make the dispatch plan the canonical runtime store and the chat reply a rendered view, preserves a fixed four-section reply shape, and adds display-state and refresh rules.
 - Revision 3 adds deterministic precedence rules, critical-path stage selection, same-turn render rules, and a single persistence location for reviewer progress.
 - Revision 4 adds exact top-line derivation rules, `Progress Board` schema requirements, reviewer identity rules, and example alignment.
 - Revision 5 adds the missing `scope` field to the canonical progress schema and formalizes cross-artifact synchronization requirements for implementation readiness.
+- User request to create the implementation plan is treated as approval of revision 5 and completion of the design round.
 - Rollup Rule:
   - Approve -> section state becomes `accepted`
   - Revise -> section state becomes `revision-requested` and plan state becomes `revising`
@@ -88,18 +89,18 @@
 ### Workstream: PM Transparency Redesign Spec
 
 - Owner: PM orchestrator
-- Status: awaiting user review
-- Last Update: revision 5 completed and self-reviewed after the latest staff engineer review; waiting for user review before implementation planning
+- Status: completed
+- Last Update: implementation plan written after user approval of revision 5; waiting for execution choice
 - Blocker: none
-- Next Handoff: user reviews the written spec
+- Next Handoff: user chooses execution approach
 
 ## Approval Block
 
 - Required Human Choice: `Approve` | `Revise` | `Stop`
-- Current Choice: none
-- Approved By:
-- Approval Time:
-- Notes: Revision 5 incorporates the latest staff engineer review findings and is ready for renewed user approval. It does not yet approve implementation.
+- Current Choice: Approve
+- Approved By: user
+- Approval Time: 2026-05-04
+- Notes: User requested the implementation plan after revision 5, which serves as approval of the revised design. The design round is complete and implementation planning is finished.
 - Choice Mapping:
   - Approve -> `Plan State: approved`
   - Revise -> `Plan State: revising`
