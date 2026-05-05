@@ -63,7 +63,13 @@ The chat reply is a rendered view, not the canonical runtime store. The canonica
 - the working brief is the canonical routing and analysis source
 - the chat reply renders a concise view derived from those sources for the current turn
 
-If a rendered reply conflicts with the dispatch plan, the dispatch plan wins and the reply must be corrected on the next update.
+Render-order rule:
+
+1. update the dispatch plan first
+2. derive the rendered reply from the updated persisted state in the same turn
+3. emit the reply only after the persisted state reflects the content being shown
+
+If persistence fails, do not present a more advanced rendered state than the dispatch plan currently records.
 
 ## Section 1: Status Summary
 
@@ -85,6 +91,14 @@ Rules:
 - if the system is waiting on internal work, say who owns the next move
 - when multiple workstreams are active, `primary owner` means the owner of the critical-path next move, not every active worker
 - if ownership is split across parallel workstreams, call that out in `Subagent Progress` rather than overloading `Status Summary`
+- `current stage` should describe the critical-path next handoff, not a generic aggregate of all active workstreams
+- when multiple workstreams are active, select `current stage` using this precedence:
+  - a user decision on the critical path
+  - an orchestrator handoff on the critical path
+  - an active blocker on the critical path
+  - active execution on the critical path
+  - queued work on the critical path
+- when the round is complete, `current stage` should describe the completion handoff
 
 Example:
 
@@ -120,6 +134,7 @@ Rules:
   - the next handoff changes
   - materially new progress is made that affects user understanding
 - the orchestrator is responsible for refreshing `last update` whenever it emits a reply that reflects one of those changes
+- `display status` is derived deterministically using the precedence rules below; implementations must not choose ad hoc among multiple matching labels
 
 Recommended display statuses:
 
@@ -159,6 +174,9 @@ Rules:
 - say what happens after each choice
 - if no decision is needed, explicitly say `no decision required right now`
 - do not omit the section, because the fixed reply shape should remain stable across all states
+- `user decision needed` in `Status Summary` and the content of `Decision Block` must be derived from the same current dispatch-plan state
+- if `user decision needed` is `yes`, `Decision Block` must enumerate the available choice set
+- if `user decision needed` is `no`, `Decision Block` must show only `No decision required right now`
 
 For plan approval, the block remains:
 
@@ -230,14 +248,24 @@ Subagent progress uses display states derived from dispatch-plan data rather tha
 
 Recommended derivation rules:
 
-- if packet not created and section not started -> `not started`
-- if packet created but work has not begun -> `queued`
-- if work is active and no blocker exists -> `running`
-- if a handoff is pending orchestrator synthesis -> `waiting on orchestrator`
-- if a human decision is the next required handoff -> `waiting on user`
-- if a blocker is present and prevents progress -> `blocked`
-- if the workstream has satisfied its handoff contract -> `completed`
-- if the orchestrator records an unrecoverable failure -> `failed`
+Definitions before precedence:
+
+- `waiting on user` means the next required handoff is an explicit human choice
+- `waiting on orchestrator` means the next required handoff is orchestrator synthesis or orchestrator routing
+- `blocked` means progress is prevented by a non-user blocker that is not resolved by the normal next handoff
+
+Display-status precedence, highest to lowest:
+
+1. if the orchestrator records an unrecoverable failure -> `failed`
+2. if the workstream has satisfied its handoff contract and has no remaining active handoff -> `completed`
+3. if a non-user blocker is present and prevents progress -> `blocked`
+4. if a human decision is the next required handoff -> `waiting on user`
+5. if a handoff is pending orchestrator synthesis or orchestrator routing -> `waiting on orchestrator`
+6. if work is active and no higher-precedence state matches -> `running`
+7. if packet created but work has not begun -> `queued`
+8. if packet not created and section not started -> `not started`
+
+Only one display status may be shown for a workstream. If multiple conditions appear to match, apply the highest-precedence rule and suppress the rest.
 
 ## Dispatch Plan Changes
 
@@ -257,6 +285,12 @@ The `Progress Board` is the canonical store for rendered-progress inputs. The ch
 
 The existing `Dispatch Log` can remain for audit purposes, but it should not be the only place where runtime movement is recorded.
 
+Reviewer-progress persistence rule:
+
+- reviewer progress is persisted in the dispatch plan `Progress Board`
+- the packet contract remains execution-oriented and does not become a second progress store
+- packet fields should continue to identify scope and handoff contract, while the dispatch plan records live progress for rendering
+
 ## Reviewer And Orchestrator Visibility Rules
 
 Reviewer convergence stays intact. The change is in how the result is surfaced.
@@ -268,7 +302,7 @@ Rules:
 - the user should see whether a reviewer has started, is running, is blocked, or has returned findings
 - the user should not see raw reviewer verbosity dumped without synthesis
 
-To support this, the dispatch plan and reviewer packet contract should expose reviewer progress as a structured workstream, not just a narrative note.
+To support this, the dispatch plan should expose reviewer progress as a structured workstream, not just a narrative note.
 
 ## Failure And Wait States
 
