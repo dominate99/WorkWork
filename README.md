@@ -2,6 +2,8 @@
 
 A reusable Codex skill that turns `$ww` into a disciplined orchestration workflow.
 
+## What This Skill Does
+
 The skill is designed to:
 
 - estimate work before dispatch
@@ -11,44 +13,7 @@ The skill is designed to:
 - coordinate persona-bound subagents
 - bind Superpowers workflows at each stage
 
-## Repository Layout
-
-```text
-skills/
-  ww-subagent-orchestrator/
-    SKILL.md
-    agents/openai.yaml
-    references/
-    assets/
-
-docs/
-  maintainers/
-    specs/
-    plans/
-  superpowers/
-    personas/
-```
-
-## Included Skill
-
-The reusable skill lives at:
-
-`skills/ww-subagent-orchestrator`
-
-Key files:
-
-- `skills/ww-subagent-orchestrator/SKILL.md`
-- `skills/ww-subagent-orchestrator/references/working-brief-template.md`
-- `skills/ww-subagent-orchestrator/references/persona-registry.md`
-- `skills/ww-subagent-orchestrator/references/subagent-packet-contract.md`
-- `skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md`
-- `docs/superpowers/personas/registry.yaml`
-- `docs/maintainers/specs/2026-04-25-ww-subagent-orchestrator-design.md`
-- `docs/maintainers/plans/2026-04-25-ww-subagent-orchestrator.md`
-
-## What `$ww` Does
-
-When triggered, the skill is designed to:
+When triggered, `$ww` is designed to:
 
 1. estimate the task first
 2. generate a working brief
@@ -60,7 +25,9 @@ When triggered, the skill is designed to:
 
 `docs/superpowers/dispatch-plans/` is a runtime-generated output location. It is not part of the checked-in repository structure by default.
 
-## Install Manually
+## Install
+
+### Install Manually
 
 Copy the skill folder into your Codex skills directory:
 
@@ -74,7 +41,7 @@ On Windows, that is typically:
 C:\Users\<your-user>\.codex\skills\ww-subagent-orchestrator
 ```
 
-## Install From GitHub
+### Install From GitHub
 
 If this repository is published to GitHub, Codex users can install it with the skill installer from the repo path:
 
@@ -110,7 +77,40 @@ If your Codex environment already includes the `skill-installer` helper, the sam
 
 After installing, restart Codex to pick up the new skill.
 
-## Persona Registry Example
+## Repository Contents
+
+The reusable skill lives at:
+
+`skills/ww-subagent-orchestrator`
+
+Key files:
+
+- `skills/ww-subagent-orchestrator/SKILL.md`
+- `skills/ww-subagent-orchestrator/references/working-brief-template.md`
+- `skills/ww-subagent-orchestrator/references/persona-registry.md`
+- `skills/ww-subagent-orchestrator/references/subagent-packet-contract.md`
+- `skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md`
+- `docs/superpowers/personas/registry.yaml`
+
+Repository layout:
+
+```text
+skills/
+  ww-subagent-orchestrator/
+    SKILL.md
+    agents/openai.yaml
+    references/
+    assets/
+
+docs/
+  maintainers/
+    specs/
+    plans/
+  superpowers/
+    personas/
+```
+
+## Persona Registry
 
 This repository includes a starter project persona registry at:
 
@@ -142,4 +142,4 @@ This skill was validated with the official `quick_validate.py` script after inst
 
 - The skill expects Superpowers capabilities to be available.
 - Project-specific personas can be added at `docs/superpowers/personas/registry.yaml`.
-- The repository includes design and implementation docs under `docs/superpowers/`.
+- Design and implementation docs for this repository live under `docs/maintainers/`.
