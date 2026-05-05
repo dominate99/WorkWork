@@ -289,6 +289,7 @@ Required additions:
   - `source_section_id`
   - `source_plan_revision`
   - `workstream_type`
+  - `scope`
   - `owner`
   - `internal_state_reference`
   - `display_status`
@@ -301,6 +302,11 @@ The `Progress Board` is the canonical store for rendered-progress inputs. The ch
 
 The existing `Dispatch Log` can remain for audit purposes, but it should not be the only place where runtime movement is recorded.
 
+Minimum template rule:
+
+- the dispatch plan template must include a concrete `Progress Board` section with placeholders for every required per-workstream field
+- the `Subagent Progress` reply section must be renderable from the template-backed persisted fields without inventing missing values
+
 Reviewer-progress persistence rule:
 
 - reviewer progress is persisted in the dispatch plan `Progress Board`
@@ -308,6 +314,27 @@ Reviewer-progress persistence rule:
 - packet fields should continue to identify scope and handoff contract, while the dispatch plan records live progress for rendering
 - reviewer workstreams must be keyed by `source_section_id + review_pass_id` so repeated reviews for the same section remain distinguishable across revisions
 - if more than one reviewer is used for the same section and review pass, append a stable reviewer-specific suffix to `workstream_id`
+
+## Contract Synchronization Requirements
+
+This design is not implementation-ready unless the dependent repo artifacts are updated in lockstep with the spec.
+
+Required synchronized artifacts:
+
+- `skills/ww-subagent-orchestrator/SKILL.md`
+- `skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md`
+- `skills/ww-subagent-orchestrator/references/subagent-packet-contract.md`
+
+Synchronization rules:
+
+- `SKILL.md` must require the four-section reply shape, not only `Document Summary`
+- `dispatch-plan-template.md` must include the canonical `Progress Board` schema defined in this spec
+- `subagent-packet-contract.md` must remain execution-oriented, but it must still preserve the identifiers needed to connect packets to `Progress Board` workstreams
+- if any of these three artifacts disagree with this design, the implementation plan must treat that as incomplete contract migration, not an acceptable partial rollout
+
+Release-readiness rule:
+
+- do not consider the design package implementation-ready until the spec and these dependent artifacts express the same reply contract and persisted progress schema
 
 ## Reviewer And Orchestrator Visibility Rules
 

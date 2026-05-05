@@ -1,8 +1,8 @@
 # Dispatch Plan: WW Transparency Review
 
 - Date: 2026-05-04
-- Plan Revision: 4
-- Working Brief Version: 4
+- Plan Revision: 5
+- Working Brief Version: 5
 - Plan State: awaiting-approval
 - Last Approved Revision: 1
 - Rollback Baseline Revision: 1
@@ -23,10 +23,10 @@
 
 ## Dispatch Summary
 
-- Goal: Produce a revised written PM design spec that upgrades the `ww` skill from artifact-heavy orchestration to status-visible orchestration and resolves the remaining contract-level engineering review findings.
-- Relevant Context: The current skill exposes gates and document summaries, but it does not clearly show current stage, waiting state, blocker state, or per-subagent progress in the chat reply itself. The third spec draft improved determinism, but still left gaps around deriving `waiting on` and `next action`, exact `Progress Board` schema, reviewer-progress identity, and example-rule alignment.
+- Goal: Produce a revised written PM design spec that upgrades the `ww` skill from artifact-heavy orchestration to status-visible orchestration and resolves the remaining contract-sync engineering review findings.
+- Relevant Context: The current skill exposes gates and document summaries, but it does not clearly show current stage, waiting state, blocker state, or per-subagent progress in the chat reply itself. The fourth spec draft improved top-line derivation and exact schema requirements, but still left gaps around `Progress Board.scope` and explicit synchronization requirements between the design and the repo artifacts that implement it.
 - Constraints: Keep the existing approval lifecycle, reviewer convergence rules, and document summary contract. Improve transparency without turning replies into raw execution logs or creating unsynchronized state sources.
-- Risks: Adding status detail can create noisy replies, duplicate document content, confuse users if internal states are shown without translation, drift if rendered reply state is not anchored to a canonical persisted source, or create implementation variance if the schema and derivation contracts remain implicit.
+- Risks: Adding status detail can create noisy replies, duplicate document content, confuse users if internal states are shown without translation, drift if rendered reply state is not anchored to a canonical persisted source, or leave the design package non-executable if dependent artifacts are not updated in lockstep.
 - Reviewer Rule: Every section returns to the orchestrator before human judgment.
 
 ## Planned Sections
@@ -38,8 +38,8 @@
 - Draft Author Role: PM orchestrator
 - Planned Reviewer Persona: staff engineer reviewer findings already incorporated; no new reviewer launch in this revision round
 - Planned Specialist Personas: none
-- Planned Scope: Define the user-facing response contract, subagent progress visibility model, decision prompt model, canonical runtime source, display-state mapping, update semantics, display-status precedence, critical-path stage selection, top-line derivation rules, and exact progress-board schema for the `ww` skill.
-- Planning Rationale: This round remains a single PM design artifact, but the spec must now explicitly close the remaining engineering gaps around deterministic rendering and contract shape before implementation planning starts.
+- Planned Scope: Define the user-facing response contract, subagent progress visibility model, decision prompt model, canonical runtime source, display-state mapping, update semantics, display-status precedence, critical-path stage selection, top-line derivation rules, exact progress-board schema, and cross-artifact synchronization requirements for the `ww` skill.
+- Planning Rationale: This round remains a single PM design artifact, but the spec must now explicitly close the remaining engineering gaps around deterministic rendering and repo-contract synchronization before implementation planning starts.
 - Planned Workflow Bindings: `superpowers:brainstorming`
 - Packet Created: false
 
@@ -63,12 +63,15 @@
 - Define the exact `Progress Board` schema in the template contract
 - Define reviewer-progress identity across review passes
 - Align examples with the stricter rule set
+- Add `scope` to the exact `Progress Board` schema so the reply can be rendered from persisted state only
+- Require `SKILL.md`, `dispatch-plan-template.md`, and `subagent-packet-contract.md` to migrate in lockstep with the design
 - Orchestrator Synthesis:
 - Human Decision: none
 - Revision Notes:
 - Revision 2 updates the design to make the dispatch plan the canonical runtime store and the chat reply a rendered view, preserves a fixed four-section reply shape, and adds display-state and refresh rules.
 - Revision 3 adds deterministic precedence rules, critical-path stage selection, same-turn render rules, and a single persistence location for reviewer progress.
 - Revision 4 adds exact top-line derivation rules, `Progress Board` schema requirements, reviewer identity rules, and example alignment.
+- Revision 5 adds the missing `scope` field to the canonical progress schema and formalizes cross-artifact synchronization requirements for implementation readiness.
 - Rollup Rule:
   - Approve -> section state becomes `accepted`
   - Revise -> section state becomes `revision-requested` and plan state becomes `revising`
@@ -86,7 +89,7 @@
 
 - Owner: PM orchestrator
 - Status: awaiting user review
-- Last Update: revision 4 completed and self-reviewed after the latest staff engineer review; waiting for user review before implementation planning
+- Last Update: revision 5 completed and self-reviewed after the latest staff engineer review; waiting for user review before implementation planning
 - Blocker: none
 - Next Handoff: user reviews the written spec
 
@@ -96,7 +99,7 @@
 - Current Choice: none
 - Approved By:
 - Approval Time:
-- Notes: Revision 4 incorporates the latest staff engineer review findings and is ready for renewed user approval. It does not yet approve implementation.
+- Notes: Revision 5 incorporates the latest staff engineer review findings and is ready for renewed user approval. It does not yet approve implementation.
 - Choice Mapping:
   - Approve -> `Plan State: approved`
   - Revise -> `Plan State: revising`
@@ -116,11 +119,14 @@
 - Revision 4 Created From Brief Version: 4
 - Revision Reason: revise the spec based on the third staff engineer review
 - Supersedes Revision: 3
+- Revision 5 Created From Brief Version: 5
+- Revision Reason: revise the spec based on the fourth staff engineer review
+- Supersedes Revision: 4
 
 ## Dispatch Log
 
 - Agents Launched: none
 - Launch Time:
-- Revisions Since Approval: 3
+- Revisions Since Approval: 4
 - Stop State Preserves Files: true
 - No Launch Before Approval: true
