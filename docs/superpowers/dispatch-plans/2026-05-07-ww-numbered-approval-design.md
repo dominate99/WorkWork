@@ -4,9 +4,9 @@
 - Schema Version: 1
 - Plan Revision: 1
 - Working Brief Version: 1
-- Plan State: awaiting-approval
-- Last Approved Revision: none
-- Rollback Baseline Revision: none
+- Plan State: completed
+- Last Approved Revision: 1
+- Rollback Baseline Revision: 1
 - Task Routing: code/programming
 - Main Orchestrator: staff engineer orchestrator
 
@@ -39,8 +39,8 @@
 ### Section: Numbered Approval Prompt Design
 
 - Section ID: section-numbered-approval-design
-- Section State: drafted
-- Runtime State: review-pending
+- Section State: accepted
+- Runtime State: complete
 - Required For Goal: true
 - Draft Author Role: staff engineer orchestrator
 - Planned Reviewer Persona: runtime policy reviewer
@@ -152,8 +152,9 @@
   - Orchestrator Synthesis:
     - Recommendation: approve the design if the numbered prompt contract and repo-only scope match intent, then proceed to implementation planning.
     - Reason: the design keeps approval semantics unchanged, preserves word aliases, and limits the later edit surface to the three requested active files.
-- Human Decision: none
+- Human Decision: Approve
 - Revision Notes:
+- user approved the written design and requested the implementation plan
 - Rollup Rule:
   - Approve -> section state becomes `accepted`
   - Revise -> section state becomes `revision-requested` and plan state becomes `revising`
@@ -168,10 +169,10 @@
 ## Approval Block
 
 - Required Human Choice: `Approve` | `Revise` | `Stop`
-- Current Choice: none
-- Approved By:
-- Approval Time:
-- Notes: written design spec is ready for user review before implementation planning
+- Current Choice: Approve
+- Approved By: user
+- Approval Time: 2026-05-07 America/Los_Angeles
+- Notes: user approved the design spec, which closes the design round and allows implementation planning
 - Choice Mapping:
   - Approve -> `Plan State: approved`
   - Revise -> `Plan State: revising`
@@ -191,7 +192,8 @@
 - Review Lane Transitions:
   - design draft written locally
   - spec self-review completed locally
-  - waiting on user design review
+  - user approved the written design spec
+  - implementation plan written after design approval; waiting for execution choice
 - Launch Time:
 - Revisions Since Approval:
 - Stop State Preserves Files: true
