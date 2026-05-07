@@ -1,13 +1,13 @@
 ---
 name: ww-subagent-orchestrator
-description: Use when a task should start with `$ww` to estimate work, choose an orchestrator persona, build a working brief, create a tracked dispatch plan file, and coordinate persona-bound subagents with Superpowers workflows across coding, product, or creative work.
+description: Use when a task should start with `$ww` to estimate work, choose an orchestrator persona, build a persisted working brief, create a tracked dispatch plan file, and coordinate persona-bound subagents with Superpowers workflows across coding, product, or creative work.
 ---
 
 # WW Subagent Orchestrator
 
 ## Overview
 
-Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad hoc subagent dispatch. The skill estimates first, writes a working brief, chooses the correct top-level orchestrator persona, writes a tracked dispatch plan file, and only then allows real subagent work.
+Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad hoc subagent dispatch. The skill estimates first, writes a persisted working brief, chooses the correct top-level orchestrator persona, writes a tracked dispatch plan file, and only then allows real subagent work.
 
 ## Core Rules
 
@@ -21,12 +21,15 @@ Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad
   - `estimation_complete: true`
   - `brief_status: ready`
   - dispatch plan `plan_state: approved`
+- Persist the working brief before dispatch-plan creation. Runtime schema checks do not operate on chat-only summaries.
 - Bind a Superpowers workflow at every stage and inside every subagent packet.
-- Every `$ww` reply must follow the `User-Facing Reply Contract`.
+- Every `$ww` reply must end with a `Document Summary` block covering `working brief`, `dispatch plan`, `design spec`, and `implementation plan`.
 - If any of those documents do not exist yet, say `not created yet` in the summary instead of omitting the item.
-- Every section must have a reviewer subagent, then orchestrator synthesis, then human judgment.
+- Every section must have reviewer coverage, orchestrator synthesis, and human judgment.
 - Reviewer subagents point out problems only. They do not rewrite the draft or make the final decision.
 - Reviewer subagents must stay narrow and convergent: only inspect the assigned artifact against its stated scope, list the highest-signal issues, and stop.
+- `runtime_state` is the single authoritative post-launch section state. `close_state` is derived from it and must never act as a parallel state machine.
+- `failed` and `stopped` are distinct. User stop must not be conflated with execution failure.
 
 ## Required Stage Order
 
@@ -34,12 +37,13 @@ Follow this sequence every time:
 
 1. Estimate the task
 2. Build the working brief
-3. Route to the correct orchestrator
-4. Write the dispatch plan file
-5. Ask for `Approve / Revise / Stop`
-6. Launch subagents only after `Approve`
-7. Run section review loops
-8. Synthesize results and close with verification
+3. Persist the working brief
+4. Route to the correct orchestrator
+5. Write the dispatch plan file
+6. Ask for `Approve / Revise / Stop`
+7. Launch subagents only after `Approve`
+8. Run section review loops
+9. Synthesize results and close with verification
 
 ## Stage Bindings
 
@@ -62,8 +66,39 @@ The working brief is the analysis snapshot for one dispatch round. It is the onl
 - persona selection
 - workflow bindings
 - dispatch recommendation
+- scope preparation when packets or reviewers will reference artifacts
 
 Its job is to capture context and recommendations, not runtime approval state. Do not dispatch from a rough idea or a quick summary.
+
+Working brief persistence rules:
+
+- a brief may temporarily exist in chat during raw estimation
+- before dispatch-plan creation, the brief must be saved to `docs/superpowers/working-briefs/YYYY-MM-DD-topic-vN.md`
+- schema checks, revision comparisons, and reviewer targeting must use the persisted brief artifact
+
+Schema compatibility rules:
+
+- pre-versioned artifacts are treated as `schema_version: 0`
+- normalize persisted artifacts on load before planning or launch decisions
+- write only the current schema version back to disk
+- reject mixed in-memory schema versions within one dispatch round
+- `runtime_status` is deprecated terminology and must not be reintroduced as a persisted field
+
+Cross-artifact compatibility rules:
+
+- working brief, dispatch plan, and subagent packet schemas must be compatible within one dispatch round after load-time normalization
+- if a persisted working brief or dispatch plan cannot be normalized to the current schema version, halt launch and request revision instead of dispatching with a mixed schema set
+- packet creation may only reference fields that exist in the normalized persisted working brief and dispatch plan
+- if registry fallback is used, the target must resolve to a persisted `artifact_path` plus optional `section_anchor` before it can be treated as parallel-safe or review-target-eligible
+
+State crosswalk:
+
+| Layer | Owner | Canonical values | Notes |
+|---|---|---|---|
+| `plan_state` | dispatch round | `draft`, `awaiting-approval`, `approved`, `revising`, `dispatched`, `completed`, `stopped` | top-level rollup only; `blocked` is represented by section/runtime state, not plan state |
+| `section_state` | dispatch section | `drafted`, `accepted`, `revision-requested`, `stopped` | derived from section review and controller outcomes |
+| `runtime_state` | section runtime | `queued`, `running`, `review-pending`, `blocked`, `complete`, `failed`, `stopped` | single authoritative post-launch section state |
+| `return_status` | subagent output | `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`, `FAILED` | mapped through the transition table; stale returns do not advance state |
 
 ## Persona Planning
 
@@ -75,10 +110,30 @@ For every chosen persona, write:
 - the owned scope
 - the reason it was selected from the working brief
 - the workflow bindings for its current stage
+- the `agents/openai.yaml` role binding used for prompt assembly
+- the role prompt asset used for launch assembly:
+  - `agents/orchestrator-prompt.md`
+  - `agents/worker-prompt.md`
+  - `agents/reviewer-prompt.md`
+  - `agents/explorer-prompt.md`
 
 Keep reviewers and implementers separate.
 
 If a task spans multiple categories, choose the top-level orchestrator by the primary artifact being produced and the highest-risk decision area. Keep cross-category concerns as specialist personas instead of switching orchestrators mid-run.
+
+## Artifact Resolution
+
+When sections or reviewers reference `artifact_id`, resolve it in this order:
+
+1. `docs/superpowers/artifact-registry.yaml`
+2. inline artifact mapping in the working brief
+3. inline artifact mapping in the dispatch plan
+
+Rules:
+
+- one `artifact_id` maps to exactly one canonical `artifact_path`
+- aggregate multi-file work must use multiple `artifact_id` values, explicit `path_glob` scopes, or multiple sections
+- if an artifact cannot be resolved into canonical targets, that section is not parallel-safe and may not be used as a reviewer target
 
 ## Subagent Packet Contract
 
@@ -86,27 +141,16 @@ Use the contract in `references/subagent-packet-contract.md`.
 
 Packets are execution artifacts, not planning artifacts. Create them only from an approved dispatch plan section.
 
-Required packet fields:
+Every packet must encode:
 
-- `source_dispatch_plan`
-- `source_plan_revision`
-- `source_section_id`
-- `workstream_id`
-- `review_pass_id` (required for reviewer packets; omit or set `none` for non-review workstreams)
-- `orchestrator_type`
-- `stage`
-- `subagent_persona`
-- `persona_rationale`
-- `derived_from_working_brief`
-- `task_mode`
-- `workflow_bindings[]`
-- `working_brief_excerpt`
-- `owned_scope`
-- `non_goals`
-- `success_criteria`
-- `output_contract`
-- `handoff_rule`
-- `requires_human_judgment`
+- source dispatch metadata
+- execution identity
+- execution binding
+- owned read/write scope
+- success and handoff rules
+- immutable reviewer target data when review is involved
+
+Create reviewer packets only after the reviewed artifact snapshot is stable enough to generate `review_target_ref`.
 
 ## Dispatch Plan File
 
@@ -116,76 +160,146 @@ Before real dispatch, write a tracked Markdown file using `assets/dispatch-plan-
 
 The dispatch plan is the canonical runtime state for the dispatch round. The dispatch plan must:
 
-- reference the working brief version it was derived from
+- reference the persisted working brief version it was derived from
 - record the active approval state
 - list planned sections and planned personas
 - encode per-section review loops
-- expose one canonical plan state
-- persist the critical-path workstream used to render `Status Summary`
-- persist deterministic per-workstream `Display Status` values from the approved vocabulary
-- let `plan_state` represent whether dispatch has started
+- expose one canonical `plan_state`
+- track per-section `runtime_state`
+- keep active execution pointers plus execution history
+- record `required_for_goal` so top-level aggregation can distinguish `failed` from `stopped`
 
 If the user chooses `Stop`, preserve the working brief and the dispatch plan file, and do not dispatch any new subagents.
 
 If the user chooses `Revise`, return to orchestrator editing, keep the last approved revision as the rollback baseline, increment the plan revision, and request `Approve / Revise / Stop` again before any launch.
 
-## User-Facing Reply Contract
+## Review Pipeline
 
-Every `$ww` reply must use these four sections in this order:
+Review depth depends on route type.
 
-1. `Status Summary`
-2. `Subagent Progress`
-3. `Decision Block`
-4. `Document Summary`
+For `code/programming`:
 
-The dispatch plan is the canonical runtime state source. Update the dispatch plan first, then render the chat reply from the updated persisted state in the same turn.
+1. implementer
+2. spec reviewer
+3. code quality reviewer
+4. orchestrator synthesis
+5. human judgment
 
-### Status Summary
+For `design/ads/product`:
 
-- Always include:
-  - `current stage`
-  - `primary owner`
-  - `waiting on`
-  - `next action`
-  - `user decision needed`
-- Derive all five fields from the critical-path workstream recorded in the dispatch plan.
+1. drafter
+2. scope reviewer
+3. orchestrator synthesis
+4. human judgment
 
-### Subagent Progress
+For `video/creative`:
 
-- Always include the section, even when no subagents are active.
-- If no subagents have launched, output `no subagents launched`.
-- Otherwise render each workstream from the dispatch plan `Progress Board`.
-- Allowed `Display Status` values:
-  - `not started`
-  - `queued`
-  - `running`
-  - `waiting on orchestrator`
-  - `waiting on user`
-  - `blocked`
-  - `completed`
-  - `failed`
+1. creator
+2. editorial reviewer
+3. orchestrator synthesis
+4. human judgment
 
-### Decision Block
+For spec-light code tasks, reviewer target precedence is:
 
-- Always include the section.
-- If `user decision needed` is `yes`, enumerate the available choice set.
-- If `user decision needed` is `no`, output `No decision required right now`.
+1. implementation plan if present
+2. dispatch section contract
+3. working brief excerpt
 
-### Document Summary
+## Controller Update Procedure
 
-- Always include:
-  - `working brief`
-  - `dispatch plan`
-  - `design spec`
-  - `implementation plan`
-- Use `not created yet` for missing documents.
+The orchestrator must follow one deterministic runtime procedure.
+
+On launch:
+
+1. load and normalize persisted working brief and dispatch plan artifacts
+2. verify schema compatibility and approval state
+3. resolve scope declarations into canonical targets
+4. build packet with `execution_id`, `packet_id`, `attempt_id`, and `review_target_ref` when applicable
+5. assemble the final prompt payload from persona binding, runtime template, packet fields, and workflow bindings
+6. persist `runtime_state: running` and active execution pointers
+
+On subagent return:
+
+1. verify that the result belongs to `active_attempt_id` or is explicitly allowed as a late result
+2. apply the `return_status -> runtime_state` transition table
+3. persist canonical `runtime_state`
+4. persist summary, concerns, or blocker reason
+5. derive `close_state`, section rollups, and top-level `plan_state`
+
+Only the active attempt may advance canonical state. A return from any non-active attempt is stale unless `accepts_late_results: true` explicitly allows it to be recorded as history without changing the canonical `runtime_state`. Late results may be appended to attempt history, but they must not replace the active attempt pointer or advance the section state.
+
+On reviewer return:
+
+1. verify immutable `review_target_ref`
+2. record findings against the reviewed artifact revision
+3. apply the reviewer transition rules
+4. queue synthesis or revision follow-up
+
+On orchestrator synthesis:
+
+1. summarize implementer or reviewer output
+2. persist the synthesis note into the dispatch plan review record
+3. keep `runtime_state: review-pending` while human judgment is still required
+4. otherwise advance by the transition rule for the current lane
+
+On human `Approve`, `Revise`, or `Stop`:
+
+1. record decision and timestamp
+2. apply the transition rule
+3. preserve or rotate `execution_id` according to whether the logical work item changed
+
+On retry:
+
+1. confirm that the current state is retry-eligible
+2. preserve or rotate identity layers according to controller semantics
+3. create a new `attempt_id`
+4. re-assemble the prompt payload with updated context
+5. persist `runtime_state: running` plus the new active attempt pointer
+
+On close:
+
+1. confirm terminal `runtime_state` and no next action
+2. set derived `close_state: closed`
+3. record closure timestamp and final references
+
+## Runtime Transition Table
+
+Use this canonical controller transition table.
+
+| Event Type | Input Event | Current `runtime_state` | Next canonical `runtime_state` | Required follow-up |
+|---|---|---|---|---|
+| subagent return | `DONE` | `running` | `review-pending` or `complete` | send to next required reviewer, or mark complete if no further review applies |
+| subagent return | `DONE_WITH_CONCERNS` | `running` | `review-pending` | persist concerns and require orchestrator synthesis before proceeding |
+| subagent return | `NEEDS_CONTEXT` | `running` | `blocked` | record missing context, keep `execution_id`, rotate `attempt_id` only on re-launch |
+| subagent return | `BLOCKED` | `running` | `blocked` | classify blocker and choose retry, revise, or human escalation |
+| subagent return | `FAILED` | `running` | `failed` | close current attempt and require explicit recovery decision before new launch |
+| reviewer outcome | `PASS` | `review-pending` | `review-pending` or `complete` | advance to next reviewer or synthesis, then complete if review lane is finished |
+| reviewer outcome | `REJECT` | `review-pending` | `blocked` | persist findings, require orchestrator synthesis, and relaunch only through explicit retry or revise path |
+| orchestrator event | `SYNTHESIS_COMPLETE` | `review-pending` | `review-pending` or `complete` | wait for human decision when required, otherwise close completed lane |
+| human decision | `APPROVE` | `review-pending` | `complete` | persist decision and close when no next action remains |
+| human decision | `REVISE` | `review-pending` or `blocked` | `blocked` | create revision task and preserve `execution_id` only if the logical work item is unchanged |
+| human decision | `STOP` | `running`, `review-pending`, or `blocked` | `stopped` | record explicit user stop, close active work, and prevent relaunch unless planning is explicitly reopened |
+| controller action | `RETRY` | `blocked` or `failed` | `running` | create a new `attempt_id`, preserve or rotate higher identities per controller semantics |
+
+## Document Summary Contract
+
+At the end of every `$ww` response, output a short `Document Summary` section. This is mandatory during estimation, approval, revision, dispatch, review, and closure updates.
+
+Always include exactly these four entries:
+
+- `working brief`
+- `dispatch plan`
+- `design spec`
+- `implementation plan`
+
+Each entry should briefly report the current state and, when known, the active file path or version. Never omit an entry because the document has not been started.
 
 Default document references:
 
 - `working brief`: current brief artifact for the dispatch round; if no saved file exists yet, report the current brief state and say file is `not created yet`
 - `dispatch plan`: `docs/superpowers/dispatch-plans/YYYY-MM-DD-topic.md`
-- `design spec`: `docs/maintainers/specs/YYYY-MM-DD-<topic>-design.md`
-- `implementation plan`: `docs/maintainers/plans/YYYY-MM-DD-<feature-name>.md`
+- `design spec`: `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
+- `implementation plan`: `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 
 Missing-document rule:
 
@@ -197,34 +311,11 @@ Preferred format:
 ```markdown
 ## Document Summary
 
-- `working brief`: ready, version 2, file `not created yet`
+- `working brief`: ready, version 2, `docs/superpowers/working-briefs/2026-04-27-topic-v2.md`
 - `dispatch plan`: awaiting-approval, `docs/superpowers/dispatch-plans/2026-04-27-topic.md`
 - `design spec`: not created yet
 - `implementation plan`: not created yet
 ```
-
-## Runtime Rendering Rules
-
-- `current stage`, `waiting on`, and `next action` must all derive from the same critical-path workstream.
-- The dispatch plan must mark the critical-path workstream explicitly in the `Progress Board`; do not infer it outside persisted state.
-- `waiting on` precedence:
-  - human choice
-  - orchestrator synthesis or routing
-  - blocker owner or unresolved dependency
-  - active workstream owner
-  - queue gate
-  - `nobody`
-- `Display Status` precedence:
-  - `failed`
-  - `completed`
-  - `blocked`
-  - `waiting on user`
-  - `waiting on orchestrator`
-  - `running`
-  - `queued`
-  - `not started`
-- `Decision Block` must derive from the same dispatch-plan state as `user decision needed`.
-- Do not emit a rendered state that is more advanced than the persisted dispatch plan.
 
 ## Reviewer Convergence Rules
 
@@ -258,21 +349,16 @@ Preferred reviewer output shape:
 - Severity: medium | Scope: missing edge case | Finding: ...
 ```
 
-## Review Loop
-
-For each section:
-
-1. Orchestrator drafts the section
-2. Reviewer subagent returns a narrow findings-only review under the convergence rules
-3. Orchestrator outputs:
-   - `section draft`
-   - `reviewer findings`
-   - `recommendation`
-4. Human chooses `Approve`, `Revise`, or `Stop`
-
-Never skip the orchestrator synthesis step.
-
 ## Approval Lifecycle
+
+Use this authoritative state crosswalk:
+
+| State Surface | Purpose | Allowed Values | Authority Rule |
+|---|---|---|---|
+| `plan_state` | round-level summary | `draft`, `awaiting-approval`, `approved`, `revising`, `stopped`, `dispatched`, `completed` | derived from section outcomes and required-section criticality |
+| `section_state` | human workflow tracking | `drafted`, `under-review`, `accepted`, `revision-requested`, `stopped` | records human review posture, not execution truth |
+| `runtime_state` | canonical execution state | `queued`, `running`, `blocked`, `review-pending`, `complete`, `failed`, `stopped` | single authoritative post-launch section state |
+| `return_status` | subagent event input | `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`, `FAILED`, `PASS`, `REJECT` | event input only; never persisted as the canonical long-lived state |
 
 Use one global plan state throughout the run:
 
@@ -286,7 +372,7 @@ Use one global plan state throughout the run:
 
 `approved` is the only state that allows packet creation or real dispatch.
 
-Use a separate section state for each section review:
+Use a separate section state for human workflow tracking:
 
 - `drafted`
 - `under-review`
@@ -294,7 +380,24 @@ Use a separate section state for each section review:
 - `revision-requested`
 - `stopped`
 
+Use canonical per-section runtime states for execution tracking:
+
+- `queued`
+- `running`
+- `blocked`
+- `review-pending`
+- `complete`
+- `failed`
+- `stopped`
+
 Do not reuse section decisions as the global plan state.
+
+Top-level aggregation rules:
+
+- if any `required_for_goal: true` section enters `stopped`, top-level `plan_state` becomes `stopped`
+- if a non-required section enters `stopped` while required sections remain active, top-level `plan_state` remains `dispatched`
+- if all required sections are `complete` and only non-required sections are `stopped`, top-level `plan_state` becomes `completed`
+- if any section is `running` or `review-pending`, top-level `plan_state` must not become `completed`
 
 ## Rollback Rules
 

@@ -2,3 +2,21 @@ interface:
   display_name: "WW Subagent Orchestrator"
   short_description: "Plan and dispatch subagent work"
   default_prompt: "Use $ww to estimate the task, write the working brief, generate a dispatch plan file, and orchestrate persona-bound subagents until implementation finishes."
+prompt_assets:
+  orchestrator: agents/orchestrator-prompt.md
+  worker: agents/worker-prompt.md
+  reviewer: agents/reviewer-prompt.md
+  explorer: agents/explorer-prompt.md
+role_bindings:
+  orchestrator:
+    runtime_role: orchestrator
+    template_path: agents/orchestrator-prompt.md
+  worker:
+    runtime_role: worker
+    template_path: agents/worker-prompt.md
+  reviewer:
+    runtime_role: reviewer
+    template_path: agents/reviewer-prompt.md
+  explorer:
+    runtime_role: explorer
+    template_path: agents/explorer-prompt.md

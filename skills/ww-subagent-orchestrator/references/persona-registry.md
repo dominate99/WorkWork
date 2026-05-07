@@ -47,3 +47,19 @@ If a task genuinely spans multiple categories:
 - choose the orchestrator from the primary artifact being produced
 - break ties using the highest-risk decision area
 - add cross-category concerns as specialist personas instead of swapping orchestrators during the same dispatch round
+
+## Prompt Binding Roles
+
+Use these role bindings when assembling packets and launch prompts:
+
+- `orchestrator` -> top-level controller prompt and synthesis responsibilities
+- `worker` -> implementer prompt with write authority limited to owned scope
+- `reviewer` -> findings-only prompt with no rewrite authority
+- `explorer` -> read-only prompt for investigation and scoped evidence gathering
+
+Prompt binding rules:
+
+- a persona selection must resolve to one of the supported runtime roles above before packet assembly
+- `template_path` in the packet contract must point to the role-specific prompt asset
+- role prompts are behavioral templates, not persona registry records
+- reviewer and worker prompts must remain distinct even when they share the same category
