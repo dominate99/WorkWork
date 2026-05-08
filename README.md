@@ -1,8 +1,8 @@
 # WW Subagent Orchestrator Skill
 
-A reusable skill that turns `$ww` into a structured dispatch flow: estimate work, build a brief, create a plan, and coordinate subagents.
+A reusable skill that turns `$ww` into a predictable planning-and-dispatch flow: estimate work, build a brief, create a plan, and coordinate subagents.
 
-> Workflow first, references later. Works across `Codex`, `Claude Code`, and similar workflows, with install examples kept Codex-specific.
+> Workflow first, details later. The install examples below are Codex-specific; the workflow itself works across `Codex`, `Claude Code`, and similar agent-tool setups.
 
 ## Install
 
@@ -58,7 +58,7 @@ After installing, restart Codex to pick up the new skill.
 
 ## What This Skill Does
 
-The skill is designed to:
+It helps you:
 
 - estimate work before dispatch
 - choose the right top-level orchestrator persona
@@ -67,7 +67,7 @@ The skill is designed to:
 - coordinate persona-bound subagents
 - bind Superpowers workflows at each stage
 
-When triggered, `$ww` is designed to:
+When you trigger `$ww`:
 
 1. estimate the task first
 2. generate a working brief
