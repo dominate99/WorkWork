@@ -23,7 +23,7 @@ When triggered, `$ww` is designed to:
    1. `Approve`
    2. `Revise`
    3. `Stop`
-   with `Approve`, `Revise`, and `Stop` also accepted as aliases
+   Users may reply with `1`, `2`, `3`, `Approve`, `Revise`, or `Stop`.
 6. dispatch subagents only after approval
 7. enforce reviewer findings -> orchestrator synthesis -> human judgment
 
