@@ -2,36 +2,7 @@
 
 A reusable skill for turning `$ww` into a disciplined orchestration flow across `Codex`, `Claude Code`, and similar agent-tool workflows.
 
-> Built for experienced agent-tool users who want a tighter, more predictable `$ww` process.
-
 > Works across `Codex`, `Claude Code`, and similar workflows without locking the repo to a single tool.
-
-## What This Skill Does
-
-The skill is designed to:
-
-- estimate work before dispatch
-- choose the right top-level orchestrator persona
-- build a working brief
-- create a tracked dispatch plan file
-- coordinate persona-bound subagents
-- bind Superpowers workflows at each stage
-
-When triggered, `$ww` is designed to:
-
-1. estimate the task first
-2. generate a working brief
-3. route to the correct orchestrator
-4. write a dispatch plan file to `docs/superpowers/dispatch-plans/`
-5. request:
-   1. `Approve`
-   2. `Revise`
-   3. `Stop`
-   Users may reply with `1`, `2`, `3`, `Approve`, `Revise`, or `Stop`.
-6. dispatch subagents only after approval
-7. enforce reviewer findings -> orchestrator synthesis -> human judgment
-
-`docs/superpowers/dispatch-plans/` is a runtime-generated output location. It is not part of the checked-in repository structure by default.
 
 ## Install
 
@@ -84,6 +55,33 @@ https://github.com/dominate99/WorkWork/tree/main/skills/ww-subagent-orchestrator
 If your Codex environment already includes the `skill-installer` helper, the same repo/path can be installed through that workflow instead of copying files manually.
 
 After installing, restart Codex to pick up the new skill.
+
+## What This Skill Does
+
+The skill is designed to:
+
+- estimate work before dispatch
+- choose the right top-level orchestrator persona
+- build a working brief
+- create a tracked dispatch plan file
+- coordinate persona-bound subagents
+- bind Superpowers workflows at each stage
+
+When triggered, `$ww` is designed to:
+
+1. estimate the task first
+2. generate a working brief
+3. route to the correct orchestrator
+4. write a dispatch plan file to `docs/superpowers/dispatch-plans/`
+5. request:
+   1. `Approve`
+   2. `Revise`
+   3. `Stop`
+   Users may reply with `1`, `2`, `3`, `Approve`, `Revise`, or `Stop`.
+6. dispatch subagents only after approval
+7. enforce reviewer findings -> orchestrator synthesis -> human judgment
+
+`docs/superpowers/dispatch-plans/` is a runtime-generated output location. It is not part of the checked-in repository structure by default.
 
 ## Repository Contents
 
