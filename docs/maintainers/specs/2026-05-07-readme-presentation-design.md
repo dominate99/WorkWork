@@ -4,7 +4,7 @@
 
 ## Goal
 
-Revise the repository root `README.md` so it feels clearer, more polished, and more human-friendly on GitHub while staying concise and working well for users of `Codex`, `Claude Code`, and similar agent-tool workflows.
+Revise the repository root `README.md` so it feels sharper, cleaner, and more human-friendly on GitHub while staying concise and working well for users of `Codex`, `Claude Code`, and similar agent-tool workflows.
 
 ## Problem
 
@@ -67,7 +67,13 @@ The new structure should make it obvious within the first screen of text:
 
 ### Opening
 
-Replace the current opener with a clearer statement of purpose. The new intro should sound like a product entry point, not a file catalog.
+Replace the current opener with a sharper statement of purpose. The new intro should sound like a product entry point, not a file catalog.
+
+The first sentence should do three things at once:
+
+- name the skill
+- state the outcome
+- signal that it fits modern agent-tool workflows
 
 Preferred tone:
 
@@ -78,7 +84,7 @@ Preferred tone:
 
 ### Compatibility Note
 
-Add a short compatibility callout near the top that says the skill works across `Codex`, `Claude Code`, and similar agent-tool workflows.
+Add a short compatibility callout immediately below the opening that says the skill is built for `Codex`, `Claude Code`, and similar agent-tool workflows.
 
 This note should:
 
@@ -124,6 +130,11 @@ Use only GitHub-native, low-risk presentation techniques:
 - cleaner bullet rhythm
 - careful spacing between sections
 
+Place the callouts where they do the most work:
+
+- one near the top for compatibility and audience fit
+- one later only if it clarifies installation or maintenance boundaries
+
 Do not use:
 
 - custom fonts
@@ -160,6 +171,7 @@ It should not sound:
 
 The README redesign is successful if:
 
+- the opening says what the skill does in one direct pass
 - a reader can understand what the skill does in the first screen
 - compatibility with `Codex`, `Claude Code`, and similar workflows is clear
 - the page feels more polished and readable on GitHub
@@ -170,4 +182,3 @@ The README redesign is successful if:
 ## Implementation Boundaries For The Later Edit
 
 The eventual README edit should remain inside `README.md` only and should not modify skill behavior or other repository docs.
-
