@@ -151,11 +151,16 @@
 
 ## Approval Block
 
-- Required Human Choice:
+- Required Human Choice (rendered labels):
   - `1. Approve`
   - `2. Revise`
   - `3. Stop`
-- Accepted Aliases: `Approve` | `Revise` | `Stop`
+- Numeric Reply Mapping:
+  - `1` -> `Approve`
+  - `2` -> `Revise`
+  - `3` -> `Stop`
+- Canonical Decision Values: `Approve` | `Revise` | `Stop`
+- Accepted Word Replies: `Approve` | `Revise` | `Stop`
 - Current Choice: none
 - Approved By:
 - Approval Time:
