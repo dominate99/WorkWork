@@ -40,10 +40,15 @@ Follow this sequence every time:
 3. Persist the working brief
 4. Route to the correct orchestrator
 5. Write the dispatch plan file
-6. Ask for `Approve / Revise / Stop`
+6. Ask for this approval block:
+   1. `Approve`
+   2. `Revise`
+   3. `Stop`
 7. Launch subagents only after `Approve`
 8. Run section review loops
 9. Synthesize results and close with verification
+
+The numbered list is the preferred rendered prompt. The words `Approve`, `Revise`, and `Stop` remain accepted aliases for the same decisions.
 
 ## Stage Bindings
 
@@ -171,7 +176,11 @@ The dispatch plan is the canonical runtime state for the dispatch round. The dis
 
 If the user chooses `Stop`, preserve the working brief and the dispatch plan file, and do not dispatch any new subagents.
 
-If the user chooses `Revise`, return to orchestrator editing, keep the last approved revision as the rollback baseline, increment the plan revision, and request `Approve / Revise / Stop` again before any launch.
+Approval semantics:
+
+- `Approve` advances to the next approved stage.
+- `Revise` returns to orchestrator editing, keeps the last approved revision as the rollback baseline, increments the plan revision, and requires approval again before launch.
+- `Stop` preserves the working brief and dispatch plan and prevents new dispatch until planning is reopened.
 
 ## Review Pipeline
 
