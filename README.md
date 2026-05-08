@@ -1,8 +1,8 @@
-# WW Subagent Orchestrator Skill
+# WW Subagent Orchestrator Plugin
 
-A reusable skill that turns `$ww` into a predictable planning-and-dispatch flow: estimate work, build a brief, create a plan, and coordinate subagents.
+A reusable plugin workflow that turns `$ww` into a predictable planning-and-dispatch flow: estimate work, build a brief, create a plan, and coordinate subagents.
 
-> Workflow first, details later. The install examples below show the Codex skill-installer flow, and the workflow itself works across `Codex`, `Claude Code`, and similar agent-tool setups.
+> Workflow first, details later. The install examples below show the Codex plugin flow, and the workflow itself works across `Codex`, `Claude Code`, and similar agent-tool setups.
 
 This repository is also packaged as a plugin-style workflow with manifests for `Codex`, `Claude Code`, and `Cursor`, plus an OpenCode install note.
 
@@ -17,47 +17,37 @@ This repository is packaged as a plugin-style workflow. Start with the plugin en
 - Cursor: `.cursor-plugin/plugin.json`
 - OpenCode: `.opencode/INSTALL.md`
 
-### Skill Path
-
-The reusable skill still lives at:
-
-```text
-skills/ww-subagent-orchestrator
-```
-
-Use the skill path when you need the underlying workflow contract or want to inspect the implementation directly.
-
 ### Install From GitHub
 
 Standard command template:
 
 ```bash
-python path/to/install-skill-from-github.py --repo <owner>/<repo> --path skills/ww-subagent-orchestrator
+<plugin-installer-command> --repo <owner>/<repo> --path .codex-plugin
 ```
 
 Example for this repository:
 
 ```bash
-python path/to/install-skill-from-github.py --repo dominate99/WorkWork --path skills/ww-subagent-orchestrator
+<plugin-installer-command> --repo dominate99/WorkWork --path .codex-plugin
 ```
 
 Standard GitHub URL template:
 
 ```text
-https://github.com/<owner>/<repo>/tree/main/skills/ww-subagent-orchestrator
+https://github.com/<owner>/<repo>/tree/main/.codex-plugin
 ```
 
-This repository's skill URL:
+This repository's plugin URL:
 
 ```text
-https://github.com/dominate99/WorkWork/tree/main/skills/ww-subagent-orchestrator
+https://github.com/dominate99/WorkWork/tree/main/.codex-plugin
 ```
 
-If your environment already includes the `skill-installer` helper, use the plugin entry path first and the repo/path install flow only when that helper expects a skill directory.
+If your environment already includes a plugin installer helper, use the plugin entry path first and the repo/path install flow only when that helper expects a plugin manifest directory.
 
-After installing, restart Codex to pick up the new skill.
+After installing, restart Codex to pick up the new plugin.
 
-## What This Skill Does
+## What This Plugin Does
 
 It helps you:
 
@@ -85,10 +75,6 @@ When you trigger `$ww`:
 `docs/superpowers/dispatch-plans/` is a runtime-generated output location. It is not part of the checked-in repository structure by default.
 
 ## Repository Contents
-
-The reusable skill lives at:
-
-`skills/ww-subagent-orchestrator`
 
 Plugin packaging lives at:
 
@@ -152,10 +138,10 @@ Those files are for contributors and maintainers. They are separate from the run
 
 ## Validation
 
-This skill was validated with the official `quick_validate.py` script after installing `PyYAML`.
+This plugin workflow was validated with the official `quick_validate.py` script after installing `PyYAML`.
 
 ## Notes
 
-- The skill expects Superpowers capabilities to be available.
+- The plugin expects Superpowers capabilities to be available.
 - Project-specific personas can be added at `docs/superpowers/personas/registry.yaml`.
 - Design and implementation docs for this repository live under `docs/maintainers/`.
