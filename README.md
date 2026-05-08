@@ -8,44 +8,11 @@ This repository is also packaged as a plugin-style workflow with manifests for `
 
 ## Install
 
-### Plugin Entry Paths
-
-This repository is packaged as a plugin-style workflow. Start with the plugin entry that matches your harness:
-
-- Codex: `.codex-plugin/plugin.json`
-- Claude Code: `.claude-plugin/plugin.json`
-- Cursor: `.cursor-plugin/plugin.json`
-- OpenCode: `.opencode/INSTALL.md`
-
-### Install From GitHub
-
-Standard command template:
-
-```bash
-<plugin-installer-command> --repo <owner>/<repo> --path .codex-plugin
-```
-
-Example for this repository:
-
-```bash
-<plugin-installer-command> --repo dominate99/WorkWork --path .codex-plugin
-```
-
-Standard GitHub URL template:
-
-```text
-https://github.com/<owner>/<repo>/tree/main/.codex-plugin
-```
-
 This repository's plugin URL:
 
 ```text
 https://github.com/dominate99/WorkWork/tree/main/.codex-plugin
 ```
-
-If your environment already includes a plugin installer helper, use the plugin entry path first and the repo/path install flow only when that helper expects a plugin manifest directory.
-
-After installing, restart Codex to pick up the new plugin.
 
 ## What This Plugin Does
 
