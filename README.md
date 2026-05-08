@@ -12,6 +12,7 @@ To install the plugin, configure your AI assistant using the entry point specifi
 
 | Environment | Entry Point |
 | :--- | :--- |
+| **Codex** | `https://github.com/dominate99/WorkWork/tree/main/.codex-plugin` |
 | **Claude Code** | `.claude-plugin/plugin.json` |
 | **Cursor** | `.cursor-plugin/plugin.json` |
 | **OpenCode** | `.opencode/INSTALL.md` |
