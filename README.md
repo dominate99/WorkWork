@@ -22,7 +22,7 @@ C:\Users\<your-user>\.codex\skills\ww-subagent-orchestrator
 
 ### Install From GitHub
 
-If this repository is published to GitHub, Codex users can install it with the skill installer from the repo path:
+Codex users can install it with the skill installer from the repo path:
 
 ```text
 skills/ww-subagent-orchestrator
