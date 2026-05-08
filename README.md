@@ -19,7 +19,11 @@ When triggered, `$ww` is designed to:
 2. generate a working brief
 3. route to the correct orchestrator
 4. write a dispatch plan file to `docs/superpowers/dispatch-plans/`
-5. request `Approve / Revise / Stop`
+5. request:
+   1. `Approve`
+   2. `Revise`
+   3. `Stop`
+   with `Approve`, `Revise`, and `Stop` also accepted as aliases
 6. dispatch subagents only after approval
 7. enforce reviewer findings -> orchestrator synthesis -> human judgment
 
