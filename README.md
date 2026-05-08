@@ -6,16 +6,19 @@ A reusable plugin workflow that turns `$ww` into a predictable planning-and-disp
 
 This repository is also packaged as a plugin-style workflow with manifests for `Codex`, `Claude Code`, and `Cursor`, plus an OpenCode install note.
 
-## Install
+## Installation
 
-Plugin entry points:
+To install the plugin, configure your AI assistant using the entry point specific to your environment:
 
-- Codex example: `https://github.com/dominate99/WorkWork/tree/main/.codex-plugin`
-- Claude Code: `.claude-plugin/plugin.json`
-- Cursor: `.cursor-plugin/plugin.json`
-- OpenCode: `.opencode/INSTALL.md`
+| Environment | Entry Point |
+| :--- | :--- |
+| **Claude Code** | `.claude-plugin/plugin.json` |
+| **Cursor** | `.cursor-plugin/plugin.json` |
+| **OpenCode** | `.opencode/INSTALL.md` |
 
-Use the Codex URL as the example for browser-based or repo-based installs.
+> **Note for Remote/Browser Installs:**  
+> For setups that require a direct repository link (like Codex), use the full URL to the plugin directory. For example:  
+> `https://github.com/dominate99/WorkWork/tree/main/.codex-plugin`
 
 ## What This Plugin Does
 
