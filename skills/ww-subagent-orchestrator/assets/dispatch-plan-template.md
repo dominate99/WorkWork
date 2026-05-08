@@ -151,7 +151,11 @@
 
 ## Approval Block
 
-- Required Human Choice: `Approve` | `Revise` | `Stop`
+- Required Human Choice:
+  - `1. Approve`
+  - `2. Revise`
+  - `3. Stop`
+- Accepted Aliases: `Approve` | `Revise` | `Stop`
 - Current Choice: none
 - Approved By:
 - Approval Time:
