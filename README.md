@@ -8,13 +8,26 @@ This repository is also packaged as a plugin-style workflow with manifests for `
 
 ## Install
 
-### Install From GitHub
+### Plugin Entry Paths
 
-Users can install it with the skill installer from the repo path:
+This repository is packaged as a plugin-style workflow. Start with the plugin entry that matches your harness:
+
+- Codex: `.codex-plugin/plugin.json`
+- Claude Code: `.claude-plugin/plugin.json`
+- Cursor: `.cursor-plugin/plugin.json`
+- OpenCode: `.opencode/INSTALL.md`
+
+### Skill Path
+
+The reusable skill still lives at:
 
 ```text
 skills/ww-subagent-orchestrator
 ```
+
+Use the skill path when you need the underlying workflow contract or want to inspect the implementation directly.
+
+### Install From GitHub
 
 Standard command template:
 
@@ -40,7 +53,7 @@ This repository's skill URL:
 https://github.com/dominate99/WorkWork/tree/main/skills/ww-subagent-orchestrator
 ```
 
-If your environment already includes the `skill-installer` helper, the same repo/path can be installed through that workflow instead of copying files manually.
+If your environment already includes the `skill-installer` helper, use the plugin entry path first and the repo/path install flow only when that helper expects a skill directory.
 
 After installing, restart Codex to pick up the new skill.
 
