@@ -2,7 +2,7 @@
 
 A reusable skill that turns `$ww` into a structured dispatch flow: estimate work, build a brief, create a plan, and coordinate subagents.
 
-> The install examples below are Codex-specific; the workflow itself works across `Codex`, `Claude Code`, and similar agent-tool setups.
+> Workflow first, references later. Works across `Codex`, `Claude Code`, and similar workflows, with install examples kept Codex-specific.
 
 ## Install
 
