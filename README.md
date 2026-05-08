@@ -1,8 +1,8 @@
 # WW Subagent Orchestrator Skill
 
-A reusable skill for turning `$ww` into a disciplined orchestration flow across `Codex`, `Claude Code`, and similar agent-tool workflows.
+A reusable skill that turns `$ww` into a structured dispatch flow: estimate work, build a brief, create a plan, and coordinate subagents.
 
-> Works across `Codex`, `Claude Code`, and similar workflows without locking the repo to a single tool.
+> The install examples below are Codex-specific; the workflow itself works across `Codex`, `Claude Code`, and similar agent-tool setups.
 
 ## Install
 
