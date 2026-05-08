@@ -6,20 +6,6 @@ A reusable skill that turns `$ww` into a predictable planning-and-dispatch flow:
 
 ## Install
 
-### Install Manually
-
-Copy the skill folder into your Codex skills directory:
-
-```text
-~/.codex/skills/ww-subagent-orchestrator
-```
-
-On Windows, that is typically:
-
-```text
-C:\Users\<your-user>\.codex\skills\ww-subagent-orchestrator
-```
-
 ### Install From GitHub
 
 Codex users can install it with the skill installer from the repo path:
