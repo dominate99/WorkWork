@@ -2,13 +2,13 @@
 
 A reusable skill that turns `$ww` into a predictable planning-and-dispatch flow: estimate work, build a brief, create a plan, and coordinate subagents.
 
-> Workflow first, details later. The install examples below are Codex-specific; the workflow itself works across `Codex`, `Claude Code`, and similar agent-tool setups.
+> Workflow first, details later. The install examples below show the Codex skill-installer flow, and the workflow itself works across `Codex`, `Claude Code`, and similar agent-tool setups.
 
 ## Install
 
 ### Install From GitHub
 
-Codex users can install it with the skill installer from the repo path:
+Users can install it with the skill installer from the repo path:
 
 ```text
 skills/ww-subagent-orchestrator
@@ -38,7 +38,7 @@ This repository's skill URL:
 https://github.com/dominate99/WorkWork/tree/main/skills/ww-subagent-orchestrator
 ```
 
-If your Codex environment already includes the `skill-installer` helper, the same repo/path can be installed through that workflow instead of copying files manually.
+If your environment already includes the `skill-installer` helper, the same repo/path can be installed through that workflow instead of copying files manually.
 
 After installing, restart Codex to pick up the new skill.
 
