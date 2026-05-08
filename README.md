@@ -32,9 +32,9 @@ When you trigger `$ww`:
 3. route to the correct orchestrator
 4. write a dispatch plan file to `docs/superpowers/dispatch-plans/`
 5. request approval with:
-   1. `1 Approve`
-   2. `2 Revise`
-   3. `3 Stop`
+   1. `1. Approve`
+   2. `2. Revise`
+   3. `3. Stop`
    Reply with `1`, `2`, `3`, `Approve`, `Revise`, or `Stop`.
 6. dispatch subagents only after approval
 7. enforce reviewer findings -> orchestrator synthesis -> human judgment
