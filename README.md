@@ -4,6 +4,8 @@ A reusable skill that turns `$ww` into a predictable planning-and-dispatch flow:
 
 > Workflow first, details later. The install examples below show the Codex skill-installer flow, and the workflow itself works across `Codex`, `Claude Code`, and similar agent-tool setups.
 
+This repository is also packaged as a plugin-style workflow with manifests for `Codex`, `Claude Code`, and `Cursor`, plus an OpenCode install note.
+
 ## Install
 
 ### Install From GitHub
@@ -74,6 +76,15 @@ When you trigger `$ww`:
 The reusable skill lives at:
 
 `skills/ww-subagent-orchestrator`
+
+Plugin packaging lives at:
+
+- `CLAUDE.md`
+- `AGENTS.md`
+- `.codex-plugin/plugin.json`
+- `.claude-plugin/plugin.json`
+- `.cursor-plugin/plugin.json`
+- `.opencode/INSTALL.md`
 
 Key files:
 

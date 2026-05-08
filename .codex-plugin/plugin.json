@@ -1,0 +1,30 @@
+{
+  "name": "workwork",
+  "version": "1.0.0",
+  "description": "A cross-tool workflow plugin for $ww estimation, planning, and subagent orchestration.",
+  "author": {
+    "name": "domin",
+    "url": "https://github.com/dominate99"
+  },
+  "homepage": "https://github.com/dominate99/WorkWork",
+  "repository": "https://github.com/dominate99/WorkWork",
+  "license": "MIT",
+  "keywords": [
+    "workflow",
+    "skills",
+    "subagents",
+    "superpowers"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "WorkWork",
+    "shortDescription": "$ww workflow for planning and subagent dispatch",
+    "longDescription": "Turns $ww into a disciplined planning-and-dispatch workflow that works across Codex, Claude Code, and similar agent-tool setups.",
+    "developerName": "domin",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ]
+  }
+}
