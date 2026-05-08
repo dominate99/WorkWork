@@ -40,7 +40,7 @@ Follow this sequence every time:
 3. Persist the working brief
 4. Route to the correct orchestrator
 5. Write the dispatch plan file
-6. Ask for this approval block:
+6. Render this approval block:
    1. `Approve`
    2. `Revise`
    3. `Stop`
@@ -48,7 +48,7 @@ Follow this sequence every time:
 8. Run section review loops
 9. Synthesize results and close with verification
 
-The numbered list is the preferred rendered prompt. The words `Approve`, `Revise`, and `Stop` remain accepted aliases for the same decisions.
+This numbered list is the required rendered approval prompt. Numeric replies map to the same decisions: `1` -> `Approve`, `2` -> `Revise`, `3` -> `Stop`. The words `Approve`, `Revise`, and `Stop` remain accepted aliases for the same decisions.
 
 ## Stage Bindings
 
@@ -178,9 +178,9 @@ If the user chooses `Stop`, preserve the working brief and the dispatch plan fil
 
 Approval semantics:
 
-- `Approve` advances to the next approved stage.
+- `Approve` records approval of the current plan or review gate and allows the next approved stage to proceed.
 - `Revise` returns to orchestrator editing, keeps the last approved revision as the rollback baseline, increments the plan revision, and requires approval again before launch.
-- `Stop` preserves the working brief and dispatch plan and prevents new dispatch until planning is reopened.
+- `Stop` preserves the working brief and dispatch plan and prevents new dispatch unless a new or revised planning round is explicitly started.
 
 ## Review Pipeline
 
