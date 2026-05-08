@@ -178,9 +178,9 @@ If the user chooses `Stop`, preserve the working brief and the dispatch plan fil
 
 Approval semantics:
 
-- `Approve` records approval of the current plan or review gate and allows the next approved stage to proceed.
-- `Revise` returns to orchestrator editing, keeps the last approved revision as the rollback baseline, increments the plan revision, and requires approval again before launch.
-- `Stop` preserves the working brief and dispatch plan and prevents new dispatch unless a new or revised planning round is explicitly started.
+- `Approve` allows the next approved stage to proceed.
+- `Revise` returns to orchestrator editing and requires approval again before launch.
+- `Stop` preserves the working brief and dispatch plan and prevents new dispatch.
 
 ## Review Pipeline
 
