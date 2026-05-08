@@ -8,11 +8,14 @@ This repository is also packaged as a plugin-style workflow with manifests for `
 
 ## Install
 
-This repository's plugin URL:
+Plugin entry points:
 
-```text
-https://github.com/dominate99/WorkWork/tree/main/.codex-plugin
-```
+- Codex example: `https://github.com/dominate99/WorkWork/tree/main/.codex-plugin`
+- Claude Code: `.claude-plugin/plugin.json`
+- Cursor: `.cursor-plugin/plugin.json`
+- OpenCode: `.opencode/INSTALL.md`
+
+Use the Codex URL as the example for browser-based or repo-based installs.
 
 ## What This Plugin Does
 
