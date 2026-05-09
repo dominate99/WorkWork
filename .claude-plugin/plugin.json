@@ -15,7 +15,7 @@
     "subagents",
     "superpowers"
   ],
-  "skills": "./skills/",
+  "skills": "../skills/",
   "interface": {
     "displayName": "WorkWork",
     "shortDescription": "$ww workflow for planning and subagent dispatch",
