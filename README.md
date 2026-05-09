@@ -1,25 +1,29 @@
 # WW Subagent Orchestrator Plugin
 
-A reusable plugin workflow that turns `$ww` into a predictable planning-and-dispatch flow: estimate work, build a brief, create a plan, and coordinate subagents.
+A reusable workflow package that turns `$ww` into a predictable planning-and-dispatch flow: estimate work, build a brief, create a plan, and coordinate subagents.
 
-> Workflow first, details later. The install examples below show the Codex plugin flow, and the workflow itself works across `Codex`, `Claude Code`, and similar agent-tool setups.
+> Workflow first, details later. WorkWork supports `Codex`, `Claude Code`, `Cursor`, and `OpenCode`, with a tool-specific entry point or install guide for each environment.
 
-This repository is also packaged as a plugin-style workflow with manifests for `Codex`, `Claude Code`, and `Cursor`, plus an OpenCode install note.
+This repository packages the same workflow with tool-specific entry points for `Codex`, `Claude Code`, and `Cursor`, plus install guidance for `OpenCode`.
 
-## Installation
+## Quick Start
 
-To install the plugin, configure your AI assistant using the entry point specific to your environment:
+Start with the install doc for your environment. Each environment has its own first-step doc and install target:
 
-| Environment | Entry Point |
-| :--- | :--- |
-| **Codex** | `https://github.com/dominate99/WorkWork/tree/main/.codex-plugin` |
-| **Claude Code** | `.claude-plugin/plugin.json` |
-| **Cursor** | `.cursor-plugin/plugin.json` |
-| **OpenCode** | `.opencode/INSTALL.md` |
+| Environment | First-Step Doc | Install Target / Reference |
+| :--- | :--- | :--- |
+| **Codex** | [docs/README.codex.md](docs/README.codex.md) | Recommended: local `.codex-plugin` directory from a full checkout. Fallback only: some Codex builds may preserve sibling repo access for `https://github.com/dominate99/WorkWork/tree/main/.codex-plugin` |
+| **Claude Code** | [docs/README.claude.md](docs/README.claude.md) | `.claude-plugin/plugin.json` |
+| **Cursor** | [docs/README.cursor.md](docs/README.cursor.md) | `.cursor-plugin/plugin.json` |
+| **OpenCode** | [.opencode/INSTALL.md](.opencode/INSTALL.md) | Repository root plus `.opencode/INSTALL.md` |
 
-> **Note for Remote/Browser Installs:**  
-> For setups that require a direct repository link (like Codex), use the full URL to the plugin directory. For example:  
+> **Codex Remote/Browser Note:**  
+> The normal supported Codex path for this package layout is a local checkout plus the local `.codex-plugin` directory. The GitHub subdirectory URL below is only an unverified fallback for Codex builds that both accept repository subdirectory installs and preserve access from `.codex-plugin/` to repo-root sibling files such as `../skills/`:  
 > `https://github.com/dominate99/WorkWork/tree/main/.codex-plugin`
+
+This repository does not include a one-command installer. If that changes later, it will be documented separately from this quick-start.
+
+All three hidden plugin entry points resolve the shared workflow files from the repo-root `skills/` directory. Keep the repository layout intact when installing from a local checkout; do not copy only `.codex-plugin`, `.claude-plugin`, or `.cursor-plugin` by itself.
 
 ## What This Plugin Does
 
@@ -50,10 +54,13 @@ When you trigger `$ww`:
 
 ## Repository Contents
 
-Plugin packaging lives at:
+Plugin entry points live at:
 
 - `CLAUDE.md`
 - `AGENTS.md`
+- `docs/README.codex.md`
+- `docs/README.claude.md`
+- `docs/README.cursor.md`
 - `.codex-plugin/plugin.json`
 - `.claude-plugin/plugin.json`
 - `.cursor-plugin/plugin.json`
