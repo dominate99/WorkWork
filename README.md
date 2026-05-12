@@ -1,14 +1,28 @@
 # WW Subagent Orchestrator Plugin
 
-A reusable workflow package that turns `$ww` into a predictable planning-and-dispatch flow: estimate work, build a brief, create a plan, and coordinate subagents.
+Turn `$ww` into a reliable planning-and-dispatch workflow for AI subagents.
 
-> Workflow first, details later. WorkWork supports `Codex`, `Claude Code`, `Cursor`, and `OpenCode`, with a tool-specific entry point or install guide for each environment.
+This reusable workflow package helps you scope work, generate a clear brief, choose the right orchestrator, create an approval-ready dispatch plan, and coordinate specialist subagents with consistent review gates.
 
-This repository packages the same workflow with tool-specific entry points for `Codex`, `Claude Code`, and `Cursor`, plus install guidance for `OpenCode`.
+Built for `Codex`, `Claude Code`, `Cursor`, and `OpenCode`.
 
 ## Quick Start
 
-Start with the install doc for your environment. Each environment has its own first-step doc and install target:
+1. Start with the install doc for your environment.
+2. Start your prompt with `$ww`.
+3. Review the generated brief and dispatch plan.
+4. Reply with:
+   - `1` or `Approve`
+   - `2` or `Revise`
+   - `3` or `Stop`
+
+Subagents are dispatched only after approval.
+
+Example:
+
+```text
+$ww Plan a migration from REST polling to webhooks for our notification pipeline.
+```
 
 | Environment | First-Step Doc | Install Target / Reference |
 | :--- | :--- | :--- |
@@ -25,49 +39,47 @@ This repository does not include a one-command installer. If that changes later,
 
 All three hidden plugin entry points resolve the shared workflow files from the repo-root `skills/` directory. Keep the repository layout intact when installing from a local checkout; do not copy only `.codex-plugin`, `.claude-plugin`, or `.cursor-plugin` by itself.
 
-## What This Plugin Does
+## What It Does
 
-It helps you:
+When you trigger `$ww`, the workflow:
 
-- estimate work before dispatch
-- choose the right top-level orchestrator persona
-- build a working brief
-- create a tracked dispatch plan file
-- coordinate persona-bound subagents
-- bind Superpowers workflows at each stage
+- estimates the task
+- builds a working brief
+- selects the right orchestrator persona
+- writes a dispatch plan to `docs/superpowers/dispatch-plans/`
+- pauses for approval before dispatch
+- coordinates subagents and review flow
 
-When you trigger `$ww`:
+> [!IMPORTANT]
+> `docs/superpowers/dispatch-plans/` is a runtime-generated output location and is not part of the checked-in repository structure by default.
 
-- estimate the task first
-- generate a working brief
-- route to the correct orchestrator
-- write a dispatch plan file to `docs/superpowers/dispatch-plans/`
-- request approval with:
-  - `1. Approve`
-  - `2. Revise`
-  - `3. Stop`
-  Reply with `1`, `2`, `3`, `Approve`, `Revise`, or `Stop`.
-- dispatch subagents only after approval
-- enforce reviewer findings -> orchestrator synthesis -> human judgment
+## Best For
 
-`docs/superpowers/dispatch-plans/` is a runtime-generated output location. It is not part of the checked-in repository structure by default.
+Use `$ww` when you want structured orchestration for:
 
-## Repository Contents
+- implementation planning
+- multi-step engineering work
+- review coordination
+- cross-functional briefs
+- specialist subagent dispatch
 
-Plugin entry points live at:
+## Example Prompts
 
-- `CLAUDE.md`
-- `AGENTS.md`
+```text
+$ww Plan and review a refactor of our authentication middleware.
+$ww Break this feature request into implementation and review workstreams.
+$ww Coordinate backend, security, and QA review for this API change.
+```
+
+## Key Files
+
 - `docs/README.codex.md`
 - `docs/README.claude.md`
 - `docs/README.cursor.md`
+- `.opencode/INSTALL.md`
 - `.codex-plugin/plugin.json`
 - `.claude-plugin/plugin.json`
 - `.cursor-plugin/plugin.json`
-- `.opencode/INSTALL.md`
-
-Key files:
-
 - `skills/ww-subagent-orchestrator/SKILL.md`
 - `skills/ww-subagent-orchestrator/references/working-brief-template.md`
 - `skills/ww-subagent-orchestrator/references/persona-registry.md`
@@ -75,54 +87,23 @@ Key files:
 - `skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md`
 - `docs/superpowers/personas/registry.yaml`
 
-Repository layout:
+## Customization
 
-```text
-skills/
-  ww-subagent-orchestrator/
-    SKILL.md
-    agents/openai.yaml
-    references/
-    assets/
+Adapt the workflow to your project by:
 
-docs/
-  maintainers/
-    specs/
-    plans/
-  superpowers/
-    personas/
-```
+- editing `docs/superpowers/personas/registry.yaml`
+- updating reference files under `skills/ww-subagent-orchestrator/references/`
+- modifying assets under `skills/ww-subagent-orchestrator/assets/`
 
-## Persona Registry
+## For Maintainers
 
-This repository includes a starter project persona registry at:
-
-`docs/superpowers/personas/registry.yaml`
-
-It shows how to define:
-
-- engineering reviewers like `secure-software-engineer`
-- implementation specialists like `senior-backend-engineer`
-- language specialists like `java-pro-engineer`
-- non-engineering orchestrators and reviewers for product and creative work
-
-You can copy that file into another project and tailor the personas, priorities, and workflow preferences to your team.
-
-## Maintainer Docs
-
-Design history and implementation planning for this repository live under:
+Contributor and design docs live under:
 
 - `docs/maintainers/specs/`
 - `docs/maintainers/plans/`
 
-Those files are for contributors and maintainers. They are separate from the runtime-facing `docs/superpowers/personas/` path that the skill references inside real projects.
+The workflow was validated with the official `quick_validate.py` script after installing `PyYAML`.
 
-## Validation
+## Summary
 
-This plugin workflow was validated with the official `quick_validate.py` script after installing `PyYAML`.
-
-## Notes
-
-- The plugin expects Superpowers capabilities to be available.
-- Project-specific personas can be added at `docs/superpowers/personas/registry.yaml`.
-- Design and implementation docs for this repository live under `docs/maintainers/`.
+WW gives `$ww` a predictable workflow: plan first, approve next, dispatch last.
