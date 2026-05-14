@@ -15,16 +15,5 @@
     "subagents",
     "superpowers"
   ],
-  "skills": "../skills/",
-  "interface": {
-    "displayName": "WorkWork",
-    "shortDescription": "$ww workflow for planning and subagent dispatch",
-    "longDescription": "Turns $ww into a disciplined planning-and-dispatch workflow that works across Codex, Claude Code, and similar agent-tool setups.",
-    "developerName": "domin",
-    "category": "Productivity",
-    "capabilities": [
-      "Interactive",
-      "Write"
-    ]
-  }
+  "skills": "./skills/"
 }

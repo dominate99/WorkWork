@@ -2,7 +2,9 @@
 
 WorkWork ships a Cursor plugin manifest at `.cursor-plugin/plugin.json`.
 
-That manifest resolves the shared workflow files from the repo-root `skills/` directory, so keep the full repository checkout intact instead of copying only the manifest file.
+The canonical packaged runtime skill lives under `plugins/workwork/skills/ww-subagent-orchestrator/`. Keep the full repository checkout intact instead of copying only the manifest file.
+
+The local manifest path below is the current Cursor entry point described by this repository; validator-backed runtime confirmation is still pending in a later task.
 
 ## Install From A Local Checkout
 

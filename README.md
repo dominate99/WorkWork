@@ -26,18 +26,36 @@ $ww Plan a migration from REST polling to webhooks for our notification pipeline
 
 | Environment | First-Step Doc | Install Target / Reference |
 | :--- | :--- | :--- |
-| **Codex** | [docs/README.codex.md](docs/README.codex.md) | Recommended: local `.codex-plugin` directory from a full checkout. Fallback only: some Codex builds may preserve sibling repo access for `https://github.com/dominate99/WorkWork/tree/main/.codex-plugin` |
-| **Claude Code** | [docs/README.claude.md](docs/README.claude.md) | `.claude-plugin/plugin.json` |
+| **Codex** | [docs/README.codex.md](docs/README.codex.md) | Repository-root marketplace source at `.agents/plugins/marketplace.json`; installable package at `plugins/workwork/` |
+| **Claude Code** | [docs/README.claude.md](docs/README.claude.md) | Packaged plugin root at `plugins/workwork/` |
 | **Cursor** | [docs/README.cursor.md](docs/README.cursor.md) | `.cursor-plugin/plugin.json` |
 | **OpenCode** | [.opencode/INSTALL.md](.opencode/INSTALL.md) | Repository root plus `.opencode/INSTALL.md` |
 
-> **Codex Remote/Browser Note:**  
-> The normal supported Codex path for this package layout is a local checkout plus the local `.codex-plugin` directory. The GitHub subdirectory URL below is only an unverified fallback for Codex builds that both accept repository subdirectory installs and preserve access from `.codex-plugin/` to repo-root sibling files such as `../skills/`:  
-> `https://github.com/dominate99/WorkWork/tree/main/.codex-plugin`
+> **Codex Note:**  
+> The verified local Codex flow adds the repository root as a marketplace source. The installable plugin package lives under `plugins/workwork/`, and the runtime skill lives under `plugins/workwork/skills/ww-subagent-orchestrator/`.
+
+Verified local install commands:
+
+For `Codex`:
+
+```powershell
+git clone https://github.com/dominate99/WorkWork.git
+cd WorkWork
+codex plugin marketplace add .
+```
+
+For `Claude Code`:
+
+```powershell
+git clone https://github.com/dominate99/WorkWork.git
+cd WorkWork
+```
+
+Then add `./plugins/workwork` as the Claude Code plugin path. If your Claude build asks for a manifest file instead of a plugin directory, use `./plugins/workwork/.claude-plugin/plugin.json`.
 
 This repository does not include a one-command installer. If that changes later, it will be documented separately from this quick-start.
 
-All three hidden plugin entry points resolve the shared workflow files from the repo-root `skills/` directory. Keep the repository layout intact when installing from a local checkout; do not copy only `.codex-plugin`, `.claude-plugin`, or `.cursor-plugin` by itself.
+The canonical packaged runtime skill lives under `plugins/workwork/skills/ww-subagent-orchestrator/`. Keep the repository layout intact when installing from a local checkout; Codex expects the repo-root marketplace source, Claude Code expects the packaged plugin root, and secondary targets should follow their install guides instead of copying manifest directories in isolation.
 
 ## What It Does
 
@@ -77,14 +95,15 @@ $ww Coordinate backend, security, and QA review for this API change.
 - `docs/README.claude.md`
 - `docs/README.cursor.md`
 - `.opencode/INSTALL.md`
-- `.codex-plugin/plugin.json`
-- `.claude-plugin/plugin.json`
+- `.agents/plugins/marketplace.json`
 - `.cursor-plugin/plugin.json`
-- `skills/ww-subagent-orchestrator/SKILL.md`
-- `skills/ww-subagent-orchestrator/references/working-brief-template.md`
-- `skills/ww-subagent-orchestrator/references/persona-registry.md`
-- `skills/ww-subagent-orchestrator/references/subagent-packet-contract.md`
-- `skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md`
+- `plugins/workwork/.codex-plugin/plugin.json`
+- `plugins/workwork/.claude-plugin/plugin.json`
+- `plugins/workwork/skills/ww-subagent-orchestrator/SKILL.md`
+- `plugins/workwork/skills/ww-subagent-orchestrator/references/working-brief-template.md`
+- `plugins/workwork/skills/ww-subagent-orchestrator/references/persona-registry.md`
+- `plugins/workwork/skills/ww-subagent-orchestrator/references/subagent-packet-contract.md`
+- `plugins/workwork/skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md`
 - `docs/superpowers/personas/registry.yaml`
 
 ## Customization
@@ -92,8 +111,8 @@ $ww Coordinate backend, security, and QA review for this API change.
 Adapt the workflow to your project by:
 
 - editing `docs/superpowers/personas/registry.yaml`
-- updating reference files under `skills/ww-subagent-orchestrator/references/`
-- modifying assets under `skills/ww-subagent-orchestrator/assets/`
+- updating reference files under `plugins/workwork/skills/ww-subagent-orchestrator/references/`
+- modifying assets under `plugins/workwork/skills/ww-subagent-orchestrator/assets/`
 
 ## For Maintainers
 

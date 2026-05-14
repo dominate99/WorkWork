@@ -1,35 +1,24 @@
 # Installing WorkWork In Codex
 
-WorkWork ships a Codex plugin entry point at `.codex-plugin/`.
+WorkWork is installed in Codex from the repository-root marketplace at `.agents/plugins/marketplace.json`.
 
-That entry point resolves the shared workflow files from the repo-root `skills/` directory via `../skills/`, so the recommended Codex install path is a full local checkout with the local `.codex-plugin` directory kept in place.
+The installable plugin package lives under `plugins/workwork/`, and the canonical runtime skill lives under `plugins/workwork/skills/ww-subagent-orchestrator/`.
 
-## Recommended Install Path
+## Install From A Local Checkout
 
-Use a full local checkout, then point Codex at the cloned repo's `.codex-plugin` directory.
+Use a full local checkout, then add the cloned repository root as a Codex marketplace source.
 
 ```powershell
 git clone https://github.com/dominate99/WorkWork.git
 cd WorkWork
+codex plugin marketplace add .
 ```
 
-In Codex, select the cloned repo's `.codex-plugin` folder directly. If Codex accepts paths relative to the cloned `WorkWork` directory, the equivalent local plugin path is:
+Enable the `workwork` plugin from the added marketplace. In CLI-driven flows, the verified plugin key is:
 
-`./.codex-plugin`
+`workwork@workwork`
 
-After adding the local path, restart or reload Codex so it picks up the new entry point.
-
-## Build-Dependent Fallback
-
-The GitHub subdirectory URL below is not the normal supported path for this package layout. It is only a fallback to try if your Codex build both accepts repository subdirectory installs and preserves access from `.codex-plugin/` to repo-root sibling files such as `../skills/`.
-
-That behavior is build-dependent and not verified across Codex environments.
-
-`https://github.com/dominate99/WorkWork/tree/main/.codex-plugin`
-
-If your Codex build does not satisfy those conditions, use the local checkout flow above instead.
-
-After adding the plugin, restart or reload Codex so it picks up the new entry point.
+After enabling the marketplace plugin, restart or reload Codex if your build needs it to refresh marketplace state.
 
 ## Post-Install Check
 
@@ -37,11 +26,17 @@ Make sure Superpowers is already available in Codex before testing `$ww`, or the
 
 Start a new Codex session and trigger `$ww` once. If the workflow is available, Codex should enter the WorkWork estimation/planning flow instead of treating `$ww` as plain text.
 
+Verified CLI smoke test from the repository root:
+
+```powershell
+codex exec -C . -c 'plugins."workwork@workwork".enabled=true' '$ww make a plan to rename one heading in this README'
+```
+
 > Warning: avoid duplicate installs. Enable only one WorkWork install method at a time.
 >
-> If you are migrating from an older manually installed or native-skills-based WorkWork setup, disable or remove that older WorkWork copy before enabling this plugin-based install.
-
+> If you are migrating from an older root-level `.codex-plugin` install or another manual WorkWork copy, disable or remove that older WorkWork copy before enabling this marketplace-based install.
 
 ## Current Scope
 
 This repository does not currently ship a one-command Codex installer.
+The verified Codex path is the local repository-root marketplace source described above.
