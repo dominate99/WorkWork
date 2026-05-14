@@ -9,9 +9,14 @@ description: Use when a task should start with `$ww` to estimate work, choose an
 
 Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad hoc subagent dispatch. The skill estimates first, writes a persisted working brief, chooses the correct top-level orchestrator persona, writes a tracked dispatch plan file, and only then allows real subagent work.
 
+- `$ww` = standard planning-and-dispatch workflow
+- `$www` = strict mode layered on top of `$ww`
+- `quality_mode` records whether the current dispatch round is `standard` or `strict`, and belongs in the persisted working brief for that round
+
 ## Core Rules
 
 - Treat `$ww` as an estimation trigger, not a dispatch command.
+- Treat `$www` as strict mode, not a separate orchestration system.
 - Choose the top-level orchestrator from task context:
   - `code/programming` -> `staff engineer orchestrator`
   - `design/ads/product` -> `PM orchestrator`
@@ -28,6 +33,18 @@ Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad
 - Every section must have reviewer coverage, orchestrator synthesis, and human judgment.
 - Reviewer subagents point out problems only. They do not rewrite the draft or make the final decision.
 - Reviewer subagents must stay narrow and convergent: only inspect the assigned artifact against its stated scope, list the highest-signal issues, and stop.
+- `$www` applies strict review only to the persisted `design spec` and `implementation plan` artifacts. `design-spec` and `implementation-plan` are shorthand target identifiers for those two artifact types only.
+- For `$www` design/planning rounds, persisted `design spec` and/or `implementation plan` artifacts required by the round must be created and must pass strict review before the round can complete. `$www` must not degrade to ordinary `$ww` by skipping persistence of a required target.
+- `$www` always runs `self-review -> reviewer-review`, and if material findings exist, it runs the only allowed `patching -> re-review` cycle.
+- `$www` strict review passes only on `no material findings`.
+- `$www` allows exactly one patch cycle per strict-review target.
+- Each strict-review target is identified by its persisted artifact path plus immutable reviewer `review target` identity for one specific artifact revision.
+- The one patch cycle limit is enforced per strict-review target artifact revision. The same unchanged artifact revision must not receive a second patch cycle through relabeling, redispatch, or a new review packet name.
+- `re-review` must be a fresh independent reviewer pass against the patched artifact, not an orchestrator-only check or a relabeled synthesis step.
+- If a strict-review target reaches canonical `runtime_state: blocked` and a human later chooses `Revise`, the revised `design spec` or `implementation plan` is a new strict-review target in a new approved round or revision. It does not reopen the old target or grant a second patch cycle.
+- If a persisted `design spec` or `implementation plan` changes after a strict-review pass, that post-pass revision reopens strict review for the new artifact revision before dependent work or round completion can proceed.
+- A strict-review pass does not bypass reviewer coverage, orchestrator synthesis, or human judgment. It only decides whether the strict-review target may advance without entering canonical `runtime_state: blocked`.
+- Every applicable strict-review target is `required for goal` within that `$www` round. Dependent work and round completion must wait until each required strict-review target clears the strict-review gate.
 - `runtime_state` is the single authoritative post-launch section state. `close_state` is derived from it and must never act as a parallel state machine.
 - `failed` and `stopped` are distinct. User stop must not be conflated with execution failure.
 
@@ -49,6 +66,35 @@ Follow this sequence every time:
 9. Synthesize results and close with verification
 
 This numbered list is the required rendered approval prompt. Numeric replies map to the same decisions: `1` -> `Approve`, `2` -> `Revise`, `3` -> `Stop`. The words `Approve`, `Revise`, and `Stop` remain accepted aliases for the same decisions.
+
+For `$www`, keep the same top-level stage order and diverge only after the persisted `design spec` or `implementation plan` artifact is produced.
+
+For `$www` design/planning rounds, producing and persisting every required `design spec` and `implementation plan` artifact is mandatory before dependent work or the round can complete.
+
+For `$www` on strict-review targets:
+
+1. produce target artifact
+2. run orchestrator `self-review`
+3. run reviewer `reviewer-review`
+4. if the reviewer reports `no material findings`, treat strict review as passed, map that result to reviewer outcome `PASS`, and continue under the normal lane rules for orchestrator synthesis and human judgment while canonical `runtime_state` stays in the existing review flow
+5. if material findings exist, enter `patching`
+6. run one independent reviewer `re-review`
+7. if the `re-review` reports `no material findings`, treat strict review as passed, map that result to reviewer outcome `PASS`, and continue under the normal lane rules for orchestrator synthesis and human judgment while canonical `runtime_state` stays in the existing review flow
+8. if the `re-review` still finds unresolved material issues, map that result to reviewer outcome `REJECT`, move the section to canonical `runtime_state: blocked`, and return it to the higher-level round for human judgment or revision
+9. if a human later chooses `Revise`, restart strict review only for the newly revised artifact revision in the next approved round or revision
+10. if the artifact changes after a strict-review pass, invalidate that pass and reopen strict review for the new artifact revision before dependent work or the round can complete
+
+Artifacts outside the `design spec` and `implementation plan` strict-review targets continue through the normal `$ww` section review loops.
+For `$www`, a blocked strict-review target is never optional or non-blocking: it blocks dependent work, blocks round completion, and remains `required for goal` until a newly revised target clears strict review in a later approved round or revision.
+
+## Strict Review Outcomes
+
+Use this objective contract for `$www` strict-review targets. This does not create a new persisted state surface:
+
+- `passed` means the strict-review gate succeeded because the reviewer or independent `re-review` reported `no material findings` for the current artifact revision; in controller terms, that gate result maps to reviewer outcome `PASS`, then the section continues through the existing synthesis and human-judgment flow instead of persisting a new strict-review state
+- `blocked` means the section enters canonical `runtime_state: blocked` because the one allowed independent `re-review` still reports unresolved material findings; in controller terms, that gate result maps to reviewer outcome `REJECT`
+- a post-pass artifact revision invalidates the earlier pass and reopens strict review for the new revision
+- blocked strict-review targets return to the higher-level round for orchestrator synthesis plus human judgment or revision; they do not silently continue as passed, permit dependent work, or allow round completion
 
 ## Stage Bindings
 
@@ -79,6 +125,7 @@ Working brief persistence rules:
 
 - a brief may temporarily exist in chat during raw estimation
 - before dispatch-plan creation, the brief must be saved to `docs/superpowers/working-briefs/YYYY-MM-DD-topic-vN.md`
+- when `$www` is active, record `quality_mode` in that persisted working brief; do not treat the `design spec` or `implementation plan` artifacts as the place to persist strict-mode metadata
 - schema checks, revision comparisons, and reviewer targeting must use the persisted brief artifact
 
 Schema compatibility rules:
