@@ -11,7 +11,7 @@ Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad
 
 - `$ww` = standard planning-and-dispatch workflow
 - `$www` = strict mode layered on top of `$ww`
-- `quality_mode` records whether the current dispatch round is `standard` or `strict`, and belongs in the persisted working brief for that round
+- `quality_mode` records round-level intent for whether the current dispatch round is `standard` or `strict`, and belongs in the persisted working brief for that round
 
 ## Core Rules
 
@@ -125,7 +125,8 @@ Working brief persistence rules:
 
 - a brief may temporarily exist in chat during raw estimation
 - before dispatch-plan creation, the brief must be saved to `docs/superpowers/working-briefs/YYYY-MM-DD-topic-vN.md`
-- when `$www` is active, record `quality_mode` in that persisted working brief; do not treat the `design spec` or `implementation plan` artifacts as the place to persist strict-mode metadata
+- when `$www` is active, record `quality_mode` in that persisted working brief as the working brief's only strict-mode field and treat it as round-level intent, not as a dispatch gate boolean
+- `design-spec` and `implementation-plan` artifacts stay content-focused and do not carry strict-mode headers or duplicate strict-mode metadata
 - schema checks, revision comparisons, and reviewer targeting must use the persisted brief artifact
 
 Schema compatibility rules:
@@ -214,12 +215,17 @@ The dispatch plan is the canonical runtime state for the dispatch round. The dis
 
 - reference the persisted working brief version it was derived from
 - record the active approval state
+- own the live `strict_review` gate record for `$www`, including `mode`, `target`, `state`, and `cycle_count`
 - list planned sections and planned personas
 - encode per-section review loops
 - expose one canonical `plan_state`
 - track per-section `runtime_state`
 - keep active execution pointers plus execution history
 - record `required_for_goal` so top-level aggregation can distinguish `failed` from `stopped`
+
+`strict_review` is target-specific controller metadata inside the dispatch plan. It does not replace section-level `runtime_state`, which remains the single authoritative post-launch section state.
+
+`strict_review.target` is only the target-kind discriminator for the strict-review gate: `design-spec` or `implementation-plan`. Concrete artifact identity and artifact revision continue to come from persisted artifact paths, revision tracking, and reviewer `review target` references elsewhere in the controller model.
 
 If the user chooses `Stop`, preserve the working brief and the dispatch plan file, and do not dispatch any new subagents.
 
@@ -412,9 +418,10 @@ Use this authoritative state crosswalk:
 | State Surface | Purpose | Allowed Values | Authority Rule |
 |---|---|---|---|
 | `plan_state` | round-level summary | `draft`, `awaiting-approval`, `approved`, `revising`, `stopped`, `dispatched`, `completed` | derived from section outcomes and required-section criticality |
-| `section_state` | human workflow tracking | `drafted`, `under-review`, `accepted`, `revision-requested`, `stopped` | records human review posture, not execution truth |
+| `section_state` | section-level workflow tracking | `drafted`, `accepted`, `revision-requested`, `stopped` | derived from section review and controller outcomes; do not use it as a parallel execution or review-status surface |
 | `runtime_state` | canonical execution state | `queued`, `running`, `blocked`, `review-pending`, `complete`, `failed`, `stopped` | single authoritative post-launch section state |
-| `return_status` | subagent event input | `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`, `FAILED`, `PASS`, `REJECT` | event input only; never persisted as the canonical long-lived state |
+| `return_status` | subagent event input | `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, `BLOCKED`, `FAILED` | subagent-return input only; never persisted as the canonical long-lived state |
+| reviewer outcome | review-lane event input | `PASS`, `REJECT` | separate event surface from `return_status`; used only when evaluating reviewer findings in the controller |
 
 Use one global plan state throughout the run:
 
@@ -428,10 +435,9 @@ Use one global plan state throughout the run:
 
 `approved` is the only state that allows packet creation or real dispatch.
 
-Use a separate section state for human workflow tracking:
+Use one consistent section state set for workflow tracking:
 
 - `drafted`
-- `under-review`
 - `accepted`
 - `revision-requested`
 - `stopped`

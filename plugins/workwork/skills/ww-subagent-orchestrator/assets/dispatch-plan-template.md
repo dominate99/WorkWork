@@ -10,6 +10,23 @@
 - Task Routing: {{task_routing}}
 - Main Orchestrator: {{main_orchestrator}}
 
+## Strict Review Runtime State
+
+```yaml
+strict_review:
+  mode: standard | strict
+  target: none | design-spec | implementation-plan
+  state: idle | self-review | reviewer-review | patching | re-review | passed | blocked
+  cycle_count: 0
+```
+
+Rules:
+
+- `strict_review` is a target-specific gate record owned by the dispatch plan for `$www`.
+- `strict_review` does not replace section-level `runtime_state`; `runtime_state` remains the single authoritative post-launch section state.
+- `strict_review.target` is only the strict-review target-kind discriminator: `none` | `design-spec` | `implementation-plan`.
+- Concrete artifact identity and artifact revision continue to come from persisted artifact paths and reviewer `review target` references elsewhere in the controller model.
+
 ## Preconditions
 
 - Estimation Complete: {{true_or_false}}
@@ -117,7 +134,6 @@
 ### Section: {{section_name}}
 
 - Section ID: {{section_id}}
-- Review Status: not-started
 - Review Target Strategy:
 - Review Lane Records:
   - Lane ID:
@@ -133,7 +149,6 @@
     - Schema Version:
     - Section Anchor:
     - Content Hash:
-  - Review Status:
   - Reviewer Findings:
   - Orchestrator Synthesis:
 - Human Decision: none

@@ -12,6 +12,10 @@ Use this template after estimation and before any persona dispatch.
 - `updated_at`
 - `derived_from_user_request`
 
+## Round Intent
+
+- `quality_mode: standard | strict`
+
 ## Gate State
 
 - `estimation_complete: true|false`
