@@ -38,6 +38,8 @@ Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad
 - `$www` always runs `self-review -> reviewer-review`, and if material findings exist, it runs the only allowed `patching -> re-review` cycle.
 - `$www` strict review passes only on `no material findings`.
 - `$www` allows exactly one patch cycle per strict-review target.
+- Strict review is per target, not latched across the whole round: `design-spec` and `implementation-plan` each run their own strict-review cycle.
+- When a new strict-review target starts, initialize the live `strict_review` gate record for that target by setting `strict_review.target`, `strict_review.state: idle`, and `cycle_count: 0` before `STRICT_TARGET_STARTED` moves the new target into `self-review`.
 - Each strict-review target is identified by its persisted artifact path plus immutable reviewer `review target` identity for one specific artifact revision.
 - The one patch cycle limit is enforced per strict-review target artifact revision. The same unchanged artifact revision must not receive a second patch cycle through relabeling, redispatch, or a new review packet name.
 - `re-review` must be a fresh independent reviewer pass against the patched artifact, not an orchestrator-only check or a relabeled synthesis step.
@@ -45,6 +47,8 @@ Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad
 - If a persisted `design spec` or `implementation plan` changes after a strict-review pass, that post-pass revision reopens strict review for the new artifact revision before dependent work or round completion can proceed.
 - A strict-review pass does not bypass reviewer coverage, orchestrator synthesis, or human judgment. It only decides whether the strict-review target may advance without entering canonical `runtime_state: blocked`.
 - Every applicable strict-review target is `required for goal` within that `$www` round. Dependent work and round completion must wait until each required strict-review target clears the strict-review gate.
+- `strict_review` is the live gate record for the active target only. Durable per-target strict-review outcomes must remain persisted in the section's review lane records keyed by immutable `Review Target Ref` identity for that artifact revision.
+- `passed` and `blocked` apply to the current target only. Starting a different strict-review target does not inherit the previous target's terminal gate result.
 - `runtime_state` is the single authoritative post-launch section state. `close_state` is derived from it and must never act as a parallel state machine.
 - `failed` and `stopped` are distinct. User stop must not be conflated with execution failure.
 
@@ -87,13 +91,39 @@ For `$www` on strict-review targets:
 Artifacts outside the `design spec` and `implementation plan` strict-review targets continue through the normal `$ww` section review loops.
 For `$www`, a blocked strict-review target is never optional or non-blocking: it blocks dependent work, blocks round completion, and remains `required for goal` until a newly revised target clears strict review in a later approved round or revision.
 
+## Strict Review State Machine
+
+Use this deterministic event-driven controller for `$www` strict-review targets:
+
+| Event | From State | To State | Notes |
+|---|---|---|---|
+| `STRICT_TARGET_STARTED` | `idle` | `self-review` | after initializing the live gate record for the target, start strict review for that target |
+| `SELF_REVIEW_COMPLETED` | `self-review` | `reviewer-review` | hand off to the independent reviewer |
+| `REVIEW_FOUND_NO_MATERIAL_FINDINGS` | `reviewer-review` | `passed` | applies to the current target only |
+| `REVIEW_FOUND_MATERIAL_FINDINGS` | `reviewer-review` | `patching` | first material finding enters the only patch cycle |
+| `PATCH_COMPLETED` | `patching` | `re-review` | patching never completes the gate by itself |
+| `REVIEW_FOUND_NO_MATERIAL_FINDINGS` | `re-review` | `passed` | requires an independent reviewer pass, not orchestrator synthesis alone |
+| `REVIEW_FOUND_MATERIAL_FINDINGS` | `re-review` | `blocked` | unresolved material findings after the one patch cycle block the current target |
+
+Rules:
+
+- initialize a new target by setting `strict_review.target`, `strict_review.state: idle`, and `cycle_count: 0`, then apply `STRICT_TARGET_STARTED`
+- only a `passed` target may allow the next strict-review target to start in the same round
+- a `blocked` target may not be overwritten by switching `strict_review.target` in the same round; it must follow the existing human `Revise` path into a new approved round or revision
+- entering `patching` increments `cycle_count` from `0` to `1`
+- no direct `reviewer-review -> blocked` on the first material finding
+- no direct `patching -> passed`
+- no orchestrator-only shortcut from `re-review` to `passed`
+- no second patch cycle
+
 ## Strict Review Outcomes
 
-Use this objective contract for `$www` strict-review targets. This does not create a new persisted state surface:
+Use this objective contract for `$www` strict-review targets. `strict_review.state` is the live persisted gate state for the active target, and durable per-target results remain in review lane records keyed by `Review Target Ref`:
 
-- `passed` means the strict-review gate succeeded because the reviewer or independent `re-review` reported `no material findings` for the current artifact revision; in controller terms, that gate result maps to reviewer outcome `PASS`, then the section continues through the existing synthesis and human-judgment flow instead of persisting a new strict-review state
-- `blocked` means the section enters canonical `runtime_state: blocked` because the one allowed independent `re-review` still reports unresolved material findings; in controller terms, that gate result maps to reviewer outcome `REJECT`
+- `passed` means the active target's `strict_review.state` reaches `passed` because the reviewer or independent `re-review` reported `no material findings` for the current artifact revision; in controller terms, that gate result maps to reviewer outcome `PASS`, then the section continues through the existing synthesis and human-judgment flow
+- `blocked` means the active target's `strict_review.state` reaches `blocked` and the section enters canonical `runtime_state: blocked` because the one allowed independent `re-review` still reports unresolved material findings; in controller terms, that gate result maps to reviewer outcome `REJECT`
 - a post-pass artifact revision invalidates the earlier pass and reopens strict review for the new revision
+- when the controller later initializes a new strict-review target, the previous target's pass/block outcome remains durably recorded in review lane records for that earlier `Review Target Ref`
 - blocked strict-review targets return to the higher-level round for orchestrator synthesis plus human judgment or revision; they do not silently continue as passed, permit dependent work, or allow round completion
 
 ## Stage Bindings
@@ -225,7 +255,13 @@ The dispatch plan is the canonical runtime state for the dispatch round. The dis
 
 `strict_review` is target-specific controller metadata inside the dispatch plan. It does not replace section-level `runtime_state`, which remains the single authoritative post-launch section state.
 
-`strict_review.target` is only the target-kind discriminator for the strict-review gate: `design-spec` or `implementation-plan`. Concrete artifact identity and artifact revision continue to come from persisted artifact paths, revision tracking, and reviewer `review target` references elsewhere in the controller model.
+`strict_review.target` is only the target-kind discriminator for the active strict-review target: `design-spec` or `implementation-plan`.
+
+`strict_review.state` and `cycle_count` are scoped to the active strict-review target only. When a new target is allowed to start, initialize the live gate record for that target with `state: idle` and `cycle_count: 0`, then advance it through the strict-review state machine.
+
+Concrete artifact identity and artifact revision continue to come from persisted artifact paths, revision tracking, and reviewer `review target` references elsewhere in the controller model.
+
+Durable per-target strict-review outcomes remain in the section review lane records keyed by `Review Target Ref`, so switching the live gate record to a later target does not erase whether an earlier target revision already passed or blocked.
 
 If the user chooses `Stop`, preserve the working brief and the dispatch plan file, and do not dispatch any new subagents.
 

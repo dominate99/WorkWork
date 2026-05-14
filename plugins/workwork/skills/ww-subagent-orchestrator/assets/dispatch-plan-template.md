@@ -23,9 +23,13 @@ strict_review:
 Rules:
 
 - `strict_review` is a target-specific gate record owned by the dispatch plan for `$www`.
+- `strict_review.target`, `state`, and `cycle_count` apply to the active strict-review target only.
+- When a new target is allowed to start, initialize the live gate record for that target with `target`, `state: idle`, and `cycle_count: 0`, then enter `self-review` through `STRICT_TARGET_STARTED`.
+- A blocked target may not be overwritten by switching `strict_review.target` in the same round; it must follow the existing human `Revise` path into a new approved round or revision.
 - `strict_review` does not replace section-level `runtime_state`; `runtime_state` remains the single authoritative post-launch section state.
 - `strict_review.target` is only the strict-review target-kind discriminator: `none` | `design-spec` | `implementation-plan`.
 - Concrete artifact identity and artifact revision continue to come from persisted artifact paths and reviewer `review target` references elsewhere in the controller model.
+- Durable per-target strict-review outcomes remain in `Review Lane Records` keyed by `Review Target Ref`, so switching the live gate record to a later target does not erase whether an earlier target revision already passed or blocked.
 
 ## Preconditions
 
@@ -151,6 +155,7 @@ Rules:
     - Content Hash:
   - Reviewer Findings:
   - Orchestrator Synthesis:
+  - Strict Review Outcome: none | passed | blocked
 - Human Decision: none
 - Revision Notes:
 - Rollup Rule:
