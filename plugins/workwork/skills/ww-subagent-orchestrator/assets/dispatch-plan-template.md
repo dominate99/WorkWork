@@ -22,7 +22,9 @@ strict_review:
 
 Rules:
 
-- `strict_review` is a target-specific gate record owned by the dispatch plan for `$www`.
+- The `strict_review` block is a required top-level runtime-state surface in every round; omission is invalid even when no strict target is active.
+- Standard `$ww` rounds must still render `mode: standard`, `target: none`, `state: idle`, and `cycle_count: 0`.
+- When a strict-review target is active, `strict_review` also serves as the live target-specific gate record for that target.
 - `strict_review.target`, `state`, and `cycle_count` apply to the active strict-review target only.
 - When a new target is allowed to start, initialize the live gate record for that target with `target`, `state: idle`, and `cycle_count: 0`, then enter `self-review` through `STRICT_TARGET_STARTED`.
 - A blocked target may not be overwritten by switching `strict_review.target` in the same round; it must follow the existing human `Revise` path into a new approved round or revision.
@@ -30,6 +32,7 @@ Rules:
 - `strict_review.target` is only the strict-review target-kind discriminator: `none` | `design-spec` | `implementation-plan`.
 - Concrete artifact identity and artifact revision continue to come from persisted artifact paths and reviewer `review target` references elsewhere in the controller model.
 - Durable per-target strict-review outcomes remain in `Review Lane Records` keyed by `Review Target Ref`, so switching the live gate record to a later target does not erase whether an earlier target revision already passed or blocked.
+- Invalid state note: omitting the `strict_review` runtime block is invalid.
 
 ## Preconditions
 
@@ -64,6 +67,7 @@ Rules:
 - Planned Reviewer Persona: {{reviewer_persona}}
 - Planned Specialist Personas: {{specialist_personas}}
 - Planned Scope: {{owned_scope}}
+- Planned Scope rule: every writable file listed here must also appear under `exclusive_write_scope`; `shared_read_scope` is for read-only dependencies only and must not hide writable ownership.
 - Planning Rationale: {{persona_rationale}}
 - Planned Workflow Bindings: {{workflow_bindings}}
 - Planned Review Lanes:
@@ -81,6 +85,8 @@ Rules:
     - `artifact_kind`:
     - `artifact_path`:
     - `section_anchors`:
+- Scope declaration rule: every writable file in `Planned Scope` must also appear in `exclusive_write_scope`; `shared_read_scope` must not hide writable ownership.
+- Invalid state note: `Planned Scope` includes a writable file not mirrored in `exclusive_write_scope`.
 - Packet Created: false
 
 ## Section Runtime Ledger
@@ -156,6 +162,9 @@ Rules:
   - Reviewer Findings:
   - Orchestrator Synthesis:
   - Strict Review Outcome: none | passed | blocked
+  - Persistence rule: pre-approval plans must preserve this review-lane structure and outcome field pattern; `Review Status` must not reappear here, and durable review-lane data must retain `Reviewer Findings`, `Orchestrator Synthesis`, and the `Strict Review Outcome` field pattern.
+  - Applicability rule: `Strict Review Outcome` is required when a strict-review target or durable strict-review result applies; otherwise keep the same field pattern without creating a second schema for valid non-strict lanes.
+  - Invalid state note: `Review Status` reappears or durable strict-review outcome data is dropped when applicable.
 - Human Decision: none
 - Revision Notes:
 - Rollup Rule:
