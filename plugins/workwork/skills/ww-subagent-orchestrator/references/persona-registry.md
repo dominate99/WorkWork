@@ -42,12 +42,13 @@ Worker-capable personas additionally require:
 
 ## Built-In Routing Defaults
 
-- `code/programming` -> `staff engineer orchestrator`
-- `design/ads/product` -> `PM orchestrator`
-- `video/creative` -> `creative director orchestrator`
+- `code/programming` -> `staff-engineer-orchestrator`
+- `design/ads/product` -> `pm-orchestrator`
+- `video/creative` -> `creative-director-orchestrator`
 
 These defaults choose the orchestrator category. They do not replace context-driven specialist selection.
 The concrete built-in persona records that satisfy these defaults live in `references/built-in-personas.yaml`.
+Use the built-in persona `id` field as the canonical resolver key for defaults and fallback selection. `title` is display text only.
 
 ## Mixed Task Tie-Break
 

@@ -49,7 +49,18 @@ Reviewer packets additionally require:
 
 Worker packets additionally require:
 
-- `implementation_principles`
+- `implementation_principles[]`
+
+`implementation_principles[]` contract:
+
+- ordered list of exactly two strings
+- index `0` is the hard implementation rule
+- index `1` is the soft implementation principle
+
+`subagent_persona` contract:
+
+- canonical persona `id` string from the project registry or built-in persona data file
+- do not persist display-only `title` text in `subagent_persona`
 
 ## Execution Binding
 
@@ -87,6 +98,7 @@ Defaults:
 - `attempt_id` rotates on relaunch.
 - `supersedes_attempt_id` should point to the replaced attempt when a relaunch supersedes prior execution.
 - `accepts_late_results` must be `false` by default and enabled only when the controller explicitly wants to reconcile stale outputs.
+- `subagent_persona` must use the canonical persona `id`, not a free-text display label
 - worker packets must carry `implementation_principles` as one canonical top-level field, not only inside `persona_binding`
 - worker-packet `implementation_principles` must be sourced directly from the selected persona definition
 - worker-packet `implementation_principles` must contain exactly two entries: the hard rule first and the soft principle second
@@ -145,21 +157,21 @@ Revision rules:
 - `close_policy: close after findings are handed back`
 - `requires_human_judgment: false`
 
-## Example
+## Reviewer Packet Example
 
 ```text
 schema_version: 1
 source_dispatch_plan: docs/superpowers/dispatch-plans/2026-05-06-topic.md
 source_plan_revision: 1
 source_section_id: section-core-runtime-contracts
-orchestrator_type: staff engineer orchestrator
+orchestrator_type: staff-engineer-orchestrator
 stage: review
 execution_id: exec-core-runtime-review-01
 packet_id: packet-core-runtime-review-01
 attempt_id: attempt-core-runtime-review-01
 supersedes_attempt_id:
 accepts_late_results: false
-subagent_persona: secure software engineer
+subagent_persona: secure-software-engineer
 persona_rationale: working brief identifies elevated runtime-policy integrity risk
 persona_binding:
   runtime_role: reviewer
@@ -203,4 +215,62 @@ review_type: code-quality
 pass_condition: no material findings
 reject_condition: any blocking semantic mismatch
 requires_human_judgment: true
+```
+
+## Worker Packet Example
+
+```text
+schema_version: 1
+source_dispatch_plan: docs/superpowers/dispatch-plans/2026-05-16-worker-persona-enforcement.md
+source_plan_revision: 2
+source_section_id: section-worker-persona-enforcement
+orchestrator_type: staff-engineer-orchestrator
+stage: implement
+execution_id: exec-worker-persona-enforcement-01
+packet_id: packet-worker-persona-enforcement-01
+attempt_id: attempt-worker-persona-enforcement-01
+supersedes_attempt_id:
+accepts_late_results: false
+subagent_persona: senior-backend-engineer
+persona_rationale: working brief identifies backend-oriented implementation work with service-boundary and correctness risk
+persona_binding:
+  runtime_role: worker
+  template_path: agents/worker-prompt.md
+implementation_principles:
+  - prefer service-boundary correctness and data integrity over implementation speed
+  - when tradeoffs are close, bias toward explicit interfaces and maintainable structure
+derived_from_working_brief: worker persona enforcement requires backend-oriented contract and prompt edits
+task_mode: implement
+workflow_bindings:
+- superpowers:subagent-driven-development
+working_brief_excerpt: section 1 owns worker persona contract and prompt surfaces
+owned_scope: worker persona contract and prompt files only
+read_scope:
+- path_glob: references/*.md
+write_scope:
+- path_glob: plugins/workwork/skills/ww-subagent-orchestrator/references/subagent-packet-contract.md
+- path_glob: plugins/workwork/skills/ww-subagent-orchestrator/agents/worker-prompt.md
+non_goals: do not widen reviewer or explorer behavior, do not change unrelated persona records, do not rewrite the approved spec
+success_criteria: worker packet carries canonical implementation principles and worker runtime behavior consumes them in order
+output_contract: implementation result summary plus exact artifact locations
+handoff_rule: return to orchestrator for review and human judgment
+retry_policy: relaunch with new attempt_id after orchestrator decision
+close_policy: close after reviewer handoff or explicit stop
+result_artifact_location: not created yet
+expected_return_status:
+- DONE
+- DONE_WITH_CONCERNS
+- NEEDS_CONTEXT
+- BLOCKED
+- FAILED
+execution_binding:
+  agent_type: worker
+  context_mode: curated-only
+  fork_context: false
+  model_tier: strong
+  reasoning_effort: high
+  template_path: agents/worker-prompt.md
+  prompt_inputs:
+    focus: worker persona enforcement
+requires_human_judgment: false
 ```

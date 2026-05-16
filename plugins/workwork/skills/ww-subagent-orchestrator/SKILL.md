@@ -18,9 +18,9 @@ Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad
 - Treat `$ww` as an estimation trigger, not a dispatch command.
 - Treat `$www` as strict mode, not a separate orchestration system.
 - Choose the top-level orchestrator from task context:
-  - `code/programming` -> `staff engineer orchestrator`
-  - `design/ads/product` -> `PM orchestrator`
-  - `video/creative` -> `creative director orchestrator`
+  - `code/programming` -> `staff-engineer-orchestrator`
+  - `design/ads/product` -> `pm-orchestrator`
+  - `video/creative` -> `creative-director-orchestrator`
 - Do not assign personas from keywords alone. Derive them from the working brief.
 - Do not create any subagent packet until all three gates are true:
   - `estimation_complete: true`
@@ -195,13 +195,15 @@ For this first worker-enforcement layer:
 - `references/persona-registry.md` remains the rules layer
 - `references/built-in-personas.yaml` is the built-in data-record layer
 - project and built-in persona records must use the same top-level `personas:` schema shape
+- built-in routing defaults and built-in fallback resolution should use canonical persona `id` values from the data file, not free-text labels
 - worker-candidate filtering happens before persona selection is finalized
 - a worker-capable persona must have `review_only: false`, `role_type` not equal to `orchestrator`, and exactly two `implementation_principles` before it may enter the worker selection set
 - reviewer-only and orchestrator personas are not worker-capable in this layer
 
 For every chosen persona, write:
 
-- the persona name
+- the canonical persona `id`
+- the persona `title` only when a human-facing display label is useful
 - the owned scope
 - the reason it was selected from the working brief
 - the workflow bindings for its current stage
