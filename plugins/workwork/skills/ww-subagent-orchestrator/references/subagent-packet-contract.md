@@ -47,6 +47,10 @@ Reviewer packets additionally require:
 - `pass_condition`
 - `reject_condition`
 
+Worker packets additionally require:
+
+- `implementation_principles`
+
 ## Execution Binding
 
 `execution_binding` should define how the controller launches the subagent.
@@ -83,6 +87,9 @@ Defaults:
 - `attempt_id` rotates on relaunch.
 - `supersedes_attempt_id` should point to the replaced attempt when a relaunch supersedes prior execution.
 - `accepts_late_results` must be `false` by default and enabled only when the controller explicitly wants to reconcile stale outputs.
+- worker packets must carry `implementation_principles` as one canonical top-level field, not only inside `persona_binding`
+- worker-packet `implementation_principles` must be sourced directly from the selected persona definition
+- worker-packet `implementation_principles` must contain exactly two entries: the hard rule first and the soft principle second
 
 ## Reviewer Target Contract
 
@@ -122,6 +129,7 @@ Revision rules:
 - `agent_type: worker`
 - `context_mode: curated-only`
 - `fork_context: false`
+- `implementation_principles: [hard-rule, soft-principle]`
 - `retry_policy: relaunch with new attempt_id after orchestrator decision`
 - `close_policy: close after reviewer handoff or explicit stop`
 - `requires_human_judgment: false`

@@ -56,6 +56,9 @@ personas:
     preferred_workflows:
       - superpowers:subagent-driven-development
       - superpowers:requesting-code-review
+    implementation_principles:
+      - prefer service-boundary correctness and data integrity over implementation speed
+      - when tradeoffs are close, bias toward explicit interfaces and maintainable structure
     review_only: false
     priority: 90
 
@@ -80,6 +83,9 @@ personas:
     preferred_workflows:
       - superpowers:test-driven-development
       - superpowers:requesting-code-review
+    implementation_principles:
+      - prefer framework-correct behavior and language-level correctness over clever shortcuts
+      - when tradeoffs are close, bias toward idiomatic Java patterns and explicit code paths
     review_only: false
     priority: 80
 
