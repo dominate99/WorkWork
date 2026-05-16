@@ -5,7 +5,7 @@
 Check personas in this order:
 
 1. Project registry at `docs/superpowers/personas/registry.yaml`
-2. Built-in personas inferred from the active task category
+2. Built-in persona records at `references/built-in-personas.yaml`
 
 ## Required Persona Fields
 
@@ -24,6 +24,10 @@ Each persona should define:
 - `review_only`
 - `priority`
 
+Worker-capable personas additionally require:
+
+- `implementation_principles`
+
 ## Selection Rules
 
 - The orchestrator owns persona selection.
@@ -31,6 +35,10 @@ Each persona should define:
 - Reviewer personas do not double as implementers for the same section.
 - Language specialists are optional and only added when language-specific detail materially affects quality or risk.
 - If the project registry contains a strong match, prefer it over a generic built-in persona.
+- Worker-candidate filtering happens before final persona selection for implementation work.
+- A worker-capable persona is any persona with `review_only: false` and `role_type` not equal to `orchestrator`.
+- A worker-capable persona must already have exactly two `implementation_principles` before it may enter the worker selection set.
+- The first `implementation_principles` entry is the hard implementation rule; the second entry is the soft implementation principle.
 
 ## Built-In Routing Defaults
 
@@ -39,6 +47,7 @@ Each persona should define:
 - `video/creative` -> `creative director orchestrator`
 
 These defaults choose the orchestrator category. They do not replace context-driven specialist selection.
+The concrete built-in persona records that satisfy these defaults live in `references/built-in-personas.yaml`.
 
 ## Mixed Task Tie-Break
 

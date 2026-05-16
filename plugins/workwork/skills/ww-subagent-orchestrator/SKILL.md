@@ -188,7 +188,16 @@ State crosswalk:
 
 ## Persona Planning
 
-Check for project personas first at `docs/superpowers/personas/registry.yaml`. If that file does not exist or does not cover the need, fall back to built-in personas and rules from `references/persona-registry.md`.
+Check for project personas first at `docs/superpowers/personas/registry.yaml`. If that file does not exist or does not cover the need, fall back to built-in persona records from `references/built-in-personas.yaml` and the selection rules from `references/persona-registry.md`.
+
+For this first worker-enforcement layer:
+
+- `references/persona-registry.md` remains the rules layer
+- `references/built-in-personas.yaml` is the built-in data-record layer
+- project and built-in persona records must use the same top-level `personas:` schema shape
+- worker-candidate filtering happens before persona selection is finalized
+- a worker-capable persona must have `review_only: false`, `role_type` not equal to `orchestrator`, and exactly two `implementation_principles` before it may enter the worker selection set
+- reviewer-only and orchestrator personas are not worker-capable in this layer
 
 For every chosen persona, write:
 
@@ -232,6 +241,7 @@ Every packet must encode:
 - source dispatch metadata
 - execution identity
 - execution binding
+- worker persona implementation principles when the selected persona is worker-capable
 - owned read/write scope
 - success and handoff rules
 - immutable reviewer target data when review is involved
