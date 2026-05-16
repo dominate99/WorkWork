@@ -61,15 +61,18 @@ Follow this sequence every time:
 3. Persist the working brief
 4. Route to the correct orchestrator
 5. Write the dispatch plan file
-6. Render this approval block:
+6. Run the pre-approval self-audit on the just-written dispatch plan
+7. Render this approval block:
    1. `Approve`
    2. `Revise`
    3. `Stop`
-7. Launch subagents only after `Approve`
-8. Run section review loops
-9. Synthesize results and close with verification
+8. Launch subagents only after `Approve`
+9. Run section review loops
+10. Synthesize results and close with verification
 
 This numbered list is the required rendered approval prompt. Numeric replies map to the same decisions: `1` -> `Approve`, `2` -> `Revise`, `3` -> `Stop`. The words `Approve`, `Revise`, and `Stop` remain accepted aliases for the same decisions.
+
+The pre-approval self-audit is mandatory. If scope parity, required runtime-state surfaces, required review-lane outcome fields, or deprecated state-field removal fails validation, the dispatch plan stays in `draft` or `revising` and must not be shown for approval yet.
 
 For `$www`, keep the same top-level stage order and diverge only after the persisted `design spec` or `implementation plan` artifact is produced.
 
@@ -245,7 +248,7 @@ The dispatch plan is the canonical runtime state for the dispatch round. The dis
 
 - reference the persisted working brief version it was derived from
 - record the active approval state
-- own the live `strict_review` gate record for `$www`, including `mode`, `target`, `state`, and `cycle_count`
+- render the top-level `Strict Review Runtime State` block with `mode`, `target`, `state`, and `cycle_count`
 - list planned sections and planned personas
 - encode per-section review loops
 - expose one canonical `plan_state`
@@ -253,11 +256,22 @@ The dispatch plan is the canonical runtime state for the dispatch round. The dis
 - keep active execution pointers plus execution history
 - record `required_for_goal` so top-level aggregation can distinguish `failed` from `stopped`
 
-`strict_review` is target-specific controller metadata inside the dispatch plan. It does not replace section-level `runtime_state`, which remains the single authoritative post-launch section state.
+Dispatch-plan validation rules are mandatory before the approval block is rendered:
+
+- every writable path listed in `Planned Scope` must also appear in `exclusive_write_scope`
+- the dispatch plan must render the top-level `Strict Review Runtime State` block in every round; for standard rounds it must render `mode: standard`, `target: none`, `state: idle`, and `cycle_count: 0`, while active live strict-review gate semantics remain specific to strict-review targets
+- deprecated state fields such as `Review Status` must not appear in new dispatch plans
+- pre-approval plans must preserve the durable review-lane outcome fields and review-target structure, including `Strict Review Outcome` when applicable; once a stable reviewed artifact snapshot exists, the concrete durable record keyed by `Review Target Ref` and artifact revision must persist
+
+If any of these validation rules fail, the dispatch plan remains in `draft` or `revising`, the orchestrator must correct the persisted plan, and the plan must not be shown for approval yet.
+
+`strict_review` is rendered as top-level controller metadata inside every dispatch plan. It does not replace section-level `runtime_state`, which remains the single authoritative post-launch section state.
+
+For standard `$ww` rounds, render `strict_review` as `mode: standard`, `target: none`, `state: idle`, and `cycle_count: 0`. That required block is a runtime-state surface only and does not mean the round owns an active live `$www` strict-review gate.
 
 `strict_review.target` is only the target-kind discriminator for the active strict-review target: `design-spec` or `implementation-plan`.
 
-`strict_review.state` and `cycle_count` are scoped to the active strict-review target only. When a new target is allowed to start, initialize the live gate record for that target with `state: idle` and `cycle_count: 0`, then advance it through the strict-review state machine.
+For strict-review targets, `strict_review.state` and `cycle_count` are scoped to the active live strict-review target only. When a new target is allowed to start, initialize the live gate record for that target with `state: idle` and `cycle_count: 0`, then advance it through the strict-review state machine.
 
 Concrete artifact identity and artifact revision continue to come from persisted artifact paths, revision tracking, and reviewer `review target` references elsewhere in the controller model.
 
@@ -306,6 +320,15 @@ For spec-light code tasks, reviewer target precedence is:
 ## Controller Update Procedure
 
 The orchestrator must follow one deterministic runtime procedure.
+
+Before approval rendering:
+
+1. run a pre-approval self-audit on the just-written dispatch plan
+2. verify scope parity so every writable path in `Planned Scope` must also appear in `exclusive_write_scope`
+3. verify required runtime-state surfaces so the dispatch plan must render the top-level `Strict Review Runtime State` block in every round; for standard rounds it must render `mode: standard`, `target: none`, `state: idle`, and `cycle_count: 0`, while active live strict-review gate semantics remain specific to strict-review targets
+4. verify review-lane completeness so pre-approval plans must preserve durable review-lane outcome fields and review-target structure, including `Strict Review Outcome` when applicable; once a stable reviewed artifact snapshot exists, the concrete durable record keyed by `Review Target Ref` and artifact revision must persist
+5. verify deprecated state removal so fields such as `Review Status` must not appear
+6. if any audit check fails, keep the dispatch plan in `draft` or `revising`, correct the persisted plan, and it must not be shown for approval yet
 
 On launch:
 
