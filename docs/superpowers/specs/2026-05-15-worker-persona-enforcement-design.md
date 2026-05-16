@@ -42,7 +42,7 @@ This layer applies only to `worker` behavior. It does not yet change `reviewer` 
 Both persona sources must define executable implementation guidance for any persona that may be used as a `worker`:
 
 - project registry: `docs/superpowers/personas/registry.yaml`
-- built-in registry: `references/persona-registry.md`
+- built-in persona data file: `references/built-in-personas.yaml`
 
 Add a new field:
 
@@ -60,30 +60,65 @@ Examples of the intended shape:
 - hard rule: prefer boundary safety and correctness over implementation speed
 - soft rule: when tradeoffs are close, bias toward explicitness and maintainability
 
-### 2. Treat missing principles as a worker-launch contract failure
+`references/persona-registry.md` remains the rules layer. It should continue to define:
 
-If a persona can be selected for `worker` use but lacks valid `implementation_principles`, the orchestrator must not launch that persona as a worker packet.
+- required persona fields
+- selection rules
+- prompt-binding rules
 
-Allowed outcomes:
+It should not become the storage location for concrete built-in persona records. Built-in persona records must live in the new dedicated data file so the design stays cleanly split between:
 
-- choose a different valid worker persona
-- treat the persona as descriptive only and do not bind it to worker execution
-- revise the persona registry before dispatch
+- rules layer
+- data-record layer
 
-This prevents worker persona behavior from degrading back into decorative metadata.
+The built-in persona data file must use the same top-level schema shape as the project registry:
+
+```yaml
+personas:
+  - id: ...
+```
+
+This keeps project personas and built-in personas structurally compatible and avoids two parallel data formats for the same concept.
+
+### 2. Filter worker candidates before selection
+
+A persona must pass implementation-principles completeness checks before it can enter the `worker` selection set.
+
+This first layer should not model the problem as:
+
+- selected first, then rejected later
+- kept as descriptive-only metadata after worker selection
+
+Instead, the contract should require pre-selection filtering:
+
+- any persona intended for `worker` use must already have valid `implementation_principles`
+- a persona that fails this check must not enter the `worker` candidate set
+- the orchestrator must choose from valid worker candidates only
+
+This prevents worker persona behavior from degrading back into decorative metadata and keeps the contract failure at the correct stage: before worker selection, not after packet assembly.
 
 ### 3. Carry implementation principles into the packet contract
 
 The subagent packet contract must preserve the selected persona's executable principles for worker launches.
 
-This can be done either by:
+For this first layer, the carriage location must be fixed and canonical:
 
-- adding `implementation_principles` as an explicit packet field
-- or requiring it inside the packet's persona binding structure
+- add `implementation_principles` as an explicit top-level packet field
+- place it alongside:
+  - `subagent_persona`
+  - `persona_rationale`
+  - `persona_binding`
+- do not store it only inside `persona_binding`
 
-The key requirement is behavioral fidelity: the worker launch payload must contain the selected persona's two implementation principles in a form the runtime prompt can consume directly.
+Rationale:
 
-For this first layer, explicit carriage is required for worker packets only.
+- `persona_binding` is runtime binding metadata
+- `implementation_principles` are execution-contract content
+- mixing them would blur binding structure and behavioral constraints
+
+The key requirement is behavioral fidelity: the worker launch payload must contain the selected persona's two implementation principles in a direct, canonical form the runtime prompt can consume.
+
+For this first layer, explicit top-level carriage is required for worker packets only.
 
 ### 4. Make worker prompt consume principles before implementation choices
 
@@ -110,10 +145,24 @@ For worker-capable personas:
 - require `implementation_principles`
 - require exactly 2 entries
 - require the first to be treated as hard and the second as soft
+- require completeness before the persona may enter the `worker` selection set
 
 For reviewer-only personas:
 
 - `implementation_principles` are not required in this first layer
+
+### Worker-capable persona definition
+
+For this first layer, `worker-capable persona` means:
+
+- a persona with `review_only: false`
+- and `role_type` not equal to `orchestrator`
+
+Implementation-level exclusions:
+
+- `review_only: true` personas must not enter the `worker` selection set
+- `role_type: orchestrator` personas are not worker-capable
+- this first layer primarily targets specialist or other implementation-facing personas that may legitimately execute owned write work
 
 ### Packet contract
 
@@ -121,6 +170,7 @@ For worker packets:
 
 - require carriage of persona implementation principles
 - require those principles to be sourced from the selected persona definition
+- require the carriage location to be one canonical top-level field: `implementation_principles`
 
 For reviewer and explorer packets:
 
@@ -139,9 +189,10 @@ Require the prompt to instruct the worker that:
 The first layer should be considered complete only if all of the following are true:
 
 1. every worker-capable persona in both registries has exactly 2 `implementation_principles`
-2. worker packet assembly cannot silently omit those principles
-3. worker prompt language explicitly consumes the principles before workflow or output decisions
-4. reviewer and explorer contracts remain unchanged in this layer
+2. worker candidate filtering blocks any persona that lacks valid `implementation_principles`
+3. worker packet assembly cannot silently omit those principles and always stores them in the canonical top-level field
+4. worker prompt language explicitly consumes the principles before workflow or output decisions
+5. reviewer and explorer contracts remain unchanged in this layer
 
 ## Open Follow-Up
 
