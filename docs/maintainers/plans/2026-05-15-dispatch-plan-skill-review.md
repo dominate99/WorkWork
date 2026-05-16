@@ -175,10 +175,16 @@ Do not mark those checks as passing unless the later execution round runs them.
 Run:
 
 ```powershell
-git -c safe.directory='C:/Users/domin/Documents/AI/AIskill/WorkWork/.worktrees/dispatch-plan-skill-review' -C 'C:\Users\domin\Documents\AI\AIskill\WorkWork\.worktrees\dispatch-plan-skill-review' diff -- plugins/workwork/skills/ww-subagent-orchestrator/SKILL.md plugins/workwork/skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md docs/maintainers/plans
+git -c safe.directory='C:/Users/domin/Documents/AI/AIskill/WorkWork/.worktrees/dispatch-plan-skill-review' -C 'C:\Users\domin\Documents\AI\AIskill\WorkWork\.worktrees\dispatch-plan-skill-review' diff --name-only
 ```
 
-Expected: only the packaged skill contract, dispatch-plan template, and this maintainer plan are in scope.
+Expected: no tracked drift appears outside:
+
+- `plugins/workwork/skills/ww-subagent-orchestrator/SKILL.md`
+- `plugins/workwork/skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md`
+- `docs/maintainers/plans/2026-05-15-dispatch-plan-skill-review.md`
+
+If tracked paths outside that set appear, the implementation is out of scope.
 
 - [ ] **Step 3: Run a final worktree check**
 
@@ -189,6 +195,13 @@ git -c safe.directory='C:/Users/domin/Documents/AI/AIskill/WorkWork/.worktrees/d
 ```
 
 Expected: only the intended dispatch-plan-guardrail artifacts remain staged or committed.
+
+Expected local byproducts from this `$ww` round may still appear as untracked artifacts:
+
+- `docs/superpowers/dispatch-plans/2026-05-15-dispatch-plan-skill-review.md`
+- `docs/superpowers/working-briefs/2026-05-15-dispatch-plan-skill-review-v2.md`
+
+Any additional unexpected tracked or untracked files should be investigated before signoff.
 
 - [ ] **Step 4: Commit**
 
