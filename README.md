@@ -121,15 +121,15 @@ Contributor and design docs live under:
 - `docs/maintainers/specs/`
 - `docs/maintainers/plans/`
 
-Local worker `work_mode` contract validation:
+Local WW validation:
 
 ```powershell
-python -m pip install markdown-it-py
-python tools/validate_ww_worker_work_mode.py
+python -m pip install PyYAML markdown-it-py
+python tools/validate_ww_repo.py
 python tools/validate_ww_worker_work_mode.py --json
 ```
 
-The workflow was validated with the official `quick_validate.py` script after installing `PyYAML`.
+The repo-level validator runs both the packaged skill frontmatter check and the worker `work_mode` contract check. GitHub Actions uses the same repo-local entrypoint.
 
 ## Summary
 
