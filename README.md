@@ -121,6 +121,14 @@ Contributor and design docs live under:
 - `docs/maintainers/specs/`
 - `docs/maintainers/plans/`
 
+Local worker `work_mode` contract validation:
+
+```powershell
+python -m pip install markdown-it-py
+python tools/validate_ww_worker_work_mode.py
+python tools/validate_ww_worker_work_mode.py --json
+```
+
 The workflow was validated with the official `quick_validate.py` script after installing `PyYAML`.
 
 ## Summary
