@@ -31,6 +31,8 @@ Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad
 - Every `$ww` reply must end with a `Document Summary` block covering `working brief`, `dispatch plan`, `design spec`, and `implementation plan`.
 - If any of those documents do not exist yet, say `not created yet` in the summary instead of omitting the item.
 - Every section must have reviewer coverage, orchestrator synthesis, and human judgment.
+- Worker execution order is `user constraints -> work_mode -> persona -> goal_tuning`.
+- Keep `task_mode` separate from `work_mode`. `task_mode` describes the packet's role-task surface; `work_mode` describes the worker's execution posture.
 - Reviewer subagents point out problems only. They do not rewrite the draft or make the final decision.
 - Reviewer subagents must stay narrow and convergent: only inspect the assigned artifact against its stated scope, list the highest-signal issues, and stop.
 - `$www` applies strict review only to the persisted `design spec` and `implementation plan` artifacts. `design-spec` and `implementation-plan` are shorthand target identifiers for those two artifact types only.
@@ -148,6 +150,7 @@ The working brief is the analysis snapshot for one dispatch round. It is the onl
 
 - orchestrator choice
 - persona selection
+- section-level worker-mode recommendations
 - workflow bindings
 - dispatch recommendation
 - scope preparation when packets or reviewers will reference artifacts
@@ -158,6 +161,7 @@ Working brief persistence rules:
 
 - a brief may temporarily exist in chat during raw estimation
 - before dispatch-plan creation, the brief must be saved to `docs/superpowers/working-briefs/YYYY-MM-DD-topic-vN.md`
+- the working brief may recommend `worker mode`, `worker-mode rationale`, `goal tuning`, and constraint-override notes by section, but it does not decide the final execution mode
 - when `$www` is active, record `quality_mode` in that persisted working brief as the working brief's only strict-mode field and treat it as round-level intent, not as a dispatch gate boolean
 - `design-spec` and `implementation-plan` artifacts stay content-focused and do not carry strict-mode headers or duplicate strict-mode metadata
 - schema checks, revision comparisons, and reviewer targeting must use the persisted brief artifact
@@ -243,12 +247,14 @@ Every packet must encode:
 - source dispatch metadata
 - execution identity
 - execution binding
+- worker `work_mode`, `work_mode_rationale`, `goal_tuning`, and `constraint_precedence_note` when the packet is a worker packet
 - worker persona implementation principles when the selected persona is worker-capable
 - owned read/write scope
 - success and handoff rules
 - immutable reviewer target data when review is involved
 
 Create reviewer packets only after the reviewed artifact snapshot is stable enough to generate `review_target_ref`.
+Worker prompts consume packet state; they must not re-derive `work_mode` from the working brief.
 
 ## Dispatch Plan File
 
@@ -262,9 +268,11 @@ The dispatch plan is the canonical runtime state for the dispatch round. The dis
 - record the active approval state
 - render the top-level `Strict Review Runtime State` block with `mode`, `target`, `state`, and `cycle_count`
 - list planned sections and planned personas
+- record the section-level effective `worker mode` and its rationale when worker execution applies
 - encode per-section review loops
 - expose one canonical `plan_state`
 - track per-section `runtime_state`
+- track `Active Worker Mode` plus `Mode Change History` when worker execution is active
 - keep active execution pointers plus execution history
 - record `required_for_goal` so top-level aggregation can distinguish `failed` from `stopped`
 
@@ -274,10 +282,12 @@ Dispatch-plan validation rules are mandatory before the approval block is render
 - the dispatch plan must render the top-level `Strict Review Runtime State` block in every round; for standard rounds it must render `mode: standard`, `target: none`, `state: idle`, and `cycle_count: 0`, while active live strict-review gate semantics remain specific to strict-review targets
 - deprecated state fields such as `Review Status` must not appear in new dispatch plans
 - pre-approval plans must preserve the durable review-lane outcome fields and review-target structure, including `Strict Review Outcome` when applicable; once a stable reviewed artifact snapshot exists, the concrete durable record keyed by `Review Target Ref` and artifact revision must persist
+- `task_mode` must not be reused as `worker mode`
 
 If any of these validation rules fail, the dispatch plan remains in `draft` or `revising`, the orchestrator must correct the persisted plan, and the plan must not be shown for approval yet.
 
 `strict_review` is rendered as top-level controller metadata inside every dispatch plan. It does not replace section-level `runtime_state`, which remains the single authoritative post-launch section state.
+For worker execution, the authority chain is fixed: the working brief recommends, the dispatch plan decides and records, the packet freezes one execution snapshot, and the worker prompt consumes packet state only.
 
 For standard `$ww` rounds, render `strict_review` as `mode: standard`, `target: none`, `state: idle`, and `cycle_count: 0`. That required block is a runtime-state surface only and does not mean the round owns an active live `$www` strict-review gate.
 

@@ -49,6 +49,10 @@ Reviewer packets additionally require:
 
 Worker packets additionally require:
 
+- `work_mode`
+- `work_mode_rationale`
+- `goal_tuning`
+- `constraint_precedence_note`
 - `implementation_principles[]`
 
 `implementation_principles[]` contract:
@@ -102,6 +106,14 @@ Defaults:
 - worker packets must carry `implementation_principles` as one canonical top-level field, not only inside `persona_binding`
 - worker-packet `implementation_principles` must be sourced directly from the selected persona definition
 - worker-packet `implementation_principles` must contain exactly two entries: the hard rule first and the soft principle second
+- worker packets must inherit exactly one effective `work_mode` from the approved dispatch-plan section
+- `work_mode` is an execution snapshot field, not a recommendation field
+- `work_mode_rationale` must stay aligned with the section's recorded worker-mode rationale
+- `goal_tuning` must not introduce a new execution bias that is absent from the dispatch plan
+- `constraint_precedence_note` must explicitly state that packet constraints, user limits, and non-goals take precedence over `work_mode`
+- `task_mode` remains separate from `work_mode`; it must not be reused as a worker-mode field or synonym
+- if a worker-mode change alters the execution payload, the controller must rotate `packet_id`; if the worker is relaunched, it must also rotate `attempt_id`
+- a launched packet must not be silently edited in place to change `work_mode`
 
 ## Reviewer Target Contract
 
@@ -141,6 +153,8 @@ Revision rules:
 - `agent_type: worker`
 - `context_mode: curated-only`
 - `fork_context: false`
+- `work_mode: plan-first | validate-first | iterate-first | conservative-first`
+- `goal_tuning: none | speed-biased | safety-biased | validation-biased`
 - `implementation_principles: [hard-rule, soft-principle]`
 - `retry_policy: relaunch with new attempt_id after orchestrator decision`
 - `close_policy: close after reviewer handoff or explicit stop`
@@ -239,6 +253,10 @@ persona_binding:
 implementation_principles:
   - prefer service-boundary correctness and data integrity over implementation speed
   - when tradeoffs are close, bias toward explicit interfaces and maintainable structure
+work_mode: validate-first
+work_mode_rationale: this section modifies existing runtime contract behavior and must verify current semantics before implementation
+goal_tuning: validation-biased
+constraint_precedence_note: keep approved scope, explicit user limits, and non-goals ahead of worker-mode posture
 derived_from_working_brief: worker persona enforcement requires backend-oriented contract and prompt edits
 task_mode: implement
 workflow_bindings:

@@ -78,6 +78,10 @@ Rules:
 
 - `recommended_personas`
 - `persona_selection_notes`
+- `recommended_worker_mode_by_section`
+- `worker_mode_reasoning_by_section`
+- `goal_tuning_by_section`
+- `constraint_override_notes_by_section`
 - `workflow_bindings_by_stage`
 - `dispatch_recommendation`
 
@@ -91,6 +95,11 @@ Rules:
 
 - Recommended personas are provisional until dispatch approval.
 - Persona selection must cite the working brief, not just task keywords.
+- The working brief recommends `worker mode` by section, but it does not act as the final execution authority.
+- `recommended_worker_mode_by_section` must be derived from task structure, scope shape, and risk, not from persona labels alone.
+- User-provided scope limits, prohibitions, and delivery boundaries must be captured in `constraints` before any worker-mode recommendation is made.
+- If a recommended `worker mode` conflicts with user constraints, record the tension and the best-effort fallback in `constraint_override_notes_by_section`.
+- `goal_tuning_by_section` may only soften or sharpen the recommended mode posture; it must not replace the structure-driven recommendation inside the working brief.
 - The working brief is an analysis artifact, not the runtime approval record.
 - Persist the working brief before dispatch-plan creation.
 - No packet creation until the referenced dispatch plan is in `approved` state.

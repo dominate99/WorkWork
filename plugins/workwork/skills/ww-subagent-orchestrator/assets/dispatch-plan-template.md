@@ -70,6 +70,15 @@ Rules:
 - Planned Scope rule: every writable file listed here must also appear under `exclusive_write_scope`; `shared_read_scope` is for read-only dependencies only and must not hide writable ownership.
 - Planning Rationale: {{persona_rationale}}
 - Planned Workflow Bindings: {{workflow_bindings}}
+- Planned Worker Mode: {{planned_worker_mode}}
+- Worker Mode Rationale: {{worker_mode_rationale}}
+- Goal Tuning: {{goal_tuning}}
+- Constraint Interaction Rule: {{constraint_interaction_rule}}
+- `Planned Worker Mode` is the section-level execution posture chosen for worker launches.
+- `Planned Worker Mode` must align with the working brief recommendation unless an explicit override rationale is recorded.
+- `task_mode` remains the role-task field (`implement` | `review` | `investigate`) and must not be reused as `worker mode`.
+- `Goal Tuning` may modify execution emphasis, but it must not replace or contradict `Planned Worker Mode`.
+- `Constraint Interaction Rule` must state how user constraints bound the planned worker mode for the section.
 - Planned Review Lanes:
   - Lane ID:
   - Lane Type: spec-review | code-quality-review | scope-review | editorial-review | other
@@ -99,6 +108,16 @@ Rules:
 - Active Packet ID:
 - Active Agent ID:
 - Active Attempt ID:
+- Active Worker Mode:
+- Mode Change History:
+  - Previous Mode:
+  - New Mode:
+  - Trigger Evidence:
+  - Approved By:
+  - Changed At:
+- `Active Worker Mode` is the launch-time or currently effective mode for the active section execution.
+- Any worker-mode change caused by new evidence must be recorded in `Mode Change History` before a new worker packet is created.
+- An unrecorded worker-mode change is invalid and must not be treated as controller-approved execution state.
 - Execution Records:
   - Execution ID:
   - Role:
