@@ -28,6 +28,10 @@ def main() -> int:
             "Worker work-mode contract validation",
             [python, "tools/validate_ww_worker_work_mode.py"],
         ),
+        (
+            "Reviewer and explorer role-contract validation",
+            [python, "tools/validate_ww_role_contracts.py"],
+        ),
     ]
 
     failed = False
