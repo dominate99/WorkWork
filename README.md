@@ -126,10 +126,11 @@ Local WW validation:
 ```powershell
 python -m pip install PyYAML markdown-it-py
 python tools/validate_ww_repo.py
+python tools/validate_ww_repo.py --json
 python tools/validate_ww_worker_work_mode.py --json
 ```
 
-The repo-level validator runs both the packaged skill frontmatter check and the worker `work_mode` contract check. GitHub Actions uses the same repo-local entrypoint.
+The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, and reviewer/explorer role-contract checks. GitHub Actions uses the same repo-local entrypoint.
 
 ## Summary
 

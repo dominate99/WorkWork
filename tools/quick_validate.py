@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -7,6 +9,24 @@ from pathlib import Path
 
 MAX_SKILL_NAME_LENGTH = 64
 ALLOWED_FRONTMATTER_KEYS = {"name", "description", "license", "allowed-tools", "metadata"}
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Validate WorkWork packaged skill frontmatter."
+    )
+    parser.add_argument(
+        "skill_directory",
+        nargs="?",
+        help="Path to the packaged skill directory that contains SKILL.md.",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        dest="as_json",
+        help="Emit machine-readable JSON output.",
+    )
+    return parser.parse_args()
 
 
 def load_yaml():
@@ -97,18 +117,40 @@ def validate_skill(skill_path: str) -> tuple[bool, str]:
     return True, "Skill is valid!"
 
 
+def emit_json(ok: bool, message: str, skill_directory: str | None = None, error: str | None = None) -> None:
+    payload = {
+        "ok": ok,
+        "message": message,
+        "skill_directory": skill_directory,
+    }
+    if error is not None:
+        payload["error"] = error
+    print(json.dumps(payload, indent=2))
+
+
 def main() -> int:
-    if len(sys.argv) != 2:
-        print("Usage: python tools/quick_validate.py <skill_directory>")
+    args = parse_args()
+    if not args.skill_directory:
+        message = "Usage: python tools/quick_validate.py <skill_directory>"
+        if args.as_json:
+            emit_json(False, message, error=message)
+        else:
+            print(message)
         return 1
 
     try:
-        valid, message = validate_skill(sys.argv[1])
+        valid, message = validate_skill(args.skill_directory)
     except RuntimeError as exc:
-        print(str(exc))
+        if args.as_json:
+            emit_json(False, str(exc), skill_directory=args.skill_directory, error=str(exc))
+        else:
+            print(str(exc))
         return 1
 
-    print(message)
+    if args.as_json:
+        emit_json(valid, message, skill_directory=args.skill_directory)
+    else:
+        print(message)
     return 0 if valid else 1
 
 
