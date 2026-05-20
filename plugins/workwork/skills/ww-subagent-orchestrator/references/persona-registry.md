@@ -28,6 +28,61 @@ Worker-capable personas additionally require:
 
 - `implementation_principles`
 
+## Optional Persona Enrichment Fields
+
+Phase 1 persona enrichment adds optional judgment-oriented fields.
+
+These fields are additive. Their absence does not invalidate an existing persona record.
+
+Each persona may additionally define:
+
+- `decision_style`
+- `quality_bar`
+- `tradeoff_bias`
+- `failure_modes_to_watch`
+- `escalation_triggers`
+- `collaboration_posture`
+- `taste_criteria`
+
+Field guidance:
+
+- `decision_style`
+  - describe how the persona resolves ambiguity before detailed instructions arrive
+- `quality_bar`
+  - define what level of finish or rigor this persona treats as acceptable
+- `tradeoff_bias`
+  - describe what this persona protects when two acceptable choices compete
+- `failure_modes_to_watch`
+  - list the mistakes or regressions this persona notices early
+- `escalation_triggers`
+  - list the conditions where this persona should escalate instead of powering through
+- `collaboration_posture`
+  - describe how this persona tends to interact with other roles during synthesis or execution
+- `taste_criteria`
+  - capture the persona's bar for coherence, clarity, simplicity, or felt quality when that bar materially matters
+
+Authoring rules for optional enrichment fields:
+
+- enrich judgment, not biography
+- keep wording operational and decision-oriented
+- do not duplicate `runtime_role` behavior or role-prompt restrictions
+- do not restate worker `work_mode` semantics in persona records
+- omit a field rather than writing filler text
+- prefer concise entries with visible contrast between personas
+
+## Phase 1 Compatibility Boundary
+
+Phase 1 enrichment is documentation-level and additive.
+
+Compatibility rules:
+
+- the current required fields remain the validity baseline for persona records
+- optional enrichment fields must not be treated as required until a later approved runtime-adoption round says so
+- `implementation_principles` remains the worker-only execution field and is not replaced by optional enrichment fields
+- reviewer and explorer constraints continue to live in role prompts and packet contracts
+- role prompts remain behavioral templates; persona records remain viewpoint records
+- `persona`, `runtime_role`, role prompt behavior, and worker `work_mode` must remain separate concepts
+
 ## Selection Rules
 
 - The orchestrator owns persona selection.
@@ -39,6 +94,24 @@ Worker-capable personas additionally require:
 - A worker-capable persona is any persona with `review_only: false` and `role_type` not equal to `orchestrator`.
 - A worker-capable persona must already have exactly two `implementation_principles` before it may enter the worker selection set.
 - The first `implementation_principles` entry is the hard implementation rule; the second entry is the soft implementation principle.
+- Until runtime adoption rules are explicitly updated, persona selection must continue to rely on required fields first and treat optional enrichment fields as advisory context only.
+- During partial enrichment rollout, a persona must not be rejected solely because it lacks optional enrichment fields if it still satisfies the required-field baseline.
+- If optional enrichment fields are used in rationale, they should sharpen why a persona was chosen, not replace the required-field justification.
+
+## Migration Rules
+
+Use these migration rules during persona-enrichment rollout:
+
+- phase 1 defines optional fields and rollout posture before any registry-wide enrichment pass
+- adopt enrichment in this order unless a later approved plan says otherwise:
+  - orchestrator personas
+  - reviewer personas
+  - worker personas
+  - explorer personas
+- keep the persona catalog intentionally small during migration; do not add new personas merely to express nuances that optional fields can already carry
+- use optional enrichment fields to create sharper contrast between existing personas before expanding persona count
+- if a field's meaning is unclear for a persona, leave it unset instead of inventing vague prose
+- bulk runtime adoption, packet changes, validator changes, and registry-wide requirements belong to later approved rounds, not phase 1
 
 ## Built-In Routing Defaults
 
