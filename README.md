@@ -128,9 +128,10 @@ python -m pip install PyYAML markdown-it-py
 python tools/validate_ww_repo.py
 python tools/validate_ww_repo.py --json
 python tools/validate_ww_worker_work_mode.py --json
+python tools/validate_ww_persona_selection_contracts.py --json
 ```
 
-The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, and reviewer/explorer role-contract checks. GitHub Actions uses the same repo-local entrypoint.
+The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, and persona runtime-selection contract checks. GitHub Actions uses the same repo-local entrypoint.
 
 ## Summary
 

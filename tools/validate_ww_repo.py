@@ -85,6 +85,10 @@ def main() -> int:
             "Reviewer and explorer role-contract validation",
             [python, "tools/validate_ww_role_contracts.py"],
         ),
+        (
+            "Persona runtime-selection contract validation",
+            [python, "tools/validate_ww_persona_selection_contracts.py"],
+        ),
     ]
 
     failed = False
