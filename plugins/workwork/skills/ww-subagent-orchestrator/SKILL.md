@@ -160,11 +160,15 @@ Its job is to capture context and recommendations, not runtime approval state. D
 Working brief persistence rules:
 
 - a brief may temporarily exist in chat during raw estimation
-- before dispatch-plan creation, the brief must be saved to `docs/superpowers/working-briefs/YYYY-MM-DD-topic-vN.md`
+- before dispatch-plan creation, the brief must be saved to `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/working-brief.md`
 - the working brief may recommend `worker mode`, `worker-mode rationale`, `goal tuning`, and constraint-override notes by section, but it does not decide the final execution mode
 - when `$www` is active, record `quality_mode` in that persisted working brief as the working brief's only strict-mode field and treat it as round-level intent, not as a dispatch gate boolean
 - `design-spec` and `implementation-plan` artifacts stay content-focused and do not carry strict-mode headers or duplicate strict-mode metadata
 - schema checks, revision comparisons, and reviewer targeting must use the persisted brief artifact
+- each persisted working brief must carry explicit `case_slug`, `round_slug`, `case_root`, and `round_root` metadata so path identity is not re-derived ad hoc
+- `case_slug` identifies the long-lived workstream; `round_slug` identifies one bounded `$ww` or `$www` cycle inside that case
+- revisions within the same round update the same `round_root`; new rounds create a new `round_slug`
+- legacy type-based brief paths remain readable only when explicitly referenced during migration; they are not canonical write targets for new rounds
 
 Schema compatibility rules:
 
@@ -274,11 +278,12 @@ Worker prompts consume packet state; they must not re-derive `work_mode` from th
 
 Before real dispatch, write a tracked Markdown file using `assets/dispatch-plan-template.md` to:
 
-`docs/superpowers/dispatch-plans/YYYY-MM-DD-topic.md`
+`docs/superpowers/cases/<case-slug>/rounds/<round-slug>/dispatch-plan.md`
 
 The dispatch plan is the canonical runtime state for the dispatch round. The dispatch plan must:
 
 - reference the persisted working brief version it was derived from
+- reference the active `case_slug`, `round_slug`, `case_root`, and `round_root`
 - record the active approval state
 - render the top-level `Strict Review Runtime State` block with `mode`, `target`, `state`, and `cycle_count`
 - list planned sections and planned personas
@@ -302,6 +307,7 @@ If any of these validation rules fail, the dispatch plan remains in `draft` or `
 
 `strict_review` is rendered as top-level controller metadata inside every dispatch plan. It does not replace section-level `runtime_state`, which remains the single authoritative post-launch section state.
 For worker execution, the authority chain is fixed: the working brief recommends, the dispatch plan decides and records, the packet freezes one execution snapshot, and the worker prompt consumes packet state only.
+- new round artifacts are canonically written under `round_root`; legacy type-based artifact locations may remain readable during migration, but they are not active parallel write targets
 
 For standard `$ww` rounds, render `strict_review` as `mode: standard`, `target: none`, `state: idle`, and `cycle_count: 0`. That required block is a runtime-state surface only and does not mean the round owns an active live `$www` strict-review gate.
 
@@ -454,9 +460,9 @@ Each entry should briefly report the current state and, when known, the active f
 Default document references:
 
 - `working brief`: current brief artifact for the dispatch round; if no saved file exists yet, report the current brief state and say file is `not created yet`
-- `dispatch plan`: `docs/superpowers/dispatch-plans/YYYY-MM-DD-topic.md`
-- `design spec`: `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
-- `implementation plan`: `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
+- `dispatch plan`: `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/dispatch-plan.md`
+- `design spec`: `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/design-spec.md`
+- `implementation plan`: `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/implementation-plan.md`
 
 Missing-document rule:
 
@@ -468,8 +474,8 @@ Preferred format:
 ```markdown
 ## Document Summary
 
-- `working brief`: ready, version 2, `docs/superpowers/working-briefs/2026-04-27-topic-v2.md`
-- `dispatch plan`: awaiting-approval, `docs/superpowers/dispatch-plans/2026-04-27-topic.md`
+- `working brief`: ready, version 2, `docs/superpowers/cases/example-case/rounds/2026-04-27-topic/working-brief.md`
+- `dispatch plan`: awaiting-approval, `docs/superpowers/cases/example-case/rounds/2026-04-27-topic/dispatch-plan.md`
 - `design spec`: not created yet
 - `implementation plan`: not created yet
 ```

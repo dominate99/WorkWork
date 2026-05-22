@@ -4,6 +4,10 @@
 - Schema Version: 1
 - Plan Revision: 1
 - Working Brief Version: {{brief_version}}
+- Case Slug: {{case_slug}}
+- Round Slug: {{round_slug}}
+- Case Root: {{case_root}}
+- Round Root: {{round_root}}
 - Plan State: awaiting-approval
 - Last Approved Revision: none
 - Rollback Baseline Revision: none
@@ -40,6 +44,13 @@ Rules:
 - Working Brief Status: ready|draft
 
 > Do not launch any real subagent until the preconditions are satisfied and `Plan State: approved`.
+
+Path identity rules:
+
+- `Case Root` must resolve to `docs/superpowers/cases/<case_slug>/`
+- `Round Root` must resolve to `docs/superpowers/cases/<case_slug>/rounds/<round_slug>/`
+- new dispatch-round artifacts are canonically written under `Round Root`
+- legacy type-based paths may remain readable during migration, but they are not parallel write targets
 
 ## Source Context
 

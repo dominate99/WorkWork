@@ -89,6 +89,10 @@ def main() -> int:
             "Persona runtime-selection contract validation",
             [python, "tools/validate_ww_persona_selection_contracts.py"],
         ),
+        (
+            "Case-based path identity contract validation",
+            [python, "tools/validate_ww_case_path_identity.py"],
+        ),
     ]
 
     failed = False

@@ -8,6 +8,10 @@ Use this template after estimation and before any persona dispatch.
 - `brief_version`
 - `brief_status`
 - `topic_slug`
+- `case_slug`
+- `round_slug`
+- `case_root`
+- `round_root`
 - `created_at`
 - `updated_at`
 - `derived_from_user_request`
@@ -72,7 +76,15 @@ Rules:
   - write/write overlap blocks parallel worker dispatch
   - write/read overlap is allowed only for reviewer or explorer lanes that are read-only
   - cross-type collisions are checked after normalization, not by original label
-  - `doc_section` overlapping a file matched by a `path_glob` is a collision unless the packet is read-only
+- `doc_section` overlapping a file matched by a `path_glob` is a collision unless the packet is read-only
+
+Artifact-layout rules:
+
+- `case_slug` identifies the long-lived workstream for this round
+- `round_slug` identifies this bounded `$ww` or `$www` cycle inside that case
+- `case_root` must resolve to `docs/superpowers/cases/<case_slug>/`
+- `round_root` must resolve to `docs/superpowers/cases/<case_slug>/rounds/<round_slug>/`
+- new rounds write their canonical artifacts under `round_root`; legacy type-based paths remain read-compatible only when explicitly referenced
 
 ## Persona And Workflow Guidance
 

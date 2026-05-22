@@ -64,12 +64,12 @@ When you trigger `$ww`, the workflow:
 - estimates the task
 - builds a working brief
 - selects the right orchestrator persona
-- writes a dispatch plan to `docs/superpowers/dispatch-plans/`
+- writes round artifacts under `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/`
 - pauses for approval before dispatch
 - coordinates subagents and review flow
 
 > [!IMPORTANT]
-> `docs/superpowers/dispatch-plans/` is a runtime-generated output location and is not part of the checked-in repository structure by default.
+> New `$ww` and `$www` rounds are canonically written under `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/`. Older type-based paths may still exist as legacy history during migration, but they are not active parallel write targets for new rounds.
 
 ## Best For
 
@@ -129,9 +129,10 @@ python tools/validate_ww_repo.py
 python tools/validate_ww_repo.py --json
 python tools/validate_ww_worker_work_mode.py --json
 python tools/validate_ww_persona_selection_contracts.py --json
+python tools/validate_ww_case_path_identity.py --json
 ```
 
-The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, and persona runtime-selection contract checks. GitHub Actions uses the same repo-local entrypoint.
+The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, persona runtime-selection contract checks, and case-based path identity contract checks. GitHub Actions uses the same repo-local entrypoint.
 
 ## Summary
 
