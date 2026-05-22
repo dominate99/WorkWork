@@ -94,9 +94,45 @@ Compatibility rules:
 - A worker-capable persona is any persona with `review_only: false` and `role_type` not equal to `orchestrator`.
 - A worker-capable persona must already have exactly two `implementation_principles` before it may enter the worker selection set.
 - The first `implementation_principles` entry is the hard implementation rule; the second entry is the soft implementation principle.
-- Until runtime adoption rules are explicitly updated, persona selection must continue to rely on required fields first and treat optional enrichment fields as advisory context only.
+- Runtime persona selection must always establish baseline eligibility from required fields first.
+- After required-field eligibility is satisfied, optional enrichment fields may influence ranking, tie-breaks, and rationale quality.
+- Optional enrichment fields must never override runtime-role boundaries, worker-capability gates, or project-registry preference rules.
 - During partial enrichment rollout, a persona must not be rejected solely because it lacks optional enrichment fields if it still satisfies the required-field baseline.
-- If optional enrichment fields are used in rationale, they should sharpen why a persona was chosen, not replace the required-field justification.
+- If optional enrichment fields are used in rationale, they must sharpen why a persona was chosen, not replace the required-field justification.
+
+## Runtime Selection Guidance
+
+Use this order when choosing between eligible personas:
+
+1. confirm required-field eligibility and role compatibility
+2. prefer the strongest project-registry match over a generic built-in fallback
+3. use `strengths`, `use_when`, `domains`, and language fit to narrow the viable set
+4. use optional enrichment fields to rank viable candidates by decision posture, quality bar, tradeoff bias, and escalation fit
+5. write rationale that names both the baseline fit and the enrichment-level fit when enrichment affected the choice
+
+Use optional enrichment fields in these ways:
+
+- `decision_style`
+  - use to decide which persona should lead when the task's main ambiguity is about how to frame or resolve the work
+- `quality_bar`
+  - use to decide which persona best matches the level of rigor the round actually needs
+- `tradeoff_bias`
+  - use to break ties when two personas are both capable but protect different outcomes
+- `failure_modes_to_watch`
+  - use to prefer the persona most likely to notice the dominant risk early
+- `escalation_triggers`
+  - use to prefer the persona whose stopping conditions match the round's real irreversible risks
+- `collaboration_posture`
+  - use to shape which specialist should synthesize, gate, or support when more than one persona is involved
+- `taste_criteria`
+  - use when coherence, clarity, or felt quality materially changes whether the result is good enough
+
+Runtime-selection guardrails:
+
+- do not use optional enrichment fields to invent capability the persona does not already have in required fields
+- do not use optional enrichment fields to force a reviewer or orchestrator into the worker selection set
+- do not treat the presence of enrichment text as stronger than better required-field fit
+- if two candidates are still effectively tied after enrichment review, prefer the simpler selection and record the unresolved tie in rationale instead of overfitting
 
 ## Migration Rules
 

@@ -204,6 +204,20 @@ For this first worker-enforcement layer:
 - a worker-capable persona must have `review_only: false`, `role_type` not equal to `orchestrator`, and exactly two `implementation_principles` before it may enter the worker selection set
 - reviewer-only and orchestrator personas are not worker-capable in this layer
 
+Runtime selection guidance:
+
+- derive the initial candidate set from required fields first
+- prefer the strongest project persona match before falling back to built-in personas
+- use `strengths`, `use_when`, `domains`, and language fit to narrow the viable set
+- once multiple candidates are still viable, use optional enrichment fields from `references/persona-registry.md` to rank and break ties
+- use `decision_style` when the round's main ambiguity is how to frame or resolve the work
+- use `quality_bar` when the main differentiator is the rigor level the round requires
+- use `tradeoff_bias` and `failure_modes_to_watch` when two candidates are capable but protect different risks
+- use `escalation_triggers` when the choice depends on who should stop and escalate under irreversible or high-blast-radius conditions
+- use `collaboration_posture` and `taste_criteria` only when they materially improve specialist composition or quality judgment
+- do not use optional enrichment fields to bypass role compatibility, worker-capability gates, or stronger required-field fit
+- if enrichment meaningfully affected the choice, say so in the persona rationale after the required-field justification
+
 For every chosen persona, write:
 
 - the canonical persona `id`
