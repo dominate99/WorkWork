@@ -55,7 +55,7 @@ Artifact types should become files inside a round, not top-level directory drive
 Use this layout:
 
 ```text
-docs/superpowers/cases/<case-slug>/
+docs/cases/<case-slug>/
   case.md
   rounds/
     <round-slug>/
@@ -105,8 +105,8 @@ Examples:
 
 The canonical path roots should be:
 
-- `case_root = docs/superpowers/cases/<case-slug>/`
-- `round_root = docs/superpowers/cases/<case-slug>/rounds/<round-slug>/`
+- `case_root = docs/cases/<case-slug>/`
+- `round_root = docs/cases/<case-slug>/rounds/<round-slug>/`
 
 These roots should be carried explicitly by generated round artifacts so producers, validators, and operators do not have to re-derive them ad hoc.
 

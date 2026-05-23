@@ -82,9 +82,9 @@ Artifact-layout rules:
 
 - `case_slug` identifies the long-lived workstream for this round
 - `round_slug` identifies this bounded `$ww` or `$www` cycle inside that case
-- `case_root` must resolve to `docs/superpowers/cases/<case_slug>/`
-- `round_root` must resolve to `docs/superpowers/cases/<case_slug>/rounds/<round_slug>/`
-- new rounds write their canonical artifacts under `round_root`; legacy type-based paths remain read-compatible only when explicitly referenced
+- `case_root` must resolve to `docs/cases/<case_slug>/`
+- `round_root` must resolve to `docs/cases/<case_slug>/rounds/<round_slug>/`
+- new rounds write their canonical artifacts under `round_root`; pre-cutover type-based artifacts are legacy history only and must not be treated as active generation targets
 
 ## Persona And Workflow Guidance
 

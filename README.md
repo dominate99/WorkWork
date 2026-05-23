@@ -64,12 +64,12 @@ When you trigger `$ww`, the workflow:
 - estimates the task
 - builds a working brief
 - selects the right orchestrator persona
-- writes round artifacts under `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/`
+- writes round artifacts under `docs/cases/<case-slug>/rounds/<round-slug>/`
 - pauses for approval before dispatch
 - coordinates subagents and review flow
 
 > [!IMPORTANT]
-> New `$ww` and `$www` rounds are canonically written under `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/`. Older type-based paths may still exist as legacy history during migration, but they are not active parallel write targets for new rounds.
+> New `$ww` and `$www` rounds are canonically written under `docs/cases/<case-slug>/rounds/<round-slug>/`. Older type-based paths are legacy history only and are not active write targets for new rounds.
 
 ## Best For
 

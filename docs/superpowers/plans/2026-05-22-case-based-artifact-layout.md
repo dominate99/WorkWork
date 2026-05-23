@@ -132,7 +132,7 @@ For each round that changes contracts, paths, or validators, verify:
 Recommended checks for the first implementation round:
 
 ```powershell
-rg -n "docs/superpowers/working-briefs|docs/superpowers/dispatch-plans|docs/superpowers/specs|docs/superpowers/plans|docs/superpowers/cases" `
+rg -n "docs/superpowers/working-briefs|docs/superpowers/dispatch-plans|docs/superpowers/specs|docs/superpowers/plans|docs/cases" `
   "plugins/workwork/skills/ww-subagent-orchestrator/SKILL.md" `
   "README.md" `
   "docs/superpowers/**/*"

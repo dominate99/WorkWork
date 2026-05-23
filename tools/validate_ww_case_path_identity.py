@@ -251,9 +251,9 @@ def build_results(documents: Dict[str, Document]) -> List[Result]:
             all(normalize(fragment) in brief_text for fragment in [
                     "`case_slug` identifies the long-lived workstream for this round",
                     "`round_slug` identifies this bounded `$ww` or `$www` cycle inside that case",
-                    "`case_root` must resolve to `docs/superpowers/cases/<case_slug>/`",
-                    "`round_root` must resolve to `docs/superpowers/cases/<case_slug>/rounds/<round_slug>/`",
-                    "new rounds write their canonical artifacts under `round_root`; legacy type-based paths remain read-compatible only when explicitly referenced",
+                    "`case_root` must resolve to `docs/cases/<case_slug>/`",
+                    "`round_root` must resolve to `docs/cases/<case_slug>/rounds/<round_slug>/`",
+                    "new rounds write their canonical artifacts under `round_root`; pre-cutover type-based artifacts are legacy history only and must not be treated as active generation targets",
                 ]),
             "Working brief template is missing one or more artifact-layout rules for case-based paths.",
         ),
@@ -274,10 +274,10 @@ def build_results(documents: Dict[str, Document]) -> List[Result]:
             dispatch.path,
             "Preconditions",
             all(normalize(fragment) in dispatch_text for fragment in [
-                    "`Case Root` must resolve to `docs/superpowers/cases/<case_slug>/`",
-                    "`Round Root` must resolve to `docs/superpowers/cases/<case_slug>/rounds/<round_slug>/`",
+                    "`Case Root` must resolve to `docs/cases/<case_slug>/`",
+                    "`Round Root` must resolve to `docs/cases/<case_slug>/rounds/<round_slug>/`",
                     "new dispatch-round artifacts are canonically written under `Round Root`",
-                    "legacy type-based paths may remain readable during migration, but they are not parallel write targets",
+                    "legacy type-based paths are legacy history only; they are not canonical targets or ongoing generation defaults",
                 ]),
             "Dispatch plan template is missing one or more path identity rules.",
         ),
@@ -286,11 +286,11 @@ def build_results(documents: Dict[str, Document]) -> List[Result]:
             skill.path,
             "Working Brief",
             all(normalize(fragment) in skill_text for fragment in [
-                    "before dispatch-plan creation, the brief must be saved to `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/working-brief.md`",
+                    "before dispatch-plan creation, the brief must be saved to `docs/cases/<case-slug>/rounds/<round-slug>/working-brief.md`",
                     "each persisted working brief must carry explicit `case_slug`, `round_slug`, `case_root`, and `round_root` metadata so path identity is not re-derived ad hoc",
                     "`case_slug` identifies the long-lived workstream; `round_slug` identifies one bounded `$ww` or `$www` cycle inside that case",
                     "revisions within the same round update the same `round_root`; new rounds create a new `round_slug`",
-                    "legacy type-based brief paths remain readable only when explicitly referenced during migration; they are not canonical write targets for new rounds",
+                    "pre-cutover type-based brief paths are legacy history only; they are not canonical write targets for new rounds",
                 ]),
             "SKILL.md is missing one or more case-based working brief persistence rules.",
         ),
@@ -299,9 +299,9 @@ def build_results(documents: Dict[str, Document]) -> List[Result]:
             skill.path,
             "Dispatch Plan File",
             all(normalize(fragment) in skill_text for fragment in [
-                    "`docs/superpowers/cases/<case-slug>/rounds/<round-slug>/dispatch-plan.md`",
+                    "`docs/cases/<case-slug>/rounds/<round-slug>/dispatch-plan.md`",
                     "reference the active `case_slug`, `round_slug`, `case_root`, and `round_root`",
-                    "new round artifacts are canonically written under `round_root`; legacy type-based artifact locations may remain readable during migration, but they are not active parallel write targets",
+                    "new round artifacts are canonically written under `round_root`; pre-cutover type-based artifact locations are legacy history only and are not active write targets",
                 ]),
             "SKILL.md is missing one or more case-based dispatch plan rules.",
         ),
@@ -310,11 +310,11 @@ def build_results(documents: Dict[str, Document]) -> List[Result]:
             skill.path,
             "Document Summary Contract",
             all(normalize(fragment) in skill_text for fragment in [
-                    "`dispatch plan`: `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/dispatch-plan.md`",
-                    "`design spec`: `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/design-spec.md`",
-                    "`implementation plan`: `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/implementation-plan.md`",
-                    "`working brief`: ready, version 2, `docs/superpowers/cases/example-case/rounds/2026-04-27-topic/working-brief.md`",
-                    "`dispatch plan`: awaiting-approval, `docs/superpowers/cases/example-case/rounds/2026-04-27-topic/dispatch-plan.md`",
+                    "`dispatch plan`: `docs/cases/<case-slug>/rounds/<round-slug>/dispatch-plan.md`",
+                    "`design spec`: `docs/cases/<case-slug>/rounds/<round-slug>/design-spec.md`",
+                    "`implementation plan`: `docs/cases/<case-slug>/rounds/<round-slug>/implementation-plan.md`",
+                    "`working brief`: ready, version 2, `docs/cases/example-case/rounds/2026-04-27-topic/working-brief.md`",
+                    "`dispatch plan`: awaiting-approval, `docs/cases/example-case/rounds/2026-04-27-topic/dispatch-plan.md`",
                 ]),
             "SKILL.md document summary defaults are not fully aligned with case-based artifact paths.",
         ),
@@ -323,10 +323,10 @@ def build_results(documents: Dict[str, Document]) -> List[Result]:
             readme.path,
             "What It Does",
             all(normalize(fragment) in readme_text for fragment in [
-                    "writes round artifacts under `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/`",
+                    "writes round artifacts under `docs/cases/<case-slug>/rounds/<round-slug>/`",
                 ])
             and normalize(
-                "New `$ww` and `$www` rounds are canonically written under `docs/superpowers/cases/<case-slug>/rounds/<round-slug>/`. Older type-based paths may still exist as legacy history during migration, but they are not active parallel write targets for new rounds."
+                "New `$ww` and `$www` rounds are canonically written under `docs/cases/<case-slug>/rounds/<round-slug>/`. Older type-based paths are legacy history only and are not active write targets for new rounds."
             )
             in readme_text,
             "README.md is missing one or more case-based artifact path guidance rules.",

@@ -47,10 +47,10 @@ Rules:
 
 Path identity rules:
 
-- `Case Root` must resolve to `docs/superpowers/cases/<case_slug>/`
-- `Round Root` must resolve to `docs/superpowers/cases/<case_slug>/rounds/<round_slug>/`
+- `Case Root` must resolve to `docs/cases/<case_slug>/`
+- `Round Root` must resolve to `docs/cases/<case_slug>/rounds/<round_slug>/`
 - new dispatch-round artifacts are canonically written under `Round Root`
-- legacy type-based paths may remain readable during migration, but they are not parallel write targets
+- legacy type-based paths are legacy history only; they are not canonical targets or ongoing generation defaults
 
 ## Source Context
 
