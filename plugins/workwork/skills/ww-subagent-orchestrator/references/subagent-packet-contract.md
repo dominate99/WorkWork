@@ -175,7 +175,7 @@ Revision rules:
 
 ```text
 schema_version: 1
-source_dispatch_plan: docs/superpowers/dispatch-plans/2026-05-06-topic.md
+source_dispatch_plan: docs/legacy/superpowers/dispatch-plans/2026-05-06-topic.md
 source_plan_revision: 1
 source_section_id: section-core-runtime-contracts
 orchestrator_type: staff-engineer-orchestrator
@@ -235,7 +235,7 @@ requires_human_judgment: true
 
 ```text
 schema_version: 1
-source_dispatch_plan: docs/superpowers/dispatch-plans/2026-05-16-worker-persona-enforcement.md
+source_dispatch_plan: docs/legacy/superpowers/dispatch-plans/2026-05-16-worker-persona-enforcement.md
 source_plan_revision: 2
 source_section_id: section-worker-persona-enforcement
 orchestrator_type: staff-engineer-orchestrator

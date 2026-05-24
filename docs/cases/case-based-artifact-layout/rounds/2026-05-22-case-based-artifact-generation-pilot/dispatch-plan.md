@@ -104,8 +104,8 @@ Path identity rules:
     - `path_glob`: `docs/cases/case-based-artifact-layout/case.md`
   - `shared_read_scope`:
     - `path_glob`: `docs/cases/case-based-artifact-layout/**/*`
-    - `path_glob`: `docs/superpowers/specs/2026-05-22-case-based-artifact-layout-design.md`
-    - `path_glob`: `docs/superpowers/plans/2026-05-22-case-based-artifact-layout.md`
+    - `path_glob`: `docs/legacy/superpowers/specs/2026-05-22-case-based-artifact-layout-design.md`
+    - `path_glob`: `docs/legacy/superpowers/plans/2026-05-22-case-based-artifact-layout.md`
     - `path_glob`: `tools/validate_ww_case_path_identity.py`
     - `path_glob`: `tools/validate_ww_repo.py`
   - `depends_on_sections`: none
@@ -125,7 +125,7 @@ Path identity rules:
     - `section_anchors`: `Path identity rules`, `Preconditions`
     - `artifact_id`: `case_layout_design`
     - `artifact_kind`: `doc`
-    - `artifact_path`: `docs/superpowers/specs/2026-05-22-case-based-artifact-layout-design.md`
+    - `artifact_path`: `docs/legacy/superpowers/specs/2026-05-22-case-based-artifact-layout-design.md`
     - `section_anchors`: `Target Model`, `Migration Strategy`
 - Scope declaration rule: every writable file in `Planned Scope` must also appear in `exclusive_write_scope`; `shared_read_scope` must not hide writable ownership.
 - Packet Created: false

@@ -84,11 +84,11 @@
   - `section_anchors`: none
   - `artifact_id`: `case_layout_design`
   - `artifact_kind`: `doc`
-  - `artifact_path`: `docs/superpowers/specs/2026-05-22-case-based-artifact-layout-design.md`
+  - `artifact_path`: `docs/legacy/superpowers/specs/2026-05-22-case-based-artifact-layout-design.md`
   - `section_anchors`: `Target Model`, `Migration Strategy`, `Compatibility Rules`
   - `artifact_id`: `case_layout_plan`
   - `artifact_kind`: `doc`
-  - `artifact_path`: `docs/superpowers/plans/2026-05-22-case-based-artifact-layout.md`
+  - `artifact_path`: `docs/legacy/superpowers/plans/2026-05-22-case-based-artifact-layout.md`
   - `section_anchors`: `Introduce case-based path templates for new rounds`, `Decide the first compatibility bridge`
 - `exclusive_write_scope`:
   - `path_glob`: `docs/cases/case-based-artifact-layout/rounds/2026-05-22-case-based-artifact-generation-pilot/working-brief.md`
@@ -100,8 +100,8 @@
   - `path_glob`: `docs/cases/case-based-artifact-layout/case.md`
 - `shared_read_scope`:
   - `path_glob`: `docs/cases/case-based-artifact-layout/**/*`
-  - `path_glob`: `docs/superpowers/specs/2026-05-22-case-based-artifact-layout-design.md`
-  - `path_glob`: `docs/superpowers/plans/2026-05-22-case-based-artifact-layout.md`
+  - `path_glob`: `docs/legacy/superpowers/specs/2026-05-22-case-based-artifact-layout-design.md`
+  - `path_glob`: `docs/legacy/superpowers/plans/2026-05-22-case-based-artifact-layout.md`
   - `path_glob`: `tools/validate_ww_case_path_identity.py`
   - `path_glob`: `tools/validate_ww_repo.py`
 - `depends_on_sections`: none

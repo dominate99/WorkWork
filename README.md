@@ -71,6 +71,8 @@ When you trigger `$ww`, the workflow:
 > [!IMPORTANT]
 > New `$ww` and `$www` rounds are canonically written under `docs/cases/<case-slug>/rounds/<round-slug>/`. Older type-based paths are legacy history only and are not active write targets for new rounds.
 
+Historical type-based workflow artifacts are archived under `docs/legacy/superpowers/`.
+
 ## Best For
 
 Use `$ww` when you want structured orchestration for:

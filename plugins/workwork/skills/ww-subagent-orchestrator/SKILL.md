@@ -169,6 +169,7 @@ Working brief persistence rules:
 - `case_slug` identifies the long-lived workstream; `round_slug` identifies one bounded `$ww` or `$www` cycle inside that case
 - revisions within the same round update the same `round_root`; new rounds create a new `round_slug`
 - pre-cutover type-based brief paths are legacy history only; they are not canonical write targets for new rounds
+- archived historical type-based workflow artifacts live under `docs/legacy/superpowers/`
 
 Schema compatibility rules:
 
@@ -308,6 +309,7 @@ If any of these validation rules fail, the dispatch plan remains in `draft` or `
 `strict_review` is rendered as top-level controller metadata inside every dispatch plan. It does not replace section-level `runtime_state`, which remains the single authoritative post-launch section state.
 For worker execution, the authority chain is fixed: the working brief recommends, the dispatch plan decides and records, the packet freezes one execution snapshot, and the worker prompt consumes packet state only.
 - new round artifacts are canonically written under `round_root`; pre-cutover type-based artifact locations are legacy history only and are not active write targets
+- archived type-based workflow artifact families live under `docs/legacy/superpowers/`
 
 For standard `$ww` rounds, render `strict_review` as `mode: standard`, `target: none`, `state: idle`, and `cycle_count: 0`. That required block is a runtime-state surface only and does not mean the round owns an active live `$www` strict-review gate.
 

@@ -7,11 +7,11 @@ artifacts:
       - impl_plan
   working_brief:
     artifact_kind: brief
-    artifact_path: docs/superpowers/working-briefs/2026-05-06-ww-orchestrator-implementation-v1.md
+    artifact_path: docs/legacy/superpowers/working-briefs/2026-05-06-ww-orchestrator-implementation-v1.md
     aliases:
       - brief
   dispatch_plan:
     artifact_kind: plan
-    artifact_path: docs/superpowers/dispatch-plans/2026-05-06-ww-orchestrator-implementation.md
+    artifact_path: docs/legacy/superpowers/dispatch-plans/2026-05-06-ww-orchestrator-implementation.md
     aliases:
       - plan
