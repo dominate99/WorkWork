@@ -170,6 +170,8 @@ Working brief persistence rules:
 - revisions within the same round update the same `round_root`; new rounds create a new `round_slug`
 - pre-cutover type-based brief paths are legacy history only; they are not canonical write targets for new rounds
 - archived historical type-based workflow artifacts live under `docs/legacy/superpowers/`
+- repo-local scaffold helpers may create `case.md` and round-document skeletons under `docs/cases/...`, but helper output is only a draft starting point and does not satisfy approval or dispatch requirements by itself
+- active case entrypoints should follow `references/case-template.md`
 
 Schema compatibility rules:
 
@@ -579,6 +581,7 @@ If a section enters `revision-requested`, the global plan state returns to `revi
 ## References
 
 - `references/working-brief-template.md`
+- `references/case-template.md`
 - `references/persona-registry.md`
 - `references/subagent-packet-contract.md`
 - `assets/dispatch-plan-template.md`

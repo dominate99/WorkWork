@@ -102,6 +102,7 @@ $ww Coordinate backend, security, and QA review for this API change.
 - `plugins/workwork/.codex-plugin/plugin.json`
 - `plugins/workwork/.claude-plugin/plugin.json`
 - `plugins/workwork/skills/ww-subagent-orchestrator/SKILL.md`
+- `plugins/workwork/skills/ww-subagent-orchestrator/references/case-template.md`
 - `plugins/workwork/skills/ww-subagent-orchestrator/references/working-brief-template.md`
 - `plugins/workwork/skills/ww-subagent-orchestrator/references/persona-registry.md`
 - `plugins/workwork/skills/ww-subagent-orchestrator/references/subagent-packet-contract.md`
@@ -132,9 +133,24 @@ python tools/validate_ww_repo.py --json
 python tools/validate_ww_worker_work_mode.py --json
 python tools/validate_ww_persona_selection_contracts.py --json
 python tools/validate_ww_case_path_identity.py --json
+python tools/validate_ww_case_contracts.py --json
 ```
 
-The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, persona runtime-selection contract checks, and case-based path identity contract checks. GitHub Actions uses the same repo-local entrypoint.
+The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, persona runtime-selection contract checks, case-based path identity contract checks, and case artifact contract checks. GitHub Actions uses the same repo-local entrypoint.
+
+Case artifact scaffolding:
+
+```powershell
+python tools/scaffold_ww_case_artifacts.py `
+  --case-slug example-case `
+  --round-slug 2026-05-23-example-round `
+  --title "Example Round" `
+  --user-request "example request" `
+  --with-design-spec `
+  --with-implementation-plan
+```
+
+The scaffolding helper creates `working-brief.md` and `dispatch-plan.md` by default, updates `case.md`, and can optionally create `design-spec.md` and `implementation-plan.md`. It writes placeholder content only; maintainers still need to complete the round artifacts before approval.
 
 ## Summary
 

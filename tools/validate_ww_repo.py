@@ -93,6 +93,10 @@ def main() -> int:
             "Case-based path identity contract validation",
             [python, "tools/validate_ww_case_path_identity.py"],
         ),
+        (
+            "Case artifact contract validation",
+            [python, "tools/validate_ww_case_contracts.py"],
+        ),
     ]
 
     failed = False
