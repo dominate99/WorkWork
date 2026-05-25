@@ -150,7 +150,7 @@ python tools/scaffold_ww_case_artifacts.py `
   --with-implementation-plan
 ```
 
-The scaffolding helper creates `working-brief.md` and `dispatch-plan.md` by default, updates `case.md`, and can optionally create `design-spec.md` and `implementation-plan.md`. It writes placeholder content only; maintainers still need to complete the round artifacts before approval.
+The scaffolding helper is the default initializer for new `$ww/$www` case rounds under `docs/cases/...`. It creates `working-brief.md` and `dispatch-plan.md` by default, updates `case.md`, and can optionally create `design-spec.md` and `implementation-plan.md`. It writes placeholder content only; maintainers still need to complete the round artifacts before approval.
 
 ## Summary
 

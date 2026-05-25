@@ -2,7 +2,7 @@
 
 - Status: active
 - Canonical Root: `docs/cases/case-based-artifact-layout/`
-- Current Round: `2026-05-23-case-contract-validator-pilot`
+- Current Round: `2026-05-24-scaffold-adoption-pilot`
 - Goal: adopt case-based artifact generation with a hard cutover to `docs/cases/...`
 - Legacy Status: pre-cutover artifacts are archived under `docs/legacy/superpowers/`
 
@@ -13,6 +13,7 @@
 - `2026-05-23-legacy-normalization-pilot`
 - `2026-05-23-case-artifact-scaffolding-pilot`
 - `2026-05-23-case-contract-validator-pilot`
+- `2026-05-24-scaffold-adoption-pilot`
 
 ## Notes
 

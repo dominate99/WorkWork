@@ -160,6 +160,7 @@ Its job is to capture context and recommendations, not runtime approval state. D
 Working brief persistence rules:
 
 - a brief may temporarily exist in chat during raw estimation
+- for a new case or a new round under `docs/cases/...`, initialize the artifact skeleton with `tools/scaffold_ww_case_artifacts.py` by default before filling the planning content manually
 - before dispatch-plan creation, the brief must be saved to `docs/cases/<case-slug>/rounds/<round-slug>/working-brief.md`
 - the working brief may recommend `worker mode`, `worker-mode rationale`, `goal tuning`, and constraint-override notes by section, but it does not decide the final execution mode
 - when `$www` is active, record `quality_mode` in that persisted working brief as the working brief's only strict-mode field and treat it as round-level intent, not as a dispatch gate boolean
@@ -170,7 +171,7 @@ Working brief persistence rules:
 - revisions within the same round update the same `round_root`; new rounds create a new `round_slug`
 - pre-cutover type-based brief paths are legacy history only; they are not canonical write targets for new rounds
 - archived historical type-based workflow artifacts live under `docs/legacy/superpowers/`
-- repo-local scaffold helpers may create `case.md` and round-document skeletons under `docs/cases/...`, but helper output is only a draft starting point and does not satisfy approval or dispatch requirements by itself
+- the scaffold helper is the default case/round initialization path, but helper output is only a draft starting point and does not satisfy approval or dispatch requirements by itself
 - active case entrypoints should follow `references/case-template.md`
 
 Schema compatibility rules:
