@@ -173,6 +173,8 @@ Working brief persistence rules:
 - archived historical type-based workflow artifacts live under `docs/legacy/superpowers/`
 - the scaffold helper is the default case/round initialization path, but helper output is only a draft starting point and does not satisfy approval or dispatch requirements by itself
 - active case entrypoints should follow `references/case-template.md`
+- `case.md` remains navigational and points to the newest active round for the case through `Current Round`
+- round approval, execution, and closure state remain owned by each round's `dispatch-plan.md`; they must not be duplicated into `case.md`
 
 Schema compatibility rules:
 

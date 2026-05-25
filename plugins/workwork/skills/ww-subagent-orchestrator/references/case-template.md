@@ -43,6 +43,8 @@ Use this template for every active case root under `docs/cases/<case-slug>/`.
 
 - Every case directory under `docs/cases/` must contain exactly one top-level `case.md`.
 - `Canonical Root` must resolve to `docs/cases/<case-slug>/`.
+- `Current Round` must point to the newest active round for the case.
 - `Current Round` must also appear in `## Round Index`.
 - `Round Index` is navigational history, not an approval or runtime ledger.
+- `case.md` must not duplicate round approval, execution, or closure state; those remain owned by each round's `dispatch-plan.md`.
 - `case.md` may be updated by repo-local scaffold helpers, but those helpers must preserve this layout.

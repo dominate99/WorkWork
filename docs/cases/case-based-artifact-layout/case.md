@@ -2,7 +2,7 @@
 
 - Status: active
 - Canonical Root: `docs/cases/case-based-artifact-layout/`
-- Current Round: `2026-05-24-round-lifecycle-pilot`
+- Current Round: `2026-05-25-round-lifecycle-validator-pilot`
 - Goal: adopt case-based artifact generation with a hard cutover to `docs/cases/...`
 - Legacy Status: pre-cutover artifacts are archived under `docs/legacy/superpowers/`
 
@@ -14,8 +14,9 @@
 - `2026-05-23-case-artifact-scaffolding-pilot`
 - `2026-05-23-case-contract-validator-pilot`
 - `2026-05-24-scaffold-adoption-pilot`
-
 - `2026-05-24-round-lifecycle-pilot`
+- `2026-05-25-round-lifecycle-validator-pilot`
+
 ## Notes
 
 - New `$ww` and `$www` rounds for this case should write under `docs/cases/case-based-artifact-layout/rounds/<round-slug>/`.

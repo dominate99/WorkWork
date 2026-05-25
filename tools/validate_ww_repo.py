@@ -97,6 +97,10 @@ def main() -> int:
             "Case artifact contract validation",
             [python, "tools/validate_ww_case_contracts.py"],
         ),
+        (
+            "Round lifecycle contract validation",
+            [python, "tools/validate_ww_round_lifecycle.py"],
+        ),
     ]
 
     failed = False
