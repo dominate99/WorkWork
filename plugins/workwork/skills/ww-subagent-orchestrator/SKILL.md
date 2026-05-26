@@ -210,6 +210,8 @@ For this first worker-enforcement layer:
 - `references/built-in-personas.yaml` is the built-in data-record layer
 - project and built-in persona records must use the same top-level `personas:` schema shape
 - built-in routing defaults and built-in fallback resolution should use canonical persona `id` values from the data file, not free-text labels
+- persona portfolio taxonomy, minimum coverage expectations, expansion decision rules, and built-in/project source-of-truth boundaries are defined in `references/persona-registry.md`
+- do not add concrete persona records, widen routing, or change validators merely because a taxonomy gap is identified; those changes require their own approved round
 - worker-candidate filtering happens before persona selection is finalized
 - a worker-capable persona must have `review_only: false`, `role_type` not equal to `orchestrator`, and exactly two `implementation_principles` before it may enter the worker selection set
 - reviewer-only and orchestrator personas are not worker-capable in this layer

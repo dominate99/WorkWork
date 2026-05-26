@@ -28,6 +28,60 @@ Worker-capable personas additionally require:
 
 - `implementation_principles`
 
+## Persona Portfolio Taxonomy
+
+The persona catalog is a portfolio, not just a list of interchangeable labels. Keep persona count small, but do not let smallness erase required role-family coverage.
+
+Role families:
+
+- `orchestrator`
+  - owns round framing, dispatch planning, synthesis, and human-decision handoff
+  - should cover the major top-level route families the skill can select
+  - must not be used as a worker-capable persona
+- `worker`
+  - owns scoped production work inside an approved dispatch section
+  - must satisfy the worker-capability gate before selection
+  - should cover materially different execution domains rather than style variants
+  - is a runtime and portfolio family, not necessarily a literal `role_type`; current worker-capable records use specialist-style persona records and become worker-eligible only through the worker-capability gate
+- `reviewer`
+  - owns findings-only inspection of an assigned artifact or section
+  - should map to durable review-lane needs such as spec, code quality, scope, editorial, security, accessibility, or documentation clarity
+  - must not rewrite the target artifact or become the implementer for the same section
+- `explorer`
+  - owns read-only investigation, evidence gathering, and uncertainty reduction
+  - should be used when the round needs scoped context before implementation or review
+  - must not receive write authority through persona selection
+
+Minimum built-in coverage:
+
+- every supported top-level route should have at least one built-in orchestrator persona
+- every durable review lane type used by the skill should have at least one viable reviewer persona family, either dedicated or explicitly documented as covered by a broader reviewer
+- the catch-all `other` review lane is not a required reviewer-family coverage floor; using it requires an explicit rationale that names why no durable lane type fits and which reviewer family is still qualified
+- worker-capable built-ins should cover these minimum execution families before adding narrower language or framework variants:
+  - frontend and product UI implementation
+  - test and quality engineering
+  - DevOps, release, and infrastructure operations
+  - data, analytics, and ML workflows
+  - technical writing and documentation production
+- explorer coverage is required before the workflow depends on explorer packets for normal operation
+
+Expansion decision rules:
+
+- add a new persona family when a recurring task type has no eligible persona after required-field and role-compatibility filtering
+- add a new persona family when a review lane needs a materially different judgment posture from all existing reviewers
+- add a new persona family when forcing the work through an existing persona would weaken role boundaries or make the rationale depend on optional enrichment alone
+- prefer optional enrichment when the existing persona already has the required domain, role compatibility, and execution authority, but needs sharper judgment contrast
+- prefer project registry extension when the gap is project-specific; prefer built-in expansion when the gap is common to WorkWork users across projects
+- do not add personas merely for tone, seniority flavor, biography, or a one-off task nuance
+
+Source-of-truth split:
+
+- `references/built-in-personas.yaml` supplies portable fallback coverage for common WorkWork routes, worker families, and reviewer families
+- `docs/superpowers/personas/registry.yaml` supplies project-specific overrides and additions where local domain knowledge is stronger than the built-in fallback
+- project records may shadow or outrank generic built-ins when they are a stronger required-field match
+- project records should not duplicate built-ins without adding project-specific domain, constraint, or workflow value
+- taxonomy rules live in this file; persona data records live in the registry YAML files
+
 ## Optional Persona Enrichment Fields
 
 Phase 1 persona enrichment adds optional judgment-oriented fields.
@@ -145,6 +199,7 @@ Use these migration rules during persona-enrichment rollout:
   - worker personas
   - explorer personas
 - keep the persona catalog intentionally small during migration; do not add new personas merely to express nuances that optional fields can already carry
+- smallness is not a substitute for minimum portfolio coverage; if required role-family coverage is absent, create a later approved expansion round instead of stretching optional enrichment beyond the persona's baseline capability
 - use optional enrichment fields to create sharper contrast between existing personas before expanding persona count
 - if a field's meaning is unclear for a persona, leave it unset instead of inventing vague prose
 - bulk runtime adoption, packet changes, validator changes, and registry-wide requirements belong to later approved rounds, not phase 1
