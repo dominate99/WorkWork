@@ -144,6 +144,7 @@ Persona taxonomy changes:
 - update `plugins/workwork/skills/ww-subagent-orchestrator/references/persona-registry.md` when changing role-family taxonomy, minimum portfolio coverage, expansion decision rules, or built-in/project registry boundaries
 - update `plugins/workwork/skills/ww-subagent-orchestrator/SKILL.md` when orchestration behavior needs to point at those taxonomy rules
 - update `plugins/workwork/skills/ww-subagent-orchestrator/references/built-in-personas.yaml` when adding portable built-in worker persona coverage for common WorkWork execution families
+- update `plugins/workwork/skills/ww-subagent-orchestrator/references/built-in-personas.yaml` when adding portable built-in reviewer persona coverage for durable review lanes
 - do not add persona records or validator behavior in the same round unless that round explicitly approves those scopes
 
 Case artifact scaffolding:

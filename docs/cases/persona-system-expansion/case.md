@@ -2,7 +2,7 @@
 
 - Status: active
 - Canonical Root: `docs/cases/persona-system-expansion/`
-- Current Round: `2026-05-26-worker-persona-expansion`
+- Current Round: `2026-05-26-workflow-reviewer-persona-expansion`
 - Goal: expand and harden the WorkWork persona system through staged audit, taxonomy, persona coverage, and validator adoption rounds
 - Legacy Status: pre-cutover artifacts are archived under `docs/legacy/superpowers/`
 
@@ -13,6 +13,8 @@
 - `2026-05-26-persona-taxonomy-contract`
 
 - `2026-05-26-worker-persona-expansion`
+
+- `2026-05-26-workflow-reviewer-persona-expansion`
 ## Notes
 
 - New `$ww` and `$www` rounds for this case should write under `docs/cases/persona-system-expansion/rounds/<round-slug>/`.
