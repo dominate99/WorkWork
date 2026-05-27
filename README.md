@@ -137,7 +137,7 @@ python tools/validate_ww_case_contracts.py --json
 python tools/validate_ww_round_lifecycle.py --json
 ```
 
-The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, persona runtime-selection contract checks, case-based path identity contract checks, case artifact contract checks, and round lifecycle contract checks. GitHub Actions uses the same repo-local entrypoint.
+The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, persona runtime-selection recording contract checks, case-based path identity contract checks, case artifact contract checks, and round lifecycle contract checks. GitHub Actions uses the same repo-local entrypoint.
 
 Persona taxonomy changes:
 
@@ -145,6 +145,7 @@ Persona taxonomy changes:
 - update `plugins/workwork/skills/ww-subagent-orchestrator/SKILL.md` when orchestration behavior needs to point at those taxonomy rules
 - update `plugins/workwork/skills/ww-subagent-orchestrator/references/built-in-personas.yaml` when adding portable built-in worker persona coverage for common WorkWork execution families
 - update `plugins/workwork/skills/ww-subagent-orchestrator/references/built-in-personas.yaml` when adding portable built-in reviewer persona coverage for durable review lanes
+- update `plugins/workwork/skills/ww-subagent-orchestrator/SKILL.md`, `plugins/workwork/skills/ww-subagent-orchestrator/references/working-brief-template.md`, `plugins/workwork/skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md`, and `plugins/workwork/skills/ww-subagent-orchestrator/references/subagent-packet-contract.md` together when changing runtime persona selection recording rules
 - do not add persona records or validator behavior in the same round unless that round explicitly approves those scopes
 
 Case artifact scaffolding:

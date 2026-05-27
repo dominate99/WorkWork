@@ -86,7 +86,7 @@ def main() -> int:
             [python, "tools/validate_ww_role_contracts.py"],
         ),
         (
-            "Persona runtime-selection contract validation",
+            "Persona runtime-selection recording contract validation",
             [python, "tools/validate_ww_persona_selection_contracts.py"],
         ),
         (

@@ -88,6 +88,7 @@ Artifact-layout rules:
 
 ## Persona And Workflow Guidance
 
+- `candidate_persona_sources`
 - `recommended_personas`
 - `persona_selection_notes`
 - `recommended_worker_mode_by_section`
@@ -96,6 +97,36 @@ Artifact-layout rules:
 - `constraint_override_notes_by_section`
 - `workflow_bindings_by_stage`
 - `dispatch_recommendation`
+
+`candidate_persona_sources` should record:
+
+- project registry checked: true|false
+- built-in fallback checked: true|false
+- project registry outcome
+- built-in fallback outcome
+- fallback rationale when a built-in persona is recommended
+
+Each `recommended_personas` entry should record:
+
+- persona id
+- runtime role: `orchestrator` | `worker` | `reviewer` | `explorer`
+- source: `project` | `built-in`
+- owned scope, review target, or investigation target
+- baseline required-field fit rationale grounded in the working brief
+- project-priority or built-in-fallback rationale
+- enrichment fit rationale when optional enrichment fields affected the recommendation
+- role binding from `agents/openai.yaml`
+- prompt asset used for launch assembly
+- workflow bindings
+
+Persona recommendation rules:
+
+- project registry priority applies only after the persona satisfies the relevant runtime-role gate and required-field fit
+- use a project persona only when it is stronger than the built-in fallback or adds project-specific value the built-in cannot carry
+- record built-in fallback explicitly when no project persona is eligible or stronger
+- worker recommendations must pass the worker-capability gate before appearing as worker candidates
+- reviewer recommendations must pass the reviewer-only gate before appearing as review-lane candidates
+- do not recommend a persona from keywords alone; cite the working brief goal, constraints, risks, scope, or artifact type
 
 ## Runtime Preparation
 
@@ -107,6 +138,7 @@ Artifact-layout rules:
 
 - Recommended personas are provisional until dispatch approval.
 - Persona selection must cite the working brief, not just task keywords.
+- Persona selection must record source, runtime role, baseline fit, and project-priority or built-in-fallback rationale.
 - The working brief recommends `worker mode` by section, but it does not act as the final execution authority.
 - `recommended_worker_mode_by_section` must be derived from task structure, scope shape, and risk, not from persona labels alone.
 - User-provided scope limits, prohibitions, and delivery boundaries must be captured in `constraints` before any worker-mode recommendation is made.

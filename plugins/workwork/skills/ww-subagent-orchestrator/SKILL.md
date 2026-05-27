@@ -212,12 +212,19 @@ For this first worker-enforcement layer:
 - built-in routing defaults and built-in fallback resolution should use canonical persona `id` values from the data file, not free-text labels
 - persona portfolio taxonomy, minimum coverage expectations, expansion decision rules, and built-in/project source-of-truth boundaries are defined in `references/persona-registry.md`
 - do not add concrete persona records, widen routing, or change validators merely because a taxonomy gap is identified; those changes require their own approved round
+- persona selection adoption is a recording contract as well as a ranking contract: working briefs recommend candidates, dispatch plans approve selected personas, and packets snapshot the approved persona source, rationale, and role binding at launch
 - worker-candidate filtering happens before persona selection is finalized
 - a worker-capable persona must have `review_only: false`, `role_type` not equal to `orchestrator`, and exactly two `implementation_principles` before it may enter the worker selection set
 - reviewer-only and orchestrator personas are not worker-capable in this layer
+- reviewer-only personas must have `role_type: reviewer`, `review_only: true`, no worker write authority, and `agents/reviewer-prompt.md` as the launch prompt binding before they may staff a review lane
+- project persona priority applies only after role gates and required-field fit; use a project persona over a built-in fallback only when it is the stronger match or adds project-specific value the built-in cannot carry
+- built-in fallback must be explicit, not silent: when fallback wins, record why no project persona was eligible or stronger
 
 Runtime selection guidance:
 
+- determine the runtime role first: `orchestrator`, `worker`, `reviewer`, or `explorer`
+- load project candidates first, then built-in candidates, while preserving the source for every viable candidate
+- apply hard role gates before ranking: worker-capability gate for worker packets, reviewer-only gate for reviewer packets, orchestrator gate for round leadership, and read-only gate for explorer packets
 - derive the initial candidate set from required fields first
 - prefer the strongest project persona match before falling back to built-in personas
 - use `strengths`, `use_when`, `domains`, and language fit to narrow the viable set
@@ -233,9 +240,12 @@ Runtime selection guidance:
 For every chosen persona, write:
 
 - the canonical persona `id`
+- the persona source: `project` or `built-in`
+- the resolved runtime role: `orchestrator`, `worker`, `reviewer`, or `explorer`
 - the persona `title` only when a human-facing display label is useful
 - the owned scope
 - the reason it was selected from the working brief
+- the baseline required-field fit and the fallback or project-priority rationale
 - the workflow bindings for its current stage
 - the `agents/openai.yaml` role binding used for prompt assembly
 - the role prompt asset used for launch assembly:
@@ -245,6 +255,30 @@ For every chosen persona, write:
   - `agents/explorer-prompt.md`
 
 Keep reviewers and implementers separate.
+
+Default review-lane persona mapping:
+
+- `spec-review` -> `spec-reviewer`
+- `code-quality-review` -> `code-quality-reviewer`
+- `scope-review` -> `product-scope-reviewer`
+- `editorial-review` -> `editorial-reviewer`
+- `other` -> no default; require explicit rationale for why no durable lane type fits and which reviewer family is qualified
+
+Cross-cutting reviewer personas do not replace durable lane reviewers by default. Add them as a second review lane when the concern is independently material, or use them for `other` only with explicit rationale that no durable lane type fits:
+
+- `secure-software-engineer` for security, auth, secrets, abuse, or release trust boundaries
+- `accessibility-ux-reviewer` for accessible interaction, UX clarity, visual affordance, or workflow friction
+- `documentation-clarity-reviewer` for source-of-truth clarity, procedural docs, maintainer guidance, onboarding, or reader actionability
+
+Default worker specialist mapping:
+
+- backend services, APIs, or integration boundaries -> `senior-backend-engineer`
+- Java-specific implementation -> `java-pro-engineer`
+- frontend/product UI -> `frontend-product-engineer`
+- tests, fixtures, or regression harnesses -> `test-quality-engineer`
+- CI, release, deployment, or infrastructure -> `devops-release-engineer`
+- data, analytics, or ML workflows -> `data-ml-engineer`
+- docs, guides, or maintainer instructions -> `technical-writer`
 
 If a task spans multiple categories, choose the top-level orchestrator by the primary artifact being produced and the highest-risk decision area. Keep cross-category concerns as specialist personas instead of switching orchestrators mid-run.
 

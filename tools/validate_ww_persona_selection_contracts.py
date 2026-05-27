@@ -15,6 +15,12 @@ TARGETS = {
     "skill": REPO_ROOT / "plugins/workwork/skills/ww-subagent-orchestrator/SKILL.md",
     "registry": REPO_ROOT
     / "plugins/workwork/skills/ww-subagent-orchestrator/references/persona-registry.md",
+    "working_brief_template": REPO_ROOT
+    / "plugins/workwork/skills/ww-subagent-orchestrator/references/working-brief-template.md",
+    "dispatch_plan_template": REPO_ROOT
+    / "plugins/workwork/skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md",
+    "packet_contract": REPO_ROOT
+    / "plugins/workwork/skills/ww-subagent-orchestrator/references/subagent-packet-contract.md",
 }
 
 
@@ -193,6 +199,10 @@ def has_fragment(items: List[str], fragment: str) -> bool:
     return any(fragment_norm in normalize(item) for item in items)
 
 
+def file_contains(path: Path, fragment: str) -> bool:
+    return normalize(fragment) in normalize(path.read_text(encoding="utf-8"))
+
+
 def section_items(doc: Document, heading: str) -> List[str]:
     for key, items in doc.headings.items():
         if key == heading or key.endswith(f" / {heading}"):
@@ -221,6 +231,9 @@ def build_results(documents: Dict[str, Document]) -> List[Result]:
 
     skill = documents["skill"]
     registry = documents["registry"]
+    working_brief_template = documents["working_brief_template"]
+    dispatch_plan_template = documents["dispatch_plan_template"]
+    packet_contract = documents["packet_contract"]
 
     registry_selection = section_items(registry, "Selection Rules")
     registry_guidance_order = label_items(
@@ -240,11 +253,66 @@ def build_results(documents: Dict[str, Document]) -> List[Result]:
     )
 
     skill_persona = paragraph_items(skill, "Persona Planning")
+    skill_worker_enforcement = label_items(
+        skill,
+        "Persona Planning",
+        "For this first worker-enforcement layer",
+    )
     skill_runtime_guidance = label_items(
         skill,
         "Persona Planning",
         "Runtime selection guidance",
     )
+    skill_default_lane_mapping = label_items(
+        skill,
+        "Persona Planning",
+        "Default review-lane persona mapping",
+    )
+    skill_worker_mapping = label_items(
+        skill,
+        "Persona Planning",
+        "Default worker specialist mapping",
+    )
+    working_brief_persona_guidance = section_items(
+        working_brief_template,
+        "Persona And Workflow Guidance",
+    )
+    working_brief_candidate_sources = label_items(
+        working_brief_template,
+        "Persona And Workflow Guidance",
+        "`candidate_persona_sources` should record",
+    )
+    working_brief_recommended_personas = label_items(
+        working_brief_template,
+        "Persona And Workflow Guidance",
+        "Each `recommended_personas` entry should record",
+    )
+    working_brief_persona_rules = label_items(
+        working_brief_template,
+        "Persona And Workflow Guidance",
+        "Persona recommendation rules",
+    )
+    working_brief_rules = section_items(working_brief_template, "Rules")
+    dispatch_planned_section = section_items(
+        dispatch_plan_template,
+        "Planned Sections / Section: {{section_name}}",
+    )
+    dispatch_review_record = section_items(
+        dispatch_plan_template,
+        "Section Review Record / Section: {{section_name}}",
+    )
+    packet_required_fields = section_items(packet_contract, "Required Fields")
+    packet_persona_source = label_items(
+        packet_contract,
+        "Required Fields",
+        "`persona_source` contract",
+    )
+    packet_persona_binding = label_items(
+        packet_contract,
+        "Required Fields",
+        "`persona_binding` contract",
+    )
+    packet_rules = section_items(packet_contract, "Packet Rules")
 
     checks = [
         (
@@ -406,6 +474,246 @@ def build_results(documents: Dict[str, Document]) -> List[Result]:
                 "if enrichment meaningfully affected the choice, say so in the persona rationale after the required-field justification",
             ),
             "Missing SKILL rationale requirement for enrichment-influenced persona selection.",
+        ),
+        (
+            "WWPS014",
+            skill.path,
+            "Persona Planning",
+            all(
+                has_fragment(skill_runtime_guidance, fragment)
+                for fragment in [
+                    "determine the runtime role first: `orchestrator`, `worker`, `reviewer`, or `explorer`",
+                    "load project candidates first, then built-in candidates, while preserving the source for every viable candidate",
+                    "apply hard role gates before ranking: worker-capability gate for worker packets, reviewer-only gate for reviewer packets, orchestrator gate for round leadership, and read-only gate for explorer packets",
+                ]
+            ),
+            "Missing runtime-role/source/gate ordering in SKILL persona planning guidance.",
+        ),
+        (
+            "WWPS015",
+            skill.path,
+            "Persona Planning",
+            all(
+                has_fragment(skill_worker_enforcement, fragment)
+                for fragment in [
+                    "persona selection adoption is a recording contract as well as a ranking contract",
+                    "reviewer-only personas must have `role_type: reviewer`, `review_only: true`, no worker write authority, and `agents/reviewer-prompt.md` as the launch prompt binding before they may staff a review lane",
+                    "project persona priority applies only after role gates and required-field fit",
+                    "built-in fallback must be explicit, not silent",
+                ]
+            ),
+            "Missing persona recording, reviewer gate, project priority, or built-in fallback contract in SKILL.md.",
+        ),
+        (
+            "WWPS016",
+            skill.path,
+            "Persona Planning",
+            all(
+                has_fragment(skill_default_lane_mapping, fragment)
+                for fragment in [
+                    "`spec-review` -> `spec-reviewer`",
+                    "`code-quality-review` -> `code-quality-reviewer`",
+                    "`scope-review` -> `product-scope-reviewer`",
+                    "`editorial-review` -> `editorial-reviewer`",
+                    "`other` -> no default",
+                ]
+            )
+            and file_contains(
+                skill.path,
+                "Cross-cutting reviewer personas do not replace durable lane reviewers by default.",
+            ),
+            "Missing durable review-lane mapping or cross-cutting reviewer guardrail in SKILL.md.",
+        ),
+        (
+            "WWPS017",
+            skill.path,
+            "Persona Planning",
+            all(
+                has_fragment(skill_worker_mapping, fragment)
+                for fragment in [
+                    "backend services, APIs, or integration boundaries -> `senior-backend-engineer`",
+                    "Java-specific implementation -> `java-pro-engineer`",
+                    "frontend/product UI -> `frontend-product-engineer`",
+                    "tests, fixtures, or regression harnesses -> `test-quality-engineer`",
+                    "CI, release, deployment, or infrastructure -> `devops-release-engineer`",
+                    "data, analytics, or ML workflows -> `data-ml-engineer`",
+                    "docs, guides, or maintainer instructions -> `technical-writer`",
+                ]
+            ),
+            "Missing worker specialist mapping in SKILL.md.",
+        ),
+        (
+            "WWPS018",
+            working_brief_template.path,
+            "Persona And Workflow Guidance",
+            all(
+                has_fragment(working_brief_persona_guidance, fragment)
+                for fragment in [
+                    "`candidate_persona_sources`",
+                    "`recommended_personas`",
+                    "`persona_selection_notes`",
+                ]
+            ),
+            "Missing persona source or recommendation fields in working brief template.",
+        ),
+        (
+            "WWPS019",
+            working_brief_template.path,
+            "Persona And Workflow Guidance",
+            all(
+                has_fragment(working_brief_candidate_sources, fragment)
+                for fragment in [
+                    "project registry checked: true|false",
+                    "built-in fallback checked: true|false",
+                    "project registry outcome",
+                    "built-in fallback outcome",
+                    "fallback rationale when a built-in persona is recommended",
+                ]
+            ),
+            "Missing candidate_persona_sources recording fields in working brief template.",
+        ),
+        (
+            "WWPS020",
+            working_brief_template.path,
+            "Persona And Workflow Guidance",
+            all(
+                has_fragment(working_brief_recommended_personas, fragment)
+                for fragment in [
+                    "persona id",
+                    "runtime role: `orchestrator` | `worker` | `reviewer` | `explorer`",
+                    "source: `project` | `built-in`",
+                    "baseline required-field fit rationale grounded in the working brief",
+                    "project-priority or built-in-fallback rationale",
+                    "role binding from `agents/openai.yaml`",
+                    "prompt asset used for launch assembly",
+                ]
+            ),
+            "Missing recommended persona source/runtime-role/rationale fields in working brief template.",
+        ),
+        (
+            "WWPS021",
+            working_brief_template.path,
+            "Persona And Workflow Guidance",
+            all(
+                has_fragment(working_brief_persona_rules, fragment)
+                for fragment in [
+                    "project registry priority applies only after the persona satisfies the relevant runtime-role gate and required-field fit",
+                    "use a project persona only when it is stronger than the built-in fallback or adds project-specific value the built-in cannot carry",
+                    "record built-in fallback explicitly when no project persona is eligible or stronger",
+                    "worker recommendations must pass the worker-capability gate before appearing as worker candidates",
+                    "reviewer recommendations must pass the reviewer-only gate before appearing as review-lane candidates",
+                ]
+            )
+            and has_fragment(
+                working_brief_rules,
+                "Persona selection must record source, runtime role, baseline fit, and project-priority or built-in-fallback rationale.",
+            ),
+            "Missing working brief persona recommendation gate and rationale rules.",
+        ),
+        (
+            "WWPS022",
+            dispatch_plan_template.path,
+            "Planned Sections",
+            all(
+                has_fragment(dispatch_planned_section, fragment)
+                for fragment in [
+                    "Planned Reviewer Persona Source: project | built-in",
+                    "Planned Reviewer Runtime Role: reviewer",
+                    "Planned Reviewer Selection Rationale: {{reviewer_persona_rationale}}",
+                    "Source: project | built-in",
+                    "Runtime Role: worker | explorer | none",
+                    "Selection Rationale:",
+                ]
+            ),
+            "Missing planned reviewer or specialist persona source/runtime-role/rationale fields in dispatch plan template.",
+        ),
+        (
+            "WWPS023",
+            dispatch_plan_template.path,
+            "Planned Sections",
+            all(
+                has_fragment(dispatch_planned_section, fragment)
+                for fragment in [
+                    "Reviewer Source: project | built-in",
+                    "Reviewer Runtime Role: reviewer",
+                    "Reviewer Selection Rationale:",
+                    "Review lane mapping rule: default built-in reviewer mapping is `spec-review` -> `spec-reviewer`",
+                    "Cross-cutting reviewer rule: add `secure-software-engineer`, `accessibility-ux-reviewer`, or `documentation-clarity-reviewer` as a second review lane",
+                    "Worker specialist mapping rule: select worker specialists by owned scope and dominant implementation risk",
+                    "Persona source rule: project personas win only after role-gate and required-field eligibility",
+                ]
+            ),
+            "Missing review lane source/runtime-role/rationale fields or mapping rules in dispatch plan template.",
+        ),
+        (
+            "WWPS024",
+            dispatch_plan_template.path,
+            "Section Review Record",
+            all(
+                has_fragment(dispatch_review_record, fragment)
+                for fragment in [
+                    "Reviewer Source:",
+                    "Reviewer Runtime Role: reviewer",
+                    "Reviewer Findings:",
+                    "Orchestrator Synthesis:",
+                ]
+            ),
+            "Missing reviewer source/runtime-role fields in dispatch plan review records.",
+        ),
+        (
+            "WWPS025",
+            packet_contract.path,
+            "Required Fields",
+            has_fragment(packet_required_fields, "`persona_source`"),
+            "Missing persona_source as a required packet field.",
+        ),
+        (
+            "WWPS026",
+            packet_contract.path,
+            "Required Fields",
+            all(
+                has_fragment(packet_persona_source, fragment)
+                for fragment in [
+                    "one of `project` or `built-in`",
+                    "`project` means the selected persona came from `docs/superpowers/personas/registry.yaml`",
+                    "`built-in` means the selected persona came from `references/built-in-personas.yaml`",
+                    "built-in fallback must have a rationale that says why no project persona was eligible or stronger",
+                    "project persona priority applies only after runtime-role gates and required-field fit",
+                ]
+            ),
+            "Missing persona_source source-of-truth and fallback contract in packet contract.",
+        ),
+        (
+            "WWPS027",
+            packet_contract.path,
+            "Required Fields",
+            all(
+                has_fragment(packet_persona_binding, fragment)
+                for fragment in [
+                    "`runtime_role` must be exactly one of `orchestrator`, `worker`, `reviewer`, or `explorer`",
+                    "`template_path` must point to the matching role prompt asset",
+                    "worker packets use `agents/worker-prompt.md`",
+                    "reviewer packets use `agents/reviewer-prompt.md`",
+                    "explorer packets use `agents/explorer-prompt.md`",
+                ]
+            ),
+            "Missing persona_binding runtime-role or prompt binding contract.",
+        ),
+        (
+            "WWPS028",
+            packet_contract.path,
+            "Packet Rules",
+            all(
+                has_fragment(packet_rules, fragment)
+                for fragment in [
+                    "`persona_source` must be copied from the approved dispatch plan selection, not inferred silently at launch",
+                    "`persona_rationale` must include baseline required-field fit plus project-priority or built-in-fallback rationale",
+                    "packets must not use optional enrichment fields to bypass runtime-role gates, worker-capability gates, reviewer-only gates, or stronger required-field fit",
+                    "worker packet creation must fail unless the selected persona has `review_only: false`, `role_type` not equal to `orchestrator`, and exactly two `implementation_principles`",
+                    "reviewer packet creation must fail unless the selected persona has `role_type: reviewer`, `review_only: true`, no worker write authority, and `agents/reviewer-prompt.md` as the prompt binding",
+                ]
+            ),
+            "Missing packet rules for persona source/rationale persistence or worker/reviewer gates.",
         ),
     ]
 

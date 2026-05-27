@@ -76,7 +76,15 @@ Path identity rules:
 - Required For Goal: true|false
 - Draft Author Role: {{draft_author}}
 - Planned Reviewer Persona: {{reviewer_persona}}
+- Planned Reviewer Persona Source: project | built-in
+- Planned Reviewer Runtime Role: reviewer
+- Planned Reviewer Selection Rationale: {{reviewer_persona_rationale}}
 - Planned Specialist Personas: {{specialist_personas}}
+- Planned Specialist Persona Sources:
+  - Persona ID:
+  - Source: project | built-in
+  - Runtime Role: worker | explorer | none
+  - Selection Rationale:
 - Planned Scope: {{owned_scope}}
 - Planned Scope rule: every writable file listed here must also appear under `exclusive_write_scope`; `shared_read_scope` is for read-only dependencies only and must not hide writable ownership.
 - Planning Rationale: {{persona_rationale}}
@@ -94,7 +102,14 @@ Path identity rules:
   - Lane ID:
   - Lane Type: spec-review | code-quality-review | scope-review | editorial-review | other
   - Reviewer Persona:
+  - Reviewer Source: project | built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale:
   - Required: true|false
+- Review lane mapping rule: default built-in reviewer mapping is `spec-review` -> `spec-reviewer`, `code-quality-review` -> `code-quality-reviewer`, `scope-review` -> `product-scope-reviewer`, `editorial-review` -> `editorial-reviewer`, and `other` -> explicit rationale only.
+- Cross-cutting reviewer rule: add `secure-software-engineer`, `accessibility-ux-reviewer`, or `documentation-clarity-reviewer` as a second review lane when that risk surface is independently material, or use one for `other` only with explicit rationale that no durable lane type fits.
+- Worker specialist mapping rule: select worker specialists by owned scope and dominant implementation risk, not top-level `task_routing` alone.
+- Persona source rule: project personas win only after role-gate and required-field eligibility, and only when stronger or project-specific; otherwise record built-in fallback rationale.
 - Scope Declarations:
   - `exclusive_write_scope`:
   - `shared_read_scope`:
@@ -120,6 +135,9 @@ Path identity rules:
 - Active Agent ID:
 - Active Attempt ID:
 - Active Worker Mode:
+- Active Persona IDs:
+- Active Persona Sources:
+- Active Persona Role Bindings:
 - Mode Change History:
   - Previous Mode:
   - New Mode:
@@ -179,6 +197,8 @@ Path identity rules:
   - Lane ID:
   - Lane Type:
   - Reviewer Persona:
+  - Reviewer Source:
+  - Reviewer Runtime Role: reviewer
   - Execution ID:
   - Packet ID:
   - Attempt ID:

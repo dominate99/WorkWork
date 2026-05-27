@@ -20,6 +20,7 @@ Create a packet only after:
 - `supersedes_attempt_id`
 - `accepts_late_results`
 - `subagent_persona`
+- `persona_source`
 - `persona_rationale`
 - `persona_binding`
 - `derived_from_working_brief`
@@ -66,6 +67,23 @@ Worker packets additionally require:
 - canonical persona `id` string from the project registry or built-in persona data file
 - do not persist display-only `title` text in `subagent_persona`
 
+`persona_source` contract:
+
+- one of `project` or `built-in`
+- `project` means the selected persona came from `docs/superpowers/personas/registry.yaml`
+- `built-in` means the selected persona came from `references/built-in-personas.yaml`
+- built-in fallback must have a rationale that says why no project persona was eligible or stronger
+- project persona priority applies only after runtime-role gates and required-field fit
+
+`persona_binding` contract:
+
+- `runtime_role` must be exactly one of `orchestrator`, `worker`, `reviewer`, or `explorer`
+- `template_path` must point to the matching role prompt asset
+- worker packets use `agents/worker-prompt.md`
+- reviewer packets use `agents/reviewer-prompt.md`
+- explorer packets use `agents/explorer-prompt.md`
+- role prompt behavior and persona records remain separate concepts
+
 ## Execution Binding
 
 `execution_binding` should define how the controller launches the subagent.
@@ -103,9 +121,14 @@ Defaults:
 - `supersedes_attempt_id` should point to the replaced attempt when a relaunch supersedes prior execution.
 - `accepts_late_results` must be `false` by default and enabled only when the controller explicitly wants to reconcile stale outputs.
 - `subagent_persona` must use the canonical persona `id`, not a free-text display label
+- `persona_source` must be copied from the approved dispatch plan selection, not inferred silently at launch
+- `persona_rationale` must include baseline required-field fit plus project-priority or built-in-fallback rationale
+- packets must not use optional enrichment fields to bypass runtime-role gates, worker-capability gates, reviewer-only gates, or stronger required-field fit
 - worker packets must carry `implementation_principles` as one canonical top-level field, not only inside `persona_binding`
 - worker-packet `implementation_principles` must be sourced directly from the selected persona definition
 - worker-packet `implementation_principles` must contain exactly two entries: the hard rule first and the soft principle second
+- worker packet creation must fail unless the selected persona has `review_only: false`, `role_type` not equal to `orchestrator`, and exactly two `implementation_principles`
+- reviewer packet creation must fail unless the selected persona has `role_type: reviewer`, `review_only: true`, no worker write authority, and `agents/reviewer-prompt.md` as the prompt binding
 - worker packets must inherit exactly one effective `work_mode` from the approved dispatch-plan section
 - `work_mode` is an execution snapshot field, not a recommendation field
 - `work_mode_rationale` must stay aligned with the section's recorded worker-mode rationale
@@ -186,7 +209,8 @@ attempt_id: attempt-core-runtime-review-01
 supersedes_attempt_id:
 accepts_late_results: false
 subagent_persona: secure-software-engineer
-persona_rationale: working brief identifies elevated runtime-policy integrity risk
+persona_source: built-in
+persona_rationale: working brief identifies elevated runtime-policy integrity risk; built-in fallback selected because no stronger project reviewer was eligible for this security-focused lane
 persona_binding:
   runtime_role: reviewer
   template_path: agents/reviewer-prompt.md
@@ -246,7 +270,8 @@ attempt_id: attempt-worker-persona-enforcement-01
 supersedes_attempt_id:
 accepts_late_results: false
 subagent_persona: senior-backend-engineer
-persona_rationale: working brief identifies backend-oriented implementation work with service-boundary and correctness risk
+persona_source: built-in
+persona_rationale: working brief identifies backend-oriented implementation work with service-boundary and correctness risk; built-in fallback selected because no stronger project worker persona was eligible for the backend scope
 persona_binding:
   runtime_role: worker
   template_path: agents/worker-prompt.md
