@@ -199,6 +199,7 @@ Path identity rules:
   - Reviewer Persona:
   - Reviewer Source:
   - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale:
   - Execution ID:
   - Packet ID:
   - Attempt ID:

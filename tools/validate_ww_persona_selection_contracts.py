@@ -654,11 +654,16 @@ def build_results(documents: Dict[str, Document]) -> List[Result]:
                 for fragment in [
                     "Reviewer Source:",
                     "Reviewer Runtime Role: reviewer",
+                    "Reviewer Selection Rationale:",
                     "Reviewer Findings:",
                     "Orchestrator Synthesis:",
                 ]
+            )
+            and file_contains(
+                skill.path,
+                "Durable review-lane records must snapshot the selected reviewer persona source, resolved `reviewer` runtime role, and reviewer selection rationale next to the reviewer identity.",
             ),
-            "Missing reviewer source/runtime-role fields in dispatch plan review records.",
+            "Missing durable reviewer source/runtime-role/rationale contract or fields in dispatch plan review records.",
         ),
         (
             "WWPS025",

@@ -254,6 +254,8 @@ For every chosen persona, write:
   - `agents/reviewer-prompt.md`
   - `agents/explorer-prompt.md`
 
+Durable review-lane records must snapshot the selected reviewer persona source, resolved `reviewer` runtime role, and reviewer selection rationale next to the reviewer identity. Do not rely on planned review-lane rationale as the only persisted explanation after review execution begins.
+
 Keep reviewers and implementers separate.
 
 Default review-lane persona mapping:

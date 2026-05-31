@@ -2,7 +2,7 @@
 
 - Status: active
 - Canonical Root: `docs/cases/persona-system-expansion/`
-- Current Round: `2026-05-26-workflow-runtime-persona-selection-validator-expansion`
+- Current Round: `2026-05-30-workflow-durable-review-lane-persona-rationale-cleanup`
 - Goal: expand and harden the WorkWork persona system through staged audit, taxonomy, persona coverage, and validator adoption rounds
 - Legacy Status: pre-cutover artifacts are archived under `docs/legacy/superpowers/`
 
@@ -21,6 +21,10 @@
 - `2026-05-26-workflow-runtime-persona-selection-adoption-implementation`
 
 - `2026-05-26-workflow-runtime-persona-selection-validator-expansion`
+
+- `2026-05-28-workflow-runtime-persona-selection-dogfood-audit`
+
+- `2026-05-30-workflow-durable-review-lane-persona-rationale-cleanup`
 
 ## Notes
 
