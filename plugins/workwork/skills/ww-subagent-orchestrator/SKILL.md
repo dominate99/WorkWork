@@ -318,6 +318,8 @@ Every packet must encode:
 Create reviewer packets only after the reviewed artifact snapshot is stable enough to generate `review_target_ref`.
 Worker prompts consume packet state; they must not re-derive `work_mode` from the working brief.
 
+Persisted packet artifacts under `docs/cases/**/packets/*.md` are repository-validation inputs. Packet source-dispatch and reviewer-target paths must stay repository-relative. Packet validation must cross-check role prompt bindings from `persona_binding.runtime_role`, cross-check worker `implementation_principles` directly against the selected persona definition, verify full-file reviewer target hash fallbacks against the referenced artifact, and preserve valid explicit-revision excerpt target identities. When an approved dispatch plan explicitly persists prompt-path or worker-principle launch snapshots, validate those snapshots as additional evidence. Generic dispatch plans do not need to duplicate those launch snapshots merely to satisfy packet validation.
+
 ## Dispatch Plan File
 
 Before real dispatch, write a tracked Markdown file using `assets/dispatch-plan-template.md` to:

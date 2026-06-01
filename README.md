@@ -132,12 +132,13 @@ python tools/validate_ww_repo.py
 python tools/validate_ww_repo.py --json
 python tools/validate_ww_worker_work_mode.py --json
 python tools/validate_ww_persona_selection_contracts.py --json
+python tools/validate_ww_persona_packets.py --json
 python tools/validate_ww_case_path_identity.py --json
 python tools/validate_ww_case_contracts.py --json
 python tools/validate_ww_round_lifecycle.py --json
 ```
 
-The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, persona runtime-selection recording contract checks, case-based path identity contract checks, case artifact contract checks, and round lifecycle contract checks. GitHub Actions uses the same repo-local entrypoint.
+The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, persona runtime-selection recording contract checks, runtime persona packet artifact checks, case-based path identity contract checks, case artifact contract checks, and round lifecycle contract checks. GitHub Actions uses the same repo-local entrypoint.
 
 Persona taxonomy changes:
 

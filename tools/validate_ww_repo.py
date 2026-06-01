@@ -90,6 +90,10 @@ def main() -> int:
             [python, "tools/validate_ww_persona_selection_contracts.py"],
         ),
         (
+            "Runtime persona packet artifact validation",
+            [python, "tools/validate_ww_persona_packets.py"],
+        ),
+        (
             "Case-based path identity contract validation",
             [python, "tools/validate_ww_case_path_identity.py"],
         ),
