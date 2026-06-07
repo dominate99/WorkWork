@@ -2,7 +2,7 @@
 
 - Status: active
 - Canonical Root: `docs/cases/persona-system-expansion/`
-- Current Round: `2026-06-01-workflow-runtime-persona-packet-validator-dogfood-audit`
+- Current Round: `2026-06-02-workflow-runtime-persona-packet-path-containment-fixture-hardening`
 - Goal: expand and harden the WorkWork persona system through staged audit, taxonomy, persona coverage, and validator adoption rounds
 - Legacy Status: pre-cutover artifacts are archived under `docs/legacy/superpowers/`
 
@@ -31,6 +31,8 @@
 - `2026-05-31-workflow-runtime-persona-packet-validator-expansion`
 
 - `2026-06-01-workflow-runtime-persona-packet-validator-dogfood-audit`
+
+- `2026-06-02-workflow-runtime-persona-packet-path-containment-fixture-hardening`
 
 ## Notes
 

@@ -330,6 +330,27 @@ class PersonaPacketValidatorTests(unittest.TestCase):
             results = validate_repository(root)
         self.assert_rule_fails(results, "WWPP002")
 
+    def test_rejects_dispatch_plan_path_that_traverses_outside_repository(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            root = workspace / "repo"
+            make_repo(root)
+            round_root = (
+                root / "docs/cases/example/rounds/2026-05-31-packet-validator-fixture"
+            )
+            outside_dispatch = workspace / "outside-dispatch-plan.md"
+            outside_dispatch.write_text(
+                (round_root / "dispatch-plan.md").read_text(encoding="utf-8"),
+                encoding="utf-8",
+            )
+            update_packet(
+                round_root / "packets/worker-packet.md",
+                "Worker Packet Fixture",
+                source_dispatch_plan="../outside-dispatch-plan.md",
+            )
+            results = validate_repository(root)
+        self.assert_rule_fails(results, "WWPP002")
+
     def test_rejects_absolute_reviewer_target_path(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -342,6 +363,26 @@ class PersonaPacketValidatorTests(unittest.TestCase):
             reviewer["review_target_ref"]["artifact_path"] = str(
                 (round_root / "packets/worker-packet.md").resolve()
             )
+            write_packet(reviewer_path, "Reviewer Packet Fixture", reviewer)
+            results = validate_repository(root)
+        self.assert_rule_fails(results, "WWPP007")
+
+    def test_rejects_reviewer_target_path_that_traverses_outside_repository(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            root = workspace / "repo"
+            make_repo(root)
+            round_root = (
+                root / "docs/cases/example/rounds/2026-05-31-packet-validator-fixture"
+            )
+            outside_target = workspace / "outside-worker-packet.md"
+            outside_target.write_text("outside worker packet\n", encoding="utf-8")
+            outside_hash = hashlib.sha256(outside_target.read_bytes()).hexdigest()
+            reviewer_path = round_root / "packets/reviewer-packet.md"
+            reviewer = read_packet(reviewer_path)
+            reviewer["review_target_ref"]["artifact_path"] = "../outside-worker-packet.md"
+            reviewer["review_target_ref"]["artifact_revision"] = f"sha256:{outside_hash}"
+            reviewer["review_target_ref"]["content_hash"] = f"sha256:{outside_hash}"
             write_packet(reviewer_path, "Reviewer Packet Fixture", reviewer)
             results = validate_repository(root)
         self.assert_rule_fails(results, "WWPP007")
