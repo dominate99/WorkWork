@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -10,6 +13,7 @@ from validate_ww_grill_me_contracts import validate_repository
 
 
 SKILL_ROOT = Path("plugins/workwork/skills/ww-subagent-orchestrator")
+VALIDATOR_PATH = Path(__file__).with_name("validate_ww_grill_me_contracts.py")
 VALID_PERSONA = {
     "id": "grill-me",
     "title": "Grill-Me Explorer",
@@ -75,11 +79,10 @@ def make_valid_repo(root: Path) -> None:
         SKILL_ROOT / "agents/explorer-prompt.md",
         """# Explorer Prompt
 
-Ordinary explorer behavior remains unchanged.
-
-## Grill-Me Protocol
+## Grill-Me Conditional Protocol
 
 Activate this protocol only when `subagent_persona` is `grill-me`.
+Otherwise ordinary explorer behavior remains unchanged.
 
 - investigate the codebase and current artifacts before asking
 - return exactly one unresolved question
@@ -178,6 +181,38 @@ class GrillMeContractValidatorTests(unittest.TestCase):
             path.write_text(content.replace(old, new, 1), encoding="utf-8")
             return validate_repository(root)
 
+    def run_append(self, relative_name: str, addition: str) -> list:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            path = root / SKILL_ROOT / relative_name
+            content = path.read_text(encoding="utf-8")
+            path.write_text(f"{content.rstrip()}\n\n{addition}\n", encoding="utf-8")
+            return validate_repository(root)
+
+    def run_cli(
+        self,
+        root: Path,
+        *,
+        as_json: bool = False,
+        cwd: Path,
+    ) -> subprocess.CompletedProcess[str]:
+        command = [
+            sys.executable,
+            str(VALIDATOR_PATH),
+            "--repo-root",
+            str(root),
+        ]
+        if as_json:
+            command.append("--json")
+        return subprocess.run(
+            command,
+            cwd=cwd,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+
     def test_accepts_complete_contract(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -223,10 +258,31 @@ class GrillMeContractValidatorTests(unittest.TestCase):
     def test_rejects_changed_ordinary_explorer_behavior(self) -> None:
         results = self.run_text_mutation(
             "agents/explorer-prompt.md",
-            "Ordinary explorer behavior remains unchanged",
-            "Ordinary explorer behavior uses the interview protocol",
+            "Otherwise ordinary explorer behavior remains unchanged",
+            "Otherwise ordinary explorer behavior uses the interview protocol",
         )
         self.assert_rule_fails(results, "WWGM003")
+
+    def test_rejects_protocol_phrase_found_only_outside_protocol_section(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            path = root / SKILL_ROOT / "agents/explorer-prompt.md"
+            content = path.read_text(encoding="utf-8")
+            content = content.replace(
+                "return exactly one unresolved question",
+                "return one unresolved decision",
+                1,
+            )
+            content += (
+                "\n## Appendix\n\n"
+                "The phrase `return exactly one unresolved question` is historical.\n"
+            )
+            path.write_text(content, encoding="utf-8")
+            results = validate_repository(root)
+        self.assert_rule_fails(results, "WWGM004")
 
     def test_rejects_multiple_questions_per_turn(self) -> None:
         results = self.run_text_mutation(
@@ -281,6 +337,27 @@ class GrillMeContractValidatorTests(unittest.TestCase):
             "agents/explorer-prompt.md",
             "shared-understanding summary",
             "completion note",
+        )
+        self.assert_rule_fails(results, "WWGM004")
+
+    def test_rejects_contradictory_multiple_questions_statement(self) -> None:
+        results = self.run_append(
+            "agents/explorer-prompt.md",
+            (
+                "## Contradictory Guidance\n\n"
+                "The explorer may return multiple unresolved questions in one turn."
+            ),
+        )
+        self.assert_rule_fails(results, "WWGM004")
+
+    def test_rejects_recommendation_as_approval_or_branch_closure(self) -> None:
+        results = self.run_append(
+            "agents/explorer-prompt.md",
+            (
+                "## Contradictory Guidance\n\n"
+                "A recommendation may count as approval and close the branch "
+                "without user confirmation."
+            ),
         )
         self.assert_rule_fails(results, "WWGM004")
 
@@ -340,6 +417,24 @@ class GrillMeContractValidatorTests(unittest.TestCase):
         )
         self.assert_rule_fails(results, "WWGM006")
 
+    def test_rejects_retained_contract_with_direct_explorer_user_channel(
+        self,
+    ) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "The explorer asks the user directly when a decision is unresolved.",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_retained_contract_with_incomplete_plan_auto_select(
+        self,
+    ) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "Auto-select `grill-me` when a plan appears incomplete.",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
     def test_rejects_missing_decision_log(self) -> None:
         results = self.run_text_mutation(
             "references/working-brief-template.md",
@@ -390,6 +485,26 @@ class GrillMeContractValidatorTests(unittest.TestCase):
         )
         self.assert_rule_fails(results, "WWGM007")
 
+    def test_rejects_decision_log_field_found_only_in_code_fence(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            path = (
+                root
+                / SKILL_ROOT
+                / "references/working-brief-template.md"
+            )
+            content = path.read_text(encoding="utf-8")
+            content = content.replace(
+                "| Decision ID | State | Question |",
+                "| Decision ID | State | Topic |",
+                1,
+            )
+            content += "\n```\nQuestion\n```\n"
+            path.write_text(content, encoding="utf-8")
+            results = validate_repository(root)
+        self.assert_rule_fails(results, "WWGM007")
+
     def test_rejects_registry_without_explicit_request(self) -> None:
         results = self.run_text_mutation(
             "references/persona-registry.md",
@@ -421,6 +536,125 @@ class GrillMeContractValidatorTests(unittest.TestCase):
             "context",
         )
         self.assert_rule_fails(results, "WWGM009")
+
+    def test_rejects_non_list_personas_shape(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            write_yaml(
+                root,
+                SKILL_ROOT / "references/built-in-personas.yaml",
+                {"personas": {"id": "grill-me"}},
+            )
+            results = validate_repository(root)
+        self.assert_rule_fails(results, "WWGM001")
+        failure = next(result for result in results if not result.passed)
+        self.assertIn("must be a list", failure.message)
+
+    def test_rejects_non_mapping_persona_entry(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            write_yaml(
+                root,
+                SKILL_ROOT / "references/built-in-personas.yaml",
+                {"personas": ["grill-me"]},
+            )
+            results = validate_repository(root)
+        self.assert_rule_fails(results, "WWGM001")
+        failure = next(result for result in results if not result.passed)
+        self.assertIn("entries must be mappings", failure.message)
+
+    def test_rejects_non_mapping_role_bindings(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            write_yaml(
+                root,
+                SKILL_ROOT / "agents/openai.yaml",
+                {"role_bindings": ["explorer"]},
+            )
+            results = validate_repository(root)
+        self.assert_rule_fails(results, "WWGM005")
+        failure = next(result for result in results if not result.passed)
+        self.assertIn("role_bindings", failure.message)
+
+    def test_rejects_non_mapping_explorer_binding(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            write_yaml(
+                root,
+                SKILL_ROOT / "agents/openai.yaml",
+                {"role_bindings": {"explorer": "agents/explorer-prompt.md"}},
+            )
+            results = validate_repository(root)
+        self.assert_rule_fails(results, "WWGM005")
+        failure = next(result for result in results if not result.passed)
+        self.assertIn("explorer", failure.message)
+
+    def test_cli_human_success_from_non_repo_cwd(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            root = workspace / "fixture"
+            cwd = workspace / "elsewhere"
+            cwd.mkdir()
+            make_valid_repo(root)
+            completed = self.run_cli(root, cwd=cwd)
+        self.assertEqual(0, completed.returncode, completed)
+        self.assertEqual("PASS: 9 rules checked\n", completed.stdout)
+        self.assertEqual("", completed.stderr)
+
+    def test_cli_human_failure_exit_and_output(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            root = workspace / "fixture"
+            cwd = workspace / "elsewhere"
+            cwd.mkdir()
+            make_valid_repo(root)
+            readme = root / "README.md"
+            readme.write_text("# WorkWork\n", encoding="utf-8")
+            completed = self.run_cli(root, cwd=cwd)
+        self.assertEqual(1, completed.returncode, completed)
+        self.assertIn("FAIL: 1 rule violations", completed.stdout)
+        self.assertIn("[WWGM009] README.md", completed.stdout)
+
+    def test_cli_json_success_schema(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            root = workspace / "fixture"
+            cwd = workspace / "elsewhere"
+            cwd.mkdir()
+            make_valid_repo(root)
+            completed = self.run_cli(root, as_json=True, cwd=cwd)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(0, completed.returncode, completed)
+        self.assertEqual(
+            {"ok", "rule_failures", "results"},
+            set(payload),
+        )
+        self.assertTrue(payload["ok"])
+        self.assertEqual(0, payload["rule_failures"])
+        self.assertEqual(9, len(payload["results"]))
+
+    def test_cli_json_failure_schema(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            root = workspace / "fixture"
+            cwd = workspace / "elsewhere"
+            cwd.mkdir()
+            make_valid_repo(root)
+            readme = root / "README.md"
+            readme.write_text("# WorkWork\n", encoding="utf-8")
+            completed = self.run_cli(root, as_json=True, cwd=cwd)
+        payload = json.loads(completed.stdout)
+        self.assertEqual(1, completed.returncode, completed)
+        self.assertFalse(payload["ok"])
+        self.assertEqual(1, payload["rule_failures"])
+        failure = next(
+            result for result in payload["results"] if not result["passed"]
+        )
+        self.assertEqual("WWGM009", failure["rule_id"])
 
 
 if __name__ == "__main__":

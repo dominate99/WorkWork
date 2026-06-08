@@ -49,6 +49,12 @@ def parse_args() -> argparse.Namespace:
         dest="as_json",
         help="Emit machine-readable JSON output.",
     )
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=REPO_ROOT,
+        help="Repository root to validate. Defaults to the current WorkWork checkout.",
+    )
     return parser.parse_args()
 
 
@@ -59,6 +65,112 @@ def normalized(text: str) -> str:
 def contains_all(text: str, fragments: list[str]) -> bool:
     value = normalized(text)
     return all(normalized(fragment) in value for fragment in fragments)
+
+
+def markdown_without_fences(text: str) -> str:
+    lines: list[str] = []
+    fence_marker = ""
+    for line in text.splitlines():
+        stripped = line.lstrip()
+        if fence_marker:
+            if stripped.startswith(fence_marker):
+                fence_marker = ""
+            continue
+        if stripped.startswith("```"):
+            fence_marker = "```"
+            continue
+        if stripped.startswith("~~~"):
+            fence_marker = "~~~"
+            continue
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def markdown_heading(line: str) -> tuple[int, str] | None:
+    stripped = line.lstrip()
+    hashes = len(stripped) - len(stripped.lstrip("#"))
+    if hashes == 0 or hashes > 6:
+        return None
+    if len(stripped) <= hashes or stripped[hashes] != " ":
+        return None
+    return hashes, stripped[hashes + 1 :].strip()
+
+
+def markdown_section(text: str, heading: str, level: int = 2) -> str | None:
+    content = markdown_without_fences(text)
+    collecting = False
+    lines: list[str] = []
+    for line in content.splitlines():
+        parsed = markdown_heading(line)
+        if parsed:
+            current_level, current_heading = parsed
+            if collecting and current_level <= level:
+                break
+            if current_level == level and current_heading == heading:
+                collecting = True
+                continue
+        if collecting:
+            lines.append(line)
+    if not collecting:
+        return None
+    return "\n".join(lines)
+
+
+def is_negated(statement: str) -> bool:
+    return any(
+        marker in statement
+        for marker in [
+            "must not",
+            "may not",
+            "cannot",
+            "can not",
+            "does not",
+            "do not",
+            "never",
+            "forbid",
+        ]
+    )
+
+
+def has_prompt_contradiction(text: str) -> bool:
+    for raw_line in markdown_without_fences(text).splitlines():
+        statement = normalized(raw_line)
+        if not statement or is_negated(statement):
+            continue
+        if (
+            "multiple unresolved questions" in statement
+            or "more than one unresolved question" in statement
+        ):
+            return True
+        if (
+            "recommendation" in statement
+            and (
+                "count as approval" in statement
+                or "close the branch without" in statement
+                or "close branch without" in statement
+            )
+        ):
+            return True
+    return False
+
+
+def has_skill_contradiction(text: str) -> bool:
+    for raw_line in markdown_without_fences(text).splitlines():
+        statement = normalized(raw_line)
+        if not statement or is_negated(statement):
+            continue
+        if "explorer asks the user directly" in statement:
+            return True
+        if (
+            (
+                "auto-select `grill-me`" in statement
+                or "automatically select `grill-me`" in statement
+                or "may select `grill-me`" in statement
+            )
+            and "plan appears incomplete" in statement
+        ):
+            return True
+    return False
 
 
 def result(
@@ -84,23 +196,58 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
         for name, path in paths.items()
         if name != "personas"
     }
-    payload = yaml.safe_load(paths["personas"].read_text(encoding="utf-8")) or {}
-    personas = payload.get("personas", [])
+    payload = yaml.safe_load(paths["personas"].read_text(encoding="utf-8"))
+    persona_shape_error = ""
+    personas: list[dict] = []
+    if not isinstance(payload, dict):
+        persona_shape_error = "Persona YAML root must be a mapping."
+    elif not isinstance(payload.get("personas"), list):
+        persona_shape_error = "`personas` must be a list."
+    elif not all(isinstance(persona, dict) for persona in payload["personas"]):
+        persona_shape_error = "All `personas` entries must be mappings."
+    else:
+        personas = payload["personas"]
     grill = next(
         (persona for persona in personas if persona.get("id") == "grill-me"),
         {},
     )
 
-    role_binding = yaml.safe_load(texts["openai"]) or {}
-    explorer_binding = role_binding.get("role_bindings", {}).get("explorer", {})
+    role_binding = yaml.safe_load(texts["openai"])
+    role_binding_shape_error = ""
+    explorer_binding: dict = {}
+    if not isinstance(role_binding, dict):
+        role_binding_shape_error = "OpenAI role binding YAML root must be a mapping."
+    else:
+        role_bindings = role_binding.get("role_bindings")
+        if not isinstance(role_bindings, dict):
+            role_binding_shape_error = "`role_bindings` must be a mapping."
+        elif not isinstance(role_bindings.get("explorer"), dict):
+            role_binding_shape_error = (
+                "`role_bindings.explorer` must be a mapping."
+            )
+        else:
+            explorer_binding = role_bindings["explorer"]
+
+    prompt_plain = markdown_without_fences(texts["prompt"])
+    skill_plain = markdown_without_fences(texts["skill"])
+    registry_plain = markdown_without_fences(texts["registry"])
+    readme_plain = markdown_without_fences(texts["readme"])
+    protocol_section = markdown_section(
+        texts["prompt"],
+        "Grill-Me Conditional Protocol",
+    )
+    decision_log_section = markdown_section(
+        texts["brief"],
+        "Grill-Me Decision Log",
+    )
 
     checks = [
         result(
             "WWGM001",
-            bool(grill),
+            not persona_shape_error and bool(grill),
             TARGETS["personas"],
             "Built-In Persona",
-            "Missing built-in persona `grill-me`.",
+            persona_shape_error or "Missing built-in persona `grill-me`.",
         ),
         result(
             "WWGM002",
@@ -119,8 +266,9 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
         ),
         result(
             "WWGM003",
-            contains_all(
-                texts["prompt"],
+            protocol_section is not None
+            and contains_all(
+                protocol_section,
                 [
                     "only when `subagent_persona` is `grill-me`",
                     "ordinary explorer behavior remains unchanged",
@@ -135,8 +283,9 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
         ),
         result(
             "WWGM004",
-            contains_all(
-                texts["prompt"],
+            protocol_section is not None
+            and contains_all(
+                protocol_section,
                 [
                     "investigate the codebase and current artifacts before asking",
                     "return exactly one unresolved question",
@@ -146,25 +295,28 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
                     "allow the user to stop",
                     "shared-understanding summary",
                 ],
-            ),
+            )
+            and not has_prompt_contradiction(prompt_plain),
             TARGETS["prompt"],
             "Interview Protocol",
             "The grill-me interview protocol is incomplete.",
         ),
         result(
             "WWGM005",
-            explorer_binding.get("runtime_role") == "explorer"
+            not role_binding_shape_error
+            and explorer_binding.get("runtime_role") == "explorer"
             and explorer_binding.get("template_path")
             == "agents/explorer-prompt.md"
-            and contains_all(texts["prompt"], ["do not write files"]),
+            and contains_all(prompt_plain, ["do not write files"]),
             TARGETS["openai"],
             "Read-Only Explorer Binding",
-            "`grill-me` must use the existing read-only explorer role binding.",
+            role_binding_shape_error
+            or "`grill-me` must use the existing read-only explorer role binding.",
         ),
         result(
             "WWGM006",
             contains_all(
-                texts["skill"],
+                skill_plain,
                 [
                     "only when the user explicitly requests",
                     "the orchestrator asks the user",
@@ -174,7 +326,8 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
                         "appears incomplete"
                     ),
                 ],
-            ),
+            )
+            and not has_skill_contradiction(skill_plain),
             TARGETS["skill"],
             "Orchestrator Protocol",
             (
@@ -184,10 +337,10 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
         ),
         result(
             "WWGM007",
-            contains_all(
-                texts["brief"],
+            decision_log_section is not None
+            and contains_all(
+                decision_log_section,
                 [
-                    "## Grill-Me Decision Log",
                     "Decision ID",
                     "State",
                     "Question",
@@ -206,7 +359,7 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
         result(
             "WWGM008",
             contains_all(
-                texts["registry"],
+                registry_plain,
                 [
                     "`grill-me`",
                     "explicitly requests",
@@ -221,7 +374,7 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
         result(
             "WWGM009",
             contains_all(
-                texts["readme"],
+                readme_plain,
                 [
                     "$ww grill me",
                     "one question at a time",
@@ -265,7 +418,7 @@ def main() -> int:
     args = parse_args()
 
     try:
-        results = validate_repository()
+        results = validate_repository(args.repo_root.resolve())
     except Exception as exc:  # pragma: no cover - operational safeguard
         if args.as_json:
             print(
