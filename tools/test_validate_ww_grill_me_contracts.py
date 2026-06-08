@@ -368,14 +368,21 @@ class GrillMeContractValidatorTests(unittest.TestCase):
     def test_rejects_contradictory_multiple_questions_statement(self) -> None:
         results = self.run_append(
             "agents/explorer-prompt.md",
-            "return multiple unresolved questions at once",
+            "- return multiple unresolved questions at once",
+        )
+        self.assert_rule_fails(results, "WWGM004")
+
+    def test_rejects_prefixed_multiple_questions_instruction(self) -> None:
+        results = self.run_append(
+            "agents/explorer-prompt.md",
+            "- always return multiple unresolved questions at once",
         )
         self.assert_rule_fails(results, "WWGM004")
 
     def test_rejects_recommendation_as_approval_or_branch_closure(self) -> None:
         results = self.run_append(
             "agents/explorer-prompt.md",
-            "the recommended answer counts as user approval",
+            "- the recommended answer counts as user approval",
         )
         self.assert_rule_fails(results, "WWGM004")
 
@@ -383,8 +390,8 @@ class GrillMeContractValidatorTests(unittest.TestCase):
         results = self.run_append(
             "agents/explorer-prompt.md",
             (
-                "Historical incident notes mention multiple unresolved questions "
-                "as a failure mode."
+                "Historical guidance once said return multiple unresolved "
+                "questions at once, which caused poor outcomes."
             ),
         )
         self.assertTrue(all(result.passed for result in results), results)
@@ -392,7 +399,7 @@ class GrillMeContractValidatorTests(unittest.TestCase):
     def test_accepts_protective_multiple_questions_negation(self) -> None:
         results = self.run_append(
             "agents/explorer-prompt.md",
-            "do not return multiple unresolved questions at once",
+            "- do not return multiple unresolved questions at once",
         )
         self.assertTrue(all(result.passed for result in results), results)
 
@@ -457,7 +464,7 @@ class GrillMeContractValidatorTests(unittest.TestCase):
     ) -> None:
         results = self.run_append(
             "SKILL.md",
-            "the explorer asks the user directly",
+            "- the explorer asks the user directly",
         )
         self.assert_rule_fails(results, "WWGM006")
 
@@ -466,14 +473,21 @@ class GrillMeContractValidatorTests(unittest.TestCase):
     ) -> None:
         results = self.run_append(
             "SKILL.md",
-            "select grill-me when a plan appears incomplete",
+            "- select grill-me when a plan appears incomplete",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_prefixed_incomplete_plan_selection(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "- you should select grill-me when a plan appears incomplete",
         )
         self.assert_rule_fails(results, "WWGM006")
 
     def test_accepts_protective_incomplete_plan_negation(self) -> None:
         results = self.run_append(
             "SKILL.md",
-            "must not select grill-me when a plan appears incomplete",
+            "- must not select grill-me when a plan appears incomplete",
         )
         self.assertTrue(all(result.passed for result in results), results)
 
