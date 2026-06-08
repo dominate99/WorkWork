@@ -109,8 +109,8 @@ It resolves to `runtime_role: explorer` and must not enter the worker candidate 
 
 The orchestrator owns this log.
 
-| Decision ID | User-Confirmed Answer | Recommendation Offered | Dependencies Resolved | Dependent Branches Unblocked |
-| --- | --- | --- | --- | --- |
+| Decision ID | State | Question | User-Confirmed Answer | Recommendation Offered | Rationale Or Repository Evidence | Dependencies Resolved | Dependent Branches Unblocked |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
 """,
     )
     write_text(
@@ -360,6 +360,32 @@ class GrillMeContractValidatorTests(unittest.TestCase):
         results = self.run_text_mutation(
             "references/working-brief-template.md",
             "Dependent Branches Unblocked",
+            "Notes",
+        )
+        self.assert_rule_fails(results, "WWGM007")
+
+    def test_rejects_decision_log_without_state(self) -> None:
+        results = self.run_text_mutation(
+            "references/working-brief-template.md",
+            "State",
+            "Status",
+        )
+        self.assert_rule_fails(results, "WWGM007")
+
+    def test_rejects_decision_log_without_question(self) -> None:
+        results = self.run_text_mutation(
+            "references/working-brief-template.md",
+            "Question",
+            "Topic",
+        )
+        self.assert_rule_fails(results, "WWGM007")
+
+    def test_rejects_decision_log_without_rationale_or_repository_evidence(
+        self,
+    ) -> None:
+        results = self.run_text_mutation(
+            "references/working-brief-template.md",
+            "Rationale Or Repository Evidence",
             "Notes",
         )
         self.assert_rule_fails(results, "WWGM007")

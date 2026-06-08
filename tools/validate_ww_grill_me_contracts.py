@@ -189,8 +189,11 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
                 [
                     "## Grill-Me Decision Log",
                     "Decision ID",
+                    "State",
+                    "Question",
                     "User-Confirmed Answer",
                     "Recommendation Offered",
+                    "Rationale Or Repository Evidence",
                     "Dependencies Resolved",
                     "Dependent Branches Unblocked",
                     "the orchestrator owns this log",
