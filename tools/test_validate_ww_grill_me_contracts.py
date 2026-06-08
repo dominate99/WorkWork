@@ -110,16 +110,38 @@ It resolves to `runtime_role: explorer` and must not enter the worker candidate 
 
 ## Grill-Me Decision Log
 
-The orchestrator owns this log.
+The orchestrator owns this log. The `grill-me` explorer remains read-only and
+returns evidence or one unresolved question at a time.
 
-| Decision ID | State | Question | User-Confirmed Answer | Recommendation Offered | Rationale Or Repository Evidence | Dependencies Resolved | Dependent Branches Unblocked |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+Use one entry per decision:
+
+- Decision ID:
+- State: open | confirmed | stopped
+- Question:
+- User-Confirmed Answer:
+- Recommendation Offered:
+- Rationale Or Repository Evidence:
+- Dependencies Resolved:
+- Dependent Branches Unblocked:
+
+Rules:
+
+- create or update an entry only when `grill-me` is explicitly active
+- keep `State: open` until the user explicitly confirms an answer
+- do not treat the recommended answer as confirmation
+- record repository-resolved facts as evidence without asking the user to decide them
+- use confirmed entries as inputs to later design specs and implementation plans
+- keep round approval and runtime lifecycle state in `dispatch-plan.md`
 """,
     )
     write_text(
         root,
         SKILL_ROOT / "SKILL.md",
         """# WorkWork
+
+## Persona Planning
+
+### Grill-Me Explorer
 
 Select `grill-me` only when the user explicitly requests the interview.
 For each turn, the orchestrator asks the user exactly one unresolved question.
@@ -263,7 +285,7 @@ class GrillMeContractValidatorTests(unittest.TestCase):
         )
         self.assert_rule_fails(results, "WWGM003")
 
-    def test_rejects_protocol_phrase_found_only_outside_protocol_section(
+    def test_rejects_protocol_phrase_found_only_in_four_backtick_fence(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -277,8 +299,11 @@ class GrillMeContractValidatorTests(unittest.TestCase):
                 1,
             )
             content += (
-                "\n## Appendix\n\n"
-                "The phrase `return exactly one unresolved question` is historical.\n"
+                "\n````text\n"
+                "```\n"
+                "return exactly one unresolved question\n"
+                "```\n"
+                "````\n"
             )
             path.write_text(content, encoding="utf-8")
             results = validate_repository(root)
@@ -343,23 +368,26 @@ class GrillMeContractValidatorTests(unittest.TestCase):
     def test_rejects_contradictory_multiple_questions_statement(self) -> None:
         results = self.run_append(
             "agents/explorer-prompt.md",
-            (
-                "## Contradictory Guidance\n\n"
-                "The explorer may return multiple unresolved questions in one turn."
-            ),
+            "return multiple unresolved questions at once",
         )
         self.assert_rule_fails(results, "WWGM004")
 
     def test_rejects_recommendation_as_approval_or_branch_closure(self) -> None:
         results = self.run_append(
             "agents/explorer-prompt.md",
-            (
-                "## Contradictory Guidance\n\n"
-                "A recommendation may count as approval and close the branch "
-                "without user confirmation."
-            ),
+            "the recommended answer counts as user approval",
         )
         self.assert_rule_fails(results, "WWGM004")
+
+    def test_accepts_historical_multiple_questions_prose(self) -> None:
+        results = self.run_append(
+            "agents/explorer-prompt.md",
+            (
+                "Historical incident notes mention multiple unresolved questions "
+                "as a failure mode."
+            ),
+        )
+        self.assertTrue(all(result.passed for result in results), results)
 
     def test_rejects_wrong_explorer_runtime_role(self) -> None:
         results = self.run_text_mutation(
@@ -422,7 +450,7 @@ class GrillMeContractValidatorTests(unittest.TestCase):
     ) -> None:
         results = self.run_append(
             "SKILL.md",
-            "The explorer asks the user directly when a decision is unresolved.",
+            "the explorer asks the user directly",
         )
         self.assert_rule_fails(results, "WWGM006")
 
@@ -431,7 +459,7 @@ class GrillMeContractValidatorTests(unittest.TestCase):
     ) -> None:
         results = self.run_append(
             "SKILL.md",
-            "Auto-select `grill-me` when a plan appears incomplete.",
+            "select grill-me when a plan appears incomplete",
         )
         self.assert_rule_fails(results, "WWGM006")
 
@@ -451,27 +479,35 @@ class GrillMeContractValidatorTests(unittest.TestCase):
         )
         self.assert_rule_fails(results, "WWGM007")
 
+    def test_rejects_missing_decision_log_confirmation_rule(self) -> None:
+        results = self.run_text_mutation(
+            "references/working-brief-template.md",
+            "- do not treat the recommended answer as confirmation",
+            "- recommendations provide context",
+        )
+        self.assert_rule_fails(results, "WWGM007")
+
     def test_rejects_incomplete_decision_log_fields(self) -> None:
         results = self.run_text_mutation(
             "references/working-brief-template.md",
-            "Dependent Branches Unblocked",
-            "Notes",
+            "- Dependent Branches Unblocked:",
+            "- Notes:",
         )
         self.assert_rule_fails(results, "WWGM007")
 
     def test_rejects_decision_log_without_state(self) -> None:
         results = self.run_text_mutation(
             "references/working-brief-template.md",
-            "State",
-            "Status",
+            "- State: open | confirmed | stopped",
+            "- Status: open | confirmed | stopped",
         )
         self.assert_rule_fails(results, "WWGM007")
 
     def test_rejects_decision_log_without_question(self) -> None:
         results = self.run_text_mutation(
             "references/working-brief-template.md",
-            "Question",
-            "Topic",
+            "- Question:",
+            "- Topic:",
         )
         self.assert_rule_fails(results, "WWGM007")
 
@@ -480,12 +516,12 @@ class GrillMeContractValidatorTests(unittest.TestCase):
     ) -> None:
         results = self.run_text_mutation(
             "references/working-brief-template.md",
-            "Rationale Or Repository Evidence",
-            "Notes",
+            "- Rationale Or Repository Evidence:",
+            "- Notes:",
         )
         self.assert_rule_fails(results, "WWGM007")
 
-    def test_rejects_decision_log_field_found_only_in_code_fence(self) -> None:
+    def test_rejects_decision_log_field_found_only_in_prose(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             make_valid_repo(root)
@@ -496,11 +532,29 @@ class GrillMeContractValidatorTests(unittest.TestCase):
             )
             content = path.read_text(encoding="utf-8")
             content = content.replace(
-                "| Decision ID | State | Question |",
-                "| Decision ID | State | Topic |",
+                "- Question:",
+                "- Topic:",
                 1,
             )
-            content += "\n```\nQuestion\n```\n"
+            content += "\nQuestion: this prose is not a decision-log field.\n"
+            path.write_text(content, encoding="utf-8")
+            results = validate_repository(root)
+        self.assert_rule_fails(results, "WWGM007")
+
+    def test_rejects_decision_log_field_found_only_in_four_backtick_fence(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            path = (
+                root
+                / SKILL_ROOT
+                / "references/working-brief-template.md"
+            )
+            content = path.read_text(encoding="utf-8")
+            content = content.replace("- Question:", "- Topic:", 1)
+            content += "\n````text\n```\n- Question:\n```\n````\n"
             path.write_text(content, encoding="utf-8")
             results = validate_repository(root)
         self.assert_rule_fails(results, "WWGM007")
