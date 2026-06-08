@@ -389,6 +389,13 @@ class GrillMeContractValidatorTests(unittest.TestCase):
         )
         self.assertTrue(all(result.passed for result in results), results)
 
+    def test_accepts_protective_multiple_questions_negation(self) -> None:
+        results = self.run_append(
+            "agents/explorer-prompt.md",
+            "do not return multiple unresolved questions at once",
+        )
+        self.assertTrue(all(result.passed for result in results), results)
+
     def test_rejects_wrong_explorer_runtime_role(self) -> None:
         results = self.run_text_mutation(
             "agents/openai.yaml",
@@ -462,6 +469,13 @@ class GrillMeContractValidatorTests(unittest.TestCase):
             "select grill-me when a plan appears incomplete",
         )
         self.assert_rule_fails(results, "WWGM006")
+
+    def test_accepts_protective_incomplete_plan_negation(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "must not select grill-me when a plan appears incomplete",
+        )
+        self.assertTrue(all(result.passed for result in results), results)
 
     def test_rejects_missing_decision_log(self) -> None:
         results = self.run_text_mutation(

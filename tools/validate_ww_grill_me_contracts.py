@@ -48,6 +48,7 @@ class DependencyError(RuntimeError):
 class MarkdownSection:
     text: str
     list_items: list[str]
+    statements: list[str]
 
 
 def parse_args() -> argparse.Namespace:
@@ -76,11 +77,6 @@ def normalized(text: str) -> str:
 def contains_all(text: str, fragments: list[str]) -> bool:
     value = normalized(text)
     return all(normalized(fragment) in value for fragment in fragments)
-
-
-def contains_none(text: str, fragments: list[str]) -> bool:
-    value = normalized(text)
-    return all(normalized(fragment) not in value for fragment in fragments)
 
 
 def load_markdown_parser():
@@ -135,6 +131,16 @@ def collect_list_items(tokens: list[Any]) -> list[str]:
     return items
 
 
+def collect_statements(tokens: list[Any]) -> list[str]:
+    statements: list[str] = []
+    for i, token in enumerate(tokens):
+        if token.type != "inline" or i == 0:
+            continue
+        if tokens[i - 1].type in {"paragraph_open", "list_item_open"}:
+            statements.append(inline_text(token))
+    return statements
+
+
 def extract_section(
     tokens: list[Any],
     heading: str,
@@ -167,6 +173,7 @@ def extract_section(
     return MarkdownSection(
         text=visible_markdown_text(section_tokens),
         list_items=collect_list_items(section_tokens),
+        statements=collect_statements(section_tokens),
     )
 
 
@@ -178,6 +185,18 @@ def has_required_list_labels(
     return all(
         any(item.startswith(normalized(label)) for item in normalized_items)
         for label in labels
+    )
+
+
+def has_forbidden_instruction(
+    statements: list[str],
+    forbidden_prefixes: list[str],
+) -> bool:
+    normalized_statements = [normalized(statement) for statement in statements]
+    return any(
+        statement.startswith(normalized(prefix))
+        for statement in normalized_statements
+        for prefix in forbidden_prefixes
     )
 
 
@@ -314,8 +333,8 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
                     "shared-understanding summary",
                 ],
             )
-            and contains_none(
-                protocol_section.text,
+            and not has_forbidden_instruction(
+                protocol_section.statements,
                 [
                     "return multiple unresolved questions at once",
                     "the recommended answer counts as user approval",
@@ -353,8 +372,8 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
                     ),
                 ],
             )
-            and contains_none(
-                skill_section.text,
+            and not has_forbidden_instruction(
+                skill_section.statements,
                 [
                     "the explorer asks the user directly",
                     "select grill-me when a plan appears incomplete",
