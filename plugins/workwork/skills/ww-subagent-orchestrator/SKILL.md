@@ -284,6 +284,29 @@ Default worker specialist mapping:
 
 If a task spans multiple categories, choose the top-level orchestrator by the primary artifact being produced and the highest-risk decision area. Keep cross-category concerns as specialist personas instead of switching orchestrators mid-run.
 
+### Grill-Me Explorer
+
+Select built-in persona `grill-me` only when the user explicitly requests to be grilled, interviewed relentlessly, or to stress-test a plan or design one decision at a time. The orchestrator must not select `grill-me` merely because a plan appears incomplete.
+
+Bind it to `runtime_role: explorer` and `agents/explorer-prompt.md`. It is read-only, has no `implementation_principles`, and is never eligible for worker or reviewer authority.
+
+During the interview:
+
+1. provide current-round artifacts and confirmed decision-log entries to the explorer
+2. let the explorer investigate repository-answerable facts first
+3. briefly report material repository evidence
+4. the orchestrator asks the user exactly one unresolved question
+5. include the explorer's recommended answer and concise reason
+6. require explicit user confirmation, an alternative, or a custom answer before closing the branch
+7. persist the result in the working brief `Grill-Me Decision Log`
+8. resume the explorer with the confirmed decision and newly unblocked branches
+
+The explorer never asks the user directly or persists decisions. It returns repository evidence or one unresolved question to the orchestrator.
+
+Allow the user to stop at any time. Otherwise finish only after material branches and dependencies are resolved and the user confirms the shared-understanding summary.
+
+Software plans may be interviewed, but active implementation, debugging, and code modification remain outside the `grill-me` explorer role.
+
 ## Artifact Resolution
 
 When sections or reviewers reference `artifact_id`, resolve it in this order:

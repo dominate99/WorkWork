@@ -128,6 +128,30 @@ Persona recommendation rules:
 - reviewer recommendations must pass the reviewer-only gate before appearing as review-lane candidates
 - do not recommend a persona from keywords alone; cite the working brief goal, constraints, risks, scope, or artifact type
 
+## Grill-Me Decision Log
+
+The orchestrator owns this log. The `grill-me` explorer remains read-only and returns evidence or one unresolved question at a time.
+
+Use one entry per decision:
+
+- Decision ID:
+- State: open | confirmed | stopped
+- Question:
+- User-Confirmed Answer:
+- Recommendation Offered:
+- Rationale Or Repository Evidence:
+- Dependencies Resolved:
+- Dependent Branches Unblocked:
+
+Rules:
+
+- create or update an entry only when `grill-me` is explicitly active
+- keep `State: open` until the user explicitly confirms an answer
+- do not treat the recommended answer as confirmation
+- record repository-resolved facts as evidence without asking the user to decide them
+- use confirmed entries as inputs to later design specs and implementation plans
+- keep round approval and runtime lifecycle state in `dispatch-plan.md`
+
 ## Runtime Preparation
 
 - `required_for_goal_by_section`
