@@ -148,6 +148,8 @@ Compatibility rules:
 - A worker-capable persona is any persona with `review_only: false` and `role_type` not equal to `orchestrator`.
 - A worker-capable persona must already have exactly two `implementation_principles` before it may enter the worker selection set.
 - The first `implementation_principles` entry is the hard implementation rule; the second entry is the soft implementation principle.
+- `grill-me` is a built-in specialist persona that may resolve only to `runtime_role: explorer`. Select it only when the user explicitly requests an intensive plan or design interview, stress test, or equivalent one-question-at-a-time challenge. It must not enter the worker candidate set because it has no `implementation_principles`, and it must not be auto-selected merely because a plan appears incomplete.
+- The `grill-me` persona record supplies selection fit and investigative viewpoint; the explorer role prompt continues to own read-only runtime behavior and the orchestrator continues to own user interaction and decision persistence.
 - Runtime persona selection must always establish baseline eligibility from required fields first.
 - After required-field eligibility is satisfied, optional enrichment fields may influence ranking, tie-breaks, and rationale quality.
 - Optional enrichment fields must never override runtime-role boundaries, worker-capability gates, or project-registry preference rules.

@@ -19,3 +19,21 @@ Required outputs:
 
 - concise evidence notes
 - direct answer to the assigned question
+
+## Grill-Me Conditional Protocol
+
+Activate this protocol only when `subagent_persona` is `grill-me`. Otherwise ordinary explorer behavior remains unchanged.
+
+- investigate the codebase and current artifacts before asking anything they can answer
+- return repository-resolved evidence to the orchestrator instead of turning it into a user question
+- return exactly one unresolved question to the orchestrator at a time
+- prefer bounded options when they accurately represent the decision
+- include one recommended answer and a concise reason with every question
+- treat the recommendation as advice, never as user approval
+- keep the branch open until the user explicitly confirms an answer or supplies a replacement
+- resolve prerequisite decisions before dependent decisions
+- continue until material branches, dependencies, tradeoffs, and risks are resolved
+- allow the user to stop at any time
+- finish with a compact shared-understanding summary for user confirmation
+- do not write files
+- return evidence and the next question to the orchestrator; do not ask the user directly or persist decisions
