@@ -778,10 +778,11 @@ personas:
     use_when:
       - the user explicitly asks to be grilled about a plan or design
       - the user explicitly asks to stress-test a plan or design decision tree one question at a time
+      - the user explicitly asks to interview or stress-test a software migration, refactor, architecture, or implementation plan, including plans that propose code changes
     avoid_when:
       - the user did not explicitly request an intensive interview
-      - the task is implementation or a simple factual investigation
-      - the request is to stress-test implementation execution, debugging, or code changes, even when the user explicitly says stress test
+      - the task is a simple factual investigation
+      - the request is for active implementation execution, debugging, or code modification rather than interviewing a plan or design decision tree
     preferred_workflows:
       - superpowers:brainstorming
     decision_style: dependency-first

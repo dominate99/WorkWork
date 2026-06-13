@@ -150,7 +150,8 @@ Compatibility rules:
 - Only a fully worker-capable persona may enter the worker selection set.
 - The first `implementation_principles` entry is the hard implementation rule; the second entry is the soft implementation principle.
 - `grill-me` is a built-in specialist persona that may resolve only to `runtime_role: explorer`. Select it only when the user explicitly requests an intensive plan or design interview, a stress test of a plan or design decision tree, or an equivalent one-question-at-a-time challenge about plan or design decisions.
-- Do not select `grill-me` for implementation execution, debugging, or code-change stress tests, even when the user explicitly says stress test. It must not enter the worker candidate set because it has no `implementation_principles`, and it must not be auto-selected merely because a plan appears incomplete.
+- A software migration, refactor, architecture, or implementation plan remains eligible, including when the plan proposes code changes, as long as the explicit request is to interview or stress-test its plan or design decision tree.
+- Do not select `grill-me` to perform active implementation execution, debugging, or code modification itself. It must not enter the worker candidate set because it has no `implementation_principles`, and it must not be auto-selected merely because a plan appears incomplete.
 - The `grill-me` persona record supplies selection fit and investigative viewpoint; the explorer role prompt continues to own read-only runtime behavior and the orchestrator continues to own user interaction and decision persistence.
 - Runtime persona selection must always establish baseline eligibility from required fields first.
 - After required-field eligibility is satisfied, optional enrichment fields may influence ranking, tie-breaks, and rationale quality.
