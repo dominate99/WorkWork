@@ -379,6 +379,16 @@ class GrillMeContractValidatorTests(unittest.TestCase):
         )
         self.assert_rule_fails(results, "WWGM004")
 
+    def test_rejects_unrelated_negation_before_multiple_questions(self) -> None:
+        results = self.run_append(
+            "agents/explorer-prompt.md",
+            (
+                "- do not hesitate; always return multiple unresolved "
+                "questions at once"
+            ),
+        )
+        self.assert_rule_fails(results, "WWGM004")
+
     def test_rejects_recommendation_as_approval_or_branch_closure(self) -> None:
         results = self.run_append(
             "agents/explorer-prompt.md",

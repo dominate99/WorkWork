@@ -195,8 +195,11 @@ def has_forbidden_instruction(
             phrase_index = normalized_item.find(normalized(phrase))
             if phrase_index < 0:
                 continue
-            prefix = normalized_item[:phrase_index]
-            if not any(negation in prefix for negation in protective_negations):
+            prefix = normalized_item[:phrase_index].rstrip()
+            if not any(
+                prefix.endswith(negation)
+                for negation in protective_negations
+            ):
                 return True
     return False
 
