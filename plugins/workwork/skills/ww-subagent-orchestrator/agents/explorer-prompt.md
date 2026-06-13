@@ -29,6 +29,8 @@ Activate this protocol only when `subagent_persona` is `grill-me`. Otherwise ord
 - return exactly one unresolved question to the orchestrator at a time
 - prefer bounded options when they accurately represent the decision
 - include one recommended answer and a concise reason with every question
+- for `grill-me` only, the required recommended answer is decision advice grounded in evidence and is an allowed addition to concrete observations
+- the recommended answer does not override read-only scope and is not itself a factual observation or user approval
 - treat the recommendation as advice, never as user approval
 - keep the branch open until the user explicitly confirms an answer or supplies a replacement
 - resolve prerequisite decisions before dependent decisions

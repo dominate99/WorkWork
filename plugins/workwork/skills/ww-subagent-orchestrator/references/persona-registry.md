@@ -24,7 +24,7 @@ Each persona should define:
 - `review_only`
 - `priority`
 
-Worker-capable personas additionally require:
+Personas with preliminary worker-candidate role eligibility become fully worker-capable only when they additionally define:
 
 - `implementation_principles`
 
@@ -145,10 +145,12 @@ Compatibility rules:
 - Language specialists are optional and only added when language-specific detail materially affects quality or risk.
 - If the project registry contains a strong match, prefer it over a generic built-in persona.
 - Worker-candidate filtering happens before final persona selection for implementation work.
-- A worker-capable persona is any persona with `review_only: false` and `role_type` not equal to `orchestrator`.
-- A worker-capable persona must already have exactly two `implementation_principles` before it may enter the worker selection set.
+- Preliminary worker-candidate role eligibility requires `review_only: false` and `role_type` not equal to `orchestrator`; these baseline role conditions alone do not make a persona worker-capable.
+- A persona is worker-capable only after it satisfies both preliminary worker-candidate role eligibility and the requirement to define exactly two `implementation_principles`.
+- Only a fully worker-capable persona may enter the worker selection set.
 - The first `implementation_principles` entry is the hard implementation rule; the second entry is the soft implementation principle.
-- `grill-me` is a built-in specialist persona that may resolve only to `runtime_role: explorer`. Select it only when the user explicitly requests an intensive plan or design interview, stress test, or equivalent one-question-at-a-time challenge. It must not enter the worker candidate set because it has no `implementation_principles`, and it must not be auto-selected merely because a plan appears incomplete.
+- `grill-me` is a built-in specialist persona that may resolve only to `runtime_role: explorer`. Select it only when the user explicitly requests an intensive plan or design interview, a stress test of a plan or design decision tree, or an equivalent one-question-at-a-time challenge about plan or design decisions.
+- Do not select `grill-me` for implementation execution, debugging, or code-change stress tests, even when the user explicitly says stress test. It must not enter the worker candidate set because it has no `implementation_principles`, and it must not be auto-selected merely because a plan appears incomplete.
 - The `grill-me` persona record supplies selection fit and investigative viewpoint; the explorer role prompt continues to own read-only runtime behavior and the orchestrator continues to own user interaction and decision persistence.
 - Runtime persona selection must always establish baseline eligibility from required fields first.
 - After required-field eligibility is satisfied, optional enrichment fields may influence ranking, tie-breaks, and rationale quality.
