@@ -86,6 +86,10 @@ def main() -> int:
             [python, "tools/validate_ww_role_contracts.py"],
         ),
         (
+            "Grill-me inline planning contract validation",
+            [python, "tools/validate_ww_grill_me_contracts.py"],
+        ),
+        (
             "Persona runtime-selection recording contract validation",
             [python, "tools/validate_ww_persona_selection_contracts.py"],
         ),

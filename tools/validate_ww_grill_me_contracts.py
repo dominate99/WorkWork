@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+import runpy
 from dataclasses import dataclass
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import yaml
@@ -18,6 +21,7 @@ TARGETS = {
     "brief": SKILL_ROOT / "references/working-brief-template.md",
     "skill": SKILL_ROOT / "SKILL.md",
     "openai": SKILL_ROOT / "agents/openai.yaml",
+    "scaffold": Path("tools/scaffold_ww_case_artifacts.py"),
     "readme": Path("README.md"),
 }
 
@@ -76,6 +80,39 @@ def normalized(text: str) -> str:
 def contains_all(text: str, fragments: list[str]) -> bool:
     value = normalized(text)
     return all(normalized(fragment) in value for fragment in fragments)
+
+
+def render_scaffold_working_brief(
+    scaffold_path: Path,
+    repo_root: Path,
+) -> tuple[str, str]:
+    try:
+        namespace = runpy.run_path(str(scaffold_path))
+        renderer = namespace["render_working_brief"]
+        cases_root = repo_root / "docs" / "cases"
+        case_root = cases_root / "fixture-case"
+        round_root = case_root / "rounds" / "2026-06-14-fixture-round"
+        context = SimpleNamespace(
+            case_slug="fixture-case",
+            round_slug="2026-06-14-fixture-round",
+            title="Fixture Round",
+            user_request="Validate grill-me scaffold output",
+            case_goal="Validate the rendered working brief",
+            task_routing="code/programming",
+            orchestrator="staff-engineer-orchestrator",
+            quality_mode="standard",
+            cases_root=cases_root,
+            case_root=case_root,
+            round_root=round_root,
+            topic_slug="fixture-round",
+            current_date="2026-06-14",
+        )
+        rendered = renderer(context)
+    except Exception as exc:
+        return "", f"Could not render scaffold working brief: {exc}"
+    if not isinstance(rendered, str):
+        return "", "Scaffold `render_working_brief` must return Markdown text."
+    return rendered, ""
 
 
 def load_markdown_parser():
@@ -204,6 +241,73 @@ def has_forbidden_instruction(
     return False
 
 
+def has_forbidden_directive(
+    section: MarkdownSection,
+    forbidden_phrases: list[str],
+) -> bool:
+    historical_prefixes = [
+        "historical guidance",
+        "previous guidance",
+        "older guidance",
+        "the former contract",
+        "former contract",
+        "the old contract",
+    ]
+    lines = [*section.text.splitlines(), *section.list_items]
+    for line in lines:
+        normalized_line = normalized(line)
+        if any(normalized_line.startswith(prefix) for prefix in historical_prefixes):
+            continue
+        for phrase in forbidden_phrases:
+            normalized_phrase = normalized(phrase)
+            for match in re.finditer(re.escape(normalized_phrase), normalized_line):
+                prefix = normalized_line[: match.start()].rstrip()
+                protective_pattern = (
+                    r"(?:do not|must not|never|does not|should not|cannot|can't)"
+                    r"(?:\s+\w+){0,2}\s*$"
+                )
+                if not re.search(protective_pattern, prefix):
+                    return True
+    return False
+
+
+def has_forbidden_pattern(
+    section: MarkdownSection,
+    patterns: list[str],
+) -> bool:
+    historical_prefixes = (
+        "historical guidance",
+        "previous guidance",
+        "older guidance",
+        "the former contract",
+        "former contract",
+        "the old contract",
+    )
+    protective_pattern = re.compile(
+        r"(?:do not|must not|never|does not|should not|cannot|can't)"
+        r"(?:\s+\w+){0,2}\s*$"
+    )
+    for line in [*section.text.splitlines(), *section.list_items]:
+        normalized_line = normalized(line)
+        if normalized_line.startswith(historical_prefixes):
+            continue
+        for pattern in patterns:
+            for match in re.finditer(pattern, normalized_line):
+                if not protective_pattern.search(
+                    normalized_line[: match.start()].rstrip()
+                ):
+                    return True
+    return False
+
+
+def has_stopped_decision_state(list_items: list[str]) -> bool:
+    return any(
+        normalized(item).startswith("state:")
+        and "stopped" in normalized(item)
+        for item in list_items
+    )
+
+
 def result(
     rule_id: str,
     passed: bool,
@@ -264,6 +368,11 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
         name: md_cls().parse(texts[name])
         for name in ["prompt", "skill", "registry", "brief", "readme"]
     }
+    scaffold_brief, scaffold_error = render_scaffold_working_brief(
+        paths["scaffold"],
+        repo_root,
+    )
+    scaffold_tokens = md_cls().parse(scaffold_brief)
     registry_plain = visible_markdown_text(markdown_tokens["registry"])
     readme_plain = visible_markdown_text(markdown_tokens["readme"])
     protocol_section = extract_section(
@@ -281,6 +390,50 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
         "Grill-Me Decision Log",
         2,
     )
+    scaffold_decision_log_section = extract_section(
+        scaffold_tokens,
+        "Grill-Me Decision Log",
+        2,
+    )
+    decision_log_labels = [
+        "Decision ID:",
+        "State:",
+        "Question:",
+        "User-Confirmed Answer:",
+        "Recommendation Offered:",
+        "Rationale Or Repository Evidence:",
+        "Dependencies Resolved:",
+        "Dependent Branches Unblocked:",
+    ]
+    decision_log_fragments = [
+        "the orchestrator owns this log",
+        "the grill-me explorer remains read-only and is applied inline during planning",
+        "State: open | confirmed | deferred",
+        "create or update an entry only when grill-me is explicitly active",
+        "keep State: open until the user explicitly confirms an answer",
+        "do not treat the recommended answer as confirmation",
+        (
+            "record repository-resolved facts as evidence without asking the "
+            "user to decide them"
+        ),
+        (
+            "use confirmed entries as inputs to later design specs and "
+            "implementation plans"
+        ),
+        "keep round approval and runtime lifecycle state in dispatch-plan.md",
+        (
+            "when the user stops grilling, mark the current unresolved branch "
+            "deferred"
+        ),
+    ]
+
+    def valid_decision_log(section: MarkdownSection | None) -> bool:
+        return (
+            section is not None
+            and has_required_list_labels(section.list_items, decision_log_labels)
+            and contains_all(section.text, decision_log_fragments)
+            and not has_stopped_decision_state(section.list_items)
+        )
 
     checks = [
         result(
@@ -311,8 +464,16 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
             and contains_all(
                 protocol_section.text,
                 [
-                    "only when subagent_persona is grill-me",
-                    "ordinary explorer behavior remains unchanged",
+                    "used inline by the orchestrator during planning",
+                    "do not assemble or launch an explorer packet",
+                    "ordinary explorer packet behavior remains unchanged",
+                ],
+            )
+            and not has_forbidden_directive(
+                protocol_section,
+                [
+                    "assemble and launch an explorer packet",
+                    "launch a grill-me explorer packet",
                 ],
             ),
             TARGETS["prompt"],
@@ -329,7 +490,7 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
                 protocol_section.text,
                 [
                     "investigate the codebase and current artifacts before asking",
-                    "return exactly one unresolved question",
+                    "ask exactly one unresolved question per user turn",
                     "include one recommended answer and a concise reason",
                     "keep the branch open until the user explicitly confirms",
                     "resolve prerequisite decisions before dependent decisions",
@@ -374,13 +535,79 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
                         "must not select grill-me merely because a plan "
                         "appears incomplete"
                     ),
+                    "run the interview inline during working-brief finalization",
+                    "before dispatch-plan approval",
+                    "do not create a subagent packet",
+                    "launch an explorer execution",
+                    "enter the runtime controller",
+                    "when no dispatch plan exists",
+                    "then finalize the brief and create the dispatch plan",
+                    "when a dispatch plan already exists",
+                    "freeze new dispatch",
+                    "set plan_state to revising",
+                    "update and increment brief_version",
+                    "regenerate the dispatch plan against that brief version",
+                    "require approval again",
+                    "before any worker or reviewer dispatch",
+                    "stop grilling",
+                    "current unresolved branch deferred",
+                    (
+                        "does not set dispatch plan, section, or runtime state "
+                        "to stopped"
+                    ),
+                    "canonical $ww Stop remains an approval or controller decision",
+                    "use canonical Stop separately",
+                    "stop the round",
+                    "lettered options (A, B, C) or descriptive answers",
+                    "numeric 1/2/3 approval aliases",
+                    (
+                        "only when the dispatch plan is awaiting an approval "
+                        "decision"
+                    ),
+                    "not during an active grill question",
                 ],
             )
-            and not has_forbidden_instruction(
-                skill_section.list_items,
+            and not has_forbidden_directive(
+                skill_section,
                 [
                     "the explorer asks the user directly",
                     "select grill-me when a plan appears incomplete",
+                    "create an explorer packet for the grill-me interview",
+                    "build a subagent packet for the grill-me interview",
+                    "launch an explorer execution for the interview",
+                    "execute the grill-me interview as an explorer job",
+                    "enter the runtime controller for the interview",
+                    "grill-me enters the runtime controller",
+                    "run the grill-me interview after dispatch approval",
+                    "use numeric 1/2/3 options during active grill questions",
+                    "stop grilling invokes canonical Stop",
+                    "stop grilling stops the round",
+                    "reuse the original dispatch plan without approval",
+                ],
+            )
+            and not has_forbidden_pattern(
+                skill_section,
+                [
+                    (
+                        r"\b(?:create|build|assemble|generate|launch)\b"
+                        r"(?:\s+\S+){0,5}\s+"
+                        r"\b(?:subagent|explorer)\s+packet\b"
+                    ),
+                    (
+                        r"\b(?:launch|execute|run)\b"
+                        r"(?:\s+\S+){0,6}\s+\bexplorer\s+"
+                        r"(?:execution|job)\b"
+                    ),
+                    (
+                        r"(?:\b(?:enter|use|invoke)\b.*"
+                        r"\bruntime controller\b|"
+                        r"\brun\s+(?:through|inside)\b.*"
+                        r"\bruntime controller\b)"
+                    ),
+                    (
+                        r"\b(?:run|start|conduct)\b.*\bgrill-me interview\b"
+                        r".*\bafter dispatch approval\b"
+                    ),
                 ],
             ),
             TARGETS["skill"],
@@ -392,51 +619,16 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
         ),
         result(
             "WWGM007",
-            decision_log_section is not None
-            and has_required_list_labels(
-                decision_log_section.list_items,
-                [
-                    "Decision ID:",
-                    "State:",
-                    "Question:",
-                    "User-Confirmed Answer:",
-                    "Recommendation Offered:",
-                    "Rationale Or Repository Evidence:",
-                    "Dependencies Resolved:",
-                    "Dependent Branches Unblocked:",
-                ],
-            )
-            and contains_all(
-                decision_log_section.text,
-                [
-                    "the orchestrator owns this log",
-                    "the grill-me explorer remains read-only",
-                    (
-                        "create or update an entry only when grill-me is "
-                        "explicitly active"
-                    ),
-                    (
-                        "keep State: open until the user explicitly confirms "
-                        "an answer"
-                    ),
-                    "do not treat the recommended answer as confirmation",
-                    (
-                        "record repository-resolved facts as evidence without "
-                        "asking the user to decide them"
-                    ),
-                    (
-                        "use confirmed entries as inputs to later design specs "
-                        "and implementation plans"
-                    ),
-                    (
-                        "keep round approval and runtime lifecycle state in "
-                        "dispatch-plan.md"
-                    ),
-                ],
-            ),
+            not scaffold_error
+            and valid_decision_log(decision_log_section)
+            and valid_decision_log(scaffold_decision_log_section),
             TARGETS["brief"],
             "Decision Persistence",
-            "Missing durable orchestrator-owned Grill-Me Decision Log.",
+            (
+                scaffold_error
+                or "Missing durable orchestrator-owned Grill-Me Decision Log "
+                "in the reference template or rendered scaffold output."
+            ),
         ),
         result(
             "WWGM008",
@@ -447,6 +639,7 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
                     "explicitly requests",
                     "runtime_role: explorer",
                     "must not enter the worker candidate set",
+                    "must not be selected for packet assembly",
                 ],
             ),
             TARGETS["registry"],

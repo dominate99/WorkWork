@@ -89,7 +89,10 @@ Use `$ww` when you want structured orchestration for:
 $ww Plan and review a refactor of our authentication middleware.
 $ww Break this feature request into implementation and review workstreams.
 $ww Coordinate backend, security, and QA review for this API change.
+$ww grill me on this migration plan until every material decision is resolved.
 ```
+
+The `$ww grill me` trigger explicitly selects this mode. WorkWork investigates repository facts first and then asks one question at a time during working-brief planning. Every question includes a recommended answer, but the decision remains open until the user confirms or replaces it. The interview is planning-time only and does not launch a subagent packet.
 
 ## Key Files
 
@@ -131,6 +134,8 @@ python -m pip install PyYAML markdown-it-py
 python tools/validate_ww_repo.py
 python tools/validate_ww_repo.py --json
 python tools/validate_ww_worker_work_mode.py --json
+python tools/validate_ww_grill_me_contracts.py --json
+python tools/test_validate_ww_grill_me_contracts.py
 python tools/validate_ww_persona_selection_contracts.py --json
 python tools/validate_ww_persona_packets.py --json
 python tools/validate_ww_case_path_identity.py --json
@@ -138,7 +143,7 @@ python tools/validate_ww_case_contracts.py --json
 python tools/validate_ww_round_lifecycle.py --json
 ```
 
-The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, persona runtime-selection recording contract checks, runtime persona packet artifact checks, case-based path identity contract checks, case artifact contract checks, and round lifecycle contract checks. GitHub Actions uses the same repo-local entrypoint.
+The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, grill-me inline planning contract checks, persona runtime-selection recording contract checks, runtime persona packet artifact checks, case-based path identity contract checks, case artifact contract checks, and round lifecycle contract checks. GitHub Actions uses the same repo-local entrypoint.
 
 Persona taxonomy changes:
 

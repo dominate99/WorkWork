@@ -292,18 +292,28 @@ Bind it to `runtime_role: explorer` and `agents/explorer-prompt.md`. It is read-
 
 During the interview:
 
-1. provide current-round artifacts and confirmed decision-log entries to the explorer
-2. let the explorer investigate repository-answerable facts first
+1. use the `grill-me` explorer viewpoint inline while finalizing the working brief
+2. investigate repository-answerable facts before asking the user
 3. briefly report material repository evidence
 4. the orchestrator asks the user exactly one unresolved question
-5. include the explorer's recommended answer and concise reason
+5. include one recommended answer and concise reason
 6. require explicit user confirmation, an alternative, or a custom answer before closing the branch
 7. persist the result in the working brief `Grill-Me Decision Log`
-8. resume the explorer with the confirmed decision and newly unblocked branches
+8. resolve prerequisite decisions before newly unblocked dependent branches
 
-The explorer never asks the user directly or persists decisions. It returns repository evidence or one unresolved question to the orchestrator.
+The explorer viewpoint never asks the user directly or persists decisions. The orchestrator owns the interaction and the decision log.
 
-Allow the user to stop at any time. Otherwise finish only after material branches and dependencies are resolved and the user confirms the shared-understanding summary.
+Run the interview inline during working-brief finalization before dispatch-plan approval. Do not create a subagent packet for the interview. Do not launch an explorer execution for the interview. Do not enter the runtime controller for the interview.
+
+When no dispatch plan exists, investigate repository-answerable facts first, persist each user-confirmed decision in the working brief, obtain confirmation of the shared-understanding summary, then finalize the brief and create the dispatch plan.
+
+When a dispatch plan already exists, freeze new dispatch, set `plan_state` to `revising`, run the interview as planning work, update and increment `brief_version`, regenerate the dispatch plan against that brief version, and require approval again before any worker or reviewer dispatch.
+
+Allow the user to stop grilling at any time. `stop grilling` or an equivalent request exits the interview and marks the current unresolved branch `deferred`; it does not set dispatch plan, section, or runtime state to `stopped`. Canonical `$ww` `Stop` remains an approval or controller decision with its existing lifecycle meaning. If the user wants to stop the round, use canonical `Stop` separately.
+
+During an active grill question, use lettered options (`A`, `B`, `C`) or descriptive answers. Numeric `1/2/3` approval aliases are interpreted only when the dispatch plan is awaiting an approval decision, not during an active grill question.
+
+Otherwise finish only after material branches and dependencies are resolved and the user confirms the shared-understanding summary.
 
 Software plans may be interviewed, but active implementation, debugging, and code modification remain outside the `grill-me` explorer role.
 

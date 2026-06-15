@@ -2,9 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add an explicitly triggered, read-only `grill-me` explorer persona that investigates the repository first, asks one recommended question at a time through the orchestrator, and persists confirmed decisions in the working brief.
+**Goal:** Add an explicitly triggered, read-only `grill-me` explorer persona/viewpoint that investigates the repository first, asks one recommended question at a time through the orchestrator during planning, and persists confirmed decisions in the working brief.
 
-**Architecture:** Keep the existing `explorer` runtime role and `agents/explorer-prompt.md` binding. Add `grill-me` as a non-worker-capable built-in specialist persona, activate a conditional protocol only for that persona, and keep the orchestrator responsible for user interaction and decision persistence. Protect the behavior with a focused validator registered in the repository suite.
+**Architecture:** Keep the existing `explorer` role vocabulary and `agents/explorer-prompt.md` as the source of the read-only viewpoint. Add `grill-me` as a non-worker-capable built-in specialist persona, but apply it inline during working-brief finalization instead of assembling a packet or entering runtime control. Keep the orchestrator responsible for user interaction and decision persistence. Protect the behavior with a focused validator registered in the repository suite.
+
+**Design revision:** The initial packet-resume design conflicted with WorkWork's packet closure, plan revision, and controller semantics. The approved implementation uses a planning-time inline interview. When a plan already exists, dispatch freezes, `plan_state` becomes `revising`, `brief_version` increments, the plan is regenerated, and approval is requested again.
 
 **Tech Stack:** Markdown contracts, YAML persona records, Python 3, PyYAML, `unittest`, existing WorkWork repository validators.
 
@@ -19,7 +21,7 @@
 - Modify `plugins/workwork/skills/ww-subagent-orchestrator/references/built-in-personas.yaml`
   - Add the portable `grill-me` persona record without worker capability.
 - Modify `plugins/workwork/skills/ww-subagent-orchestrator/agents/explorer-prompt.md`
-  - Add a persona-conditional interview protocol while preserving ordinary explorer behavior.
+  - Add an inline planning viewpoint while preserving ordinary explorer packet behavior.
 - Modify `plugins/workwork/skills/ww-subagent-orchestrator/references/persona-registry.md`
   - Define explorer eligibility and the explicit-trigger selection rule.
 - Modify `plugins/workwork/skills/ww-subagent-orchestrator/references/working-brief-template.md`
@@ -116,7 +118,7 @@ class GrillMeContractValidatorTests(unittest.TestCase):
     def test_rejects_multiple_questions_per_turn(self) -> None:
         results = self.run_text_mutation(
             "agents/explorer-prompt.md",
-            "return exactly one unresolved question",
+            "ask exactly one unresolved question per user turn",
             "return unresolved questions",
         )
         self.assert_rule_fails(results, "WWGM004")
@@ -284,8 +286,9 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
             contains_all(
                 texts["prompt"],
                 [
-                    "only when `subagent_persona` is `grill-me`",
-                    "ordinary explorer behavior remains unchanged",
+                    "used inline by the orchestrator during planning",
+                    "do not assemble or launch an explorer packet",
+                    "ordinary explorer packet behavior remains unchanged",
                 ],
             ),
             TARGETS["prompt"],
@@ -298,7 +301,7 @@ def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
                 texts["prompt"],
                 [
                     "investigate the codebase and current artifacts before asking",
-                    "return exactly one unresolved question",
+                    "ask exactly one unresolved question per user turn",
                     "include one recommended answer and a concise reason",
                     "keep the branch open until the user explicitly confirms",
                     "resolve prerequisite decisions before dependent decisions",
@@ -476,11 +479,11 @@ Append this section to `agents/explorer-prompt.md`:
 ```markdown
 ## Grill-Me Conditional Protocol
 
-Activate this section only when `subagent_persona` is `grill-me`. Otherwise ordinary explorer behavior remains unchanged.
+This section defines the read-only `grill-me` viewpoint used inline by the orchestrator during planning. Do not assemble or launch an explorer packet for the interview. Otherwise ordinary explorer packet behavior remains unchanged.
 
 - investigate the codebase and current artifacts before asking anything they can answer
-- return repository-resolved evidence to the orchestrator instead of turning it into a user question
-- return exactly one unresolved question to the orchestrator at a time
+- use repository-resolved evidence instead of turning it into a user question
+- ask exactly one unresolved question per user turn
 - prefer bounded options when they accurately represent the decision
 - include one recommended answer and a concise reason with every question
 - treat the recommendation as advice, never as user approval
@@ -490,7 +493,7 @@ Activate this section only when `subagent_persona` is `grill-me`. Otherwise ordi
 - allow the user to stop at any time
 - finish with a compact shared-understanding summary for user confirmation
 
-The explorer returns evidence and the next question to the orchestrator. It does not ask the user directly and does not persist decisions.
+The orchestrator applies the viewpoint directly. It owns user interaction and decision persistence.
 ```
 
 - [ ] **Step 3: Add registry selection guidance**
@@ -525,7 +528,7 @@ git add plugins/workwork/skills/ww-subagent-orchestrator/references/built-in-per
 git commit -m "Add grill-me explorer persona"
 ```
 
-### Task 3: Add Orchestrator Mediation And Decision Persistence
+### Task 3: Add Inline Planning Mediation And Decision Persistence
 
 **Files:**
 - Modify: `plugins/workwork/skills/ww-subagent-orchestrator/references/working-brief-template.md`
@@ -570,18 +573,20 @@ Add a `Grill-Me Explorer` subsection under `Persona Planning`:
 
 Select built-in persona `grill-me` only when the user explicitly requests to be grilled, interviewed relentlessly, or to stress-test a plan or design one decision at a time. The orchestrator must not select `grill-me` merely because a plan appears incomplete.
 
-Bind it to `runtime_role: explorer` and `agents/explorer-prompt.md`. It is read-only, has no `implementation_principles`, and is never eligible for worker or reviewer authority.
+Use the `runtime_role: explorer` viewpoint defined by `agents/explorer-prompt.md`. It is read-only, has no `implementation_principles`, and is never eligible for worker or reviewer authority.
 
 During the interview:
 
-1. provide current-round artifacts and confirmed decision-log entries to the explorer
-2. let the explorer investigate repository-answerable questions first
+1. apply the grill-me viewpoint inline while finalizing the working brief
+2. investigate repository-answerable questions first
 3. briefly report material repository evidence
 4. the orchestrator asks the user exactly one unresolved question
 5. include the explorer's recommended answer and concise reason
 6. require explicit user confirmation, another option, or a custom answer before closing the branch
 7. persist the result in the working brief `Grill-Me Decision Log`
-8. resume the explorer with the confirmed decision and newly unblocked branches
+8. advance to the next newly unblocked branch
+
+Do not create a packet, launch an explorer execution, or enter the runtime controller for the interview. If a dispatch plan already exists, freeze dispatch, set it to `revising`, increment the brief version, regenerate the plan, and require approval again.
 
 Allow the user to stop at any time. Otherwise finish only when material branches and dependencies are resolved and the user confirms the shared-understanding summary.
 ```
@@ -746,13 +751,15 @@ Expected:
 Confirm all of the following from the diff:
 
 - ordinary explorer instructions remain the default
-- the conditional protocol activates only for `subagent_persona: grill-me`
+- the inline protocol activates only for an explicit grill-me request
 - the persona has no `implementation_principles`
 - the explorer never writes artifacts or speaks directly to the user
 - the orchestrator asks one unresolved question per turn
 - every question includes a recommendation but requires explicit user confirmation
 - repository-answerable questions are investigated first
 - confirmed decisions persist in the working brief
+- the interview never assembles a packet or enters runtime control
+- an existing plan is revised, regenerated, and reapproved
 - dispatch-plan lifecycle ownership is unchanged
 - no standalone skill, new runtime role, new prompt binding, routing expansion, or project-registry change was introduced
 

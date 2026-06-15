@@ -14,6 +14,7 @@ from validate_ww_grill_me_contracts import validate_repository
 
 SKILL_ROOT = Path("plugins/workwork/skills/ww-subagent-orchestrator")
 VALIDATOR_PATH = Path(__file__).with_name("validate_ww_grill_me_contracts.py")
+SCAFFOLD_PATH = Path("tools/scaffold_ww_case_artifacts.py")
 VALID_PERSONA = {
     "id": "grill-me",
     "title": "Grill-Me Explorer",
@@ -81,11 +82,12 @@ def make_valid_repo(root: Path) -> None:
 
 ## Grill-Me Conditional Protocol
 
-Activate this protocol only when `subagent_persona` is `grill-me`.
-Otherwise ordinary explorer behavior remains unchanged.
+This protocol defines the read-only `grill-me` explorer viewpoint used inline by
+the orchestrator during planning. Do not assemble or launch an explorer packet
+for the interview. Otherwise ordinary explorer packet behavior remains unchanged.
 
 - investigate the codebase and current artifacts before asking
-- return exactly one unresolved question
+- ask exactly one unresolved question per user turn
 - include one recommended answer and a concise reason
 - keep the branch open until the user explicitly confirms
 - resolve prerequisite decisions before dependent decisions
@@ -100,7 +102,7 @@ Otherwise ordinary explorer behavior remains unchanged.
         """# Persona Registry
 
 `grill-me` is eligible when the user explicitly requests the interview.
-It resolves to `runtime_role: explorer` and must not enter the worker candidate set.
+It uses the `runtime_role: explorer` viewpoint inline during planning, must not enter the worker candidate set, and must not be selected for packet assembly.
 """,
     )
     write_text(
@@ -111,12 +113,12 @@ It resolves to `runtime_role: explorer` and must not enter the worker candidate 
 ## Grill-Me Decision Log
 
 The orchestrator owns this log. The `grill-me` explorer remains read-only and
-returns evidence or one unresolved question at a time.
+is applied inline during planning.
 
 Use one entry per decision:
 
 - Decision ID:
-- State: open | confirmed | stopped
+- State: open | confirmed | deferred
 - Question:
 - User-Confirmed Answer:
 - Recommendation Offered:
@@ -132,6 +134,7 @@ Rules:
 - record repository-resolved facts as evidence without asking the user to decide them
 - use confirmed entries as inputs to later design specs and implementation plans
 - keep round approval and runtime lifecycle state in `dispatch-plan.md`
+- when the user stops grilling, mark the current unresolved branch `deferred`
 """,
     )
     write_text(
@@ -146,7 +149,65 @@ Rules:
 Select `grill-me` only when the user explicitly requests the interview.
 For each turn, the orchestrator asks the user exactly one unresolved question.
 The orchestrator must not select `grill-me` merely because a plan appears incomplete.
+
+Run the interview inline during working-brief finalization before dispatch-plan
+approval. Do not create a subagent packet for the interview. Do not launch an
+explorer execution for the interview. Do not enter the runtime controller for
+the interview.
+
+When no dispatch plan exists, investigate repository-answerable facts first,
+persist confirmed decisions in the working brief, confirm shared understanding,
+then finalize the brief and create the dispatch plan.
+
+When a dispatch plan already exists, freeze new dispatch, set `plan_state` to
+`revising`, run the interview as planning work, update and increment
+`brief_version`, regenerate the dispatch plan against that brief version, and
+require approval again before any worker or reviewer dispatch.
+
+`stop grilling` marks the current unresolved branch `deferred`; it does not set
+dispatch plan, section, or runtime state to `stopped`. Canonical `$ww` `Stop`
+remains an approval or controller decision. Use canonical `Stop` separately
+when the user wants to stop the round.
+
+During an active grill question, use lettered options (`A`, `B`, `C`) or
+descriptive answers. Numeric `1/2/3` approval aliases apply only when the
+dispatch plan is awaiting an approval decision, not during an active grill
+question.
 """,
+    )
+    write_text(
+        root,
+        SCAFFOLD_PATH,
+        '''def render_working_brief(context):
+    return """# Working Brief
+
+## Grill-Me Decision Log
+
+The orchestrator owns this log. The `grill-me` explorer remains read-only and
+is applied inline during planning.
+
+Use one entry per decision:
+
+- Decision ID:
+- State: open | confirmed | deferred
+- Question:
+- User-Confirmed Answer:
+- Recommendation Offered:
+- Rationale Or Repository Evidence:
+- Dependencies Resolved:
+- Dependent Branches Unblocked:
+
+Rules:
+
+- create or update an entry only when `grill-me` is explicitly active
+- keep `State: open` until the user explicitly confirms an answer
+- do not treat the recommended answer as confirmation
+- record repository-resolved facts as evidence without asking the user to decide them
+- use confirmed entries as inputs to later design specs and implementation plans
+- keep round approval and runtime lifecycle state in `dispatch-plan.md`
+- when the user stops grilling, mark the current unresolved branch `deferred`
+"""
+''',
     )
     write_yaml(
         root,
@@ -212,6 +273,16 @@ class GrillMeContractValidatorTests(unittest.TestCase):
             path.write_text(f"{content.rstrip()}\n\n{addition}\n", encoding="utf-8")
             return validate_repository(root)
 
+    def run_scaffold_mutation(self, old: str, new: str) -> list:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            path = root / SCAFFOLD_PATH
+            content = path.read_text(encoding="utf-8")
+            self.assertEqual(1, content.count(old), old)
+            path.write_text(content.replace(old, new, 1), encoding="utf-8")
+            return validate_repository(root)
+
     def run_cli(
         self,
         root: Path,
@@ -272,16 +343,24 @@ class GrillMeContractValidatorTests(unittest.TestCase):
     def test_rejects_unconditional_protocol(self) -> None:
         results = self.run_text_mutation(
             "agents/explorer-prompt.md",
-            "only when `subagent_persona` is `grill-me`",
-            "for every explorer",
+            "used inline by\nthe orchestrator during planning",
+            "used by every explorer packet",
         )
         self.assert_rule_fails(results, "WWGM003")
 
     def test_rejects_changed_ordinary_explorer_behavior(self) -> None:
         results = self.run_text_mutation(
             "agents/explorer-prompt.md",
-            "Otherwise ordinary explorer behavior remains unchanged",
+            "Otherwise ordinary explorer packet behavior remains unchanged",
             "Otherwise ordinary explorer behavior uses the interview protocol",
+        )
+        self.assert_rule_fails(results, "WWGM003")
+
+    def test_rejects_grill_me_packet_launch(self) -> None:
+        results = self.run_text_mutation(
+            "agents/explorer-prompt.md",
+            "Do not assemble or launch an explorer packet",
+            "Assemble and launch an explorer packet",
         )
         self.assert_rule_fails(results, "WWGM003")
 
@@ -294,14 +373,14 @@ class GrillMeContractValidatorTests(unittest.TestCase):
             path = root / SKILL_ROOT / "agents/explorer-prompt.md"
             content = path.read_text(encoding="utf-8")
             content = content.replace(
-                "return exactly one unresolved question",
-                "return one unresolved decision",
+                "ask exactly one unresolved question per user turn",
+                "ask about one unresolved decision",
                 1,
             )
             content += (
                 "\n````text\n"
                 "```\n"
-                "return exactly one unresolved question\n"
+                "ask exactly one unresolved question per user turn\n"
                 "```\n"
                 "````\n"
             )
@@ -312,7 +391,7 @@ class GrillMeContractValidatorTests(unittest.TestCase):
     def test_rejects_multiple_questions_per_turn(self) -> None:
         results = self.run_text_mutation(
             "agents/explorer-prompt.md",
-            "return exactly one unresolved question",
+            "ask exactly one unresolved question per user turn",
             "return unresolved questions",
         )
         self.assert_rule_fails(results, "WWGM004")
@@ -501,6 +580,261 @@ class GrillMeContractValidatorTests(unittest.TestCase):
         )
         self.assertTrue(all(result.passed for result in results), results)
 
+    def test_rejects_interview_after_dispatch_approval(self) -> None:
+        results = self.run_text_mutation(
+            "SKILL.md",
+            "before dispatch-plan\napproval",
+            "after dispatch-plan approval",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_missing_inline_planning_rule(self) -> None:
+        results = self.run_text_mutation(
+            "SKILL.md",
+            "Run the interview inline during working-brief finalization",
+            "Launch an explorer execution during working-brief finalization",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_packet_assembly_for_interview(self) -> None:
+        results = self.run_text_mutation(
+            "SKILL.md",
+            "Do not create a subagent packet",
+            "Create a subagent packet",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_runtime_controller_entry(self) -> None:
+        results = self.run_text_mutation(
+            "SKILL.md",
+            "enter the runtime controller",
+            "remain outside the runtime controller",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_missing_pre_plan_flow(self) -> None:
+        results = self.run_text_mutation(
+            "SKILL.md",
+            "then finalize the brief and create the dispatch plan",
+            "then launch a worker packet",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_missing_existing_plan_freeze(self) -> None:
+        results = self.run_text_mutation(
+            "SKILL.md",
+            "freeze new dispatch",
+            "continue new dispatch",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_missing_revising_transition(self) -> None:
+        results = self.run_text_mutation(
+            "SKILL.md",
+            "set `plan_state` to\n`revising`",
+            "leave `plan_state` approved",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_missing_brief_version_increment(self) -> None:
+        results = self.run_text_mutation(
+            "SKILL.md",
+            "update and increment\n`brief_version`",
+            "keep the existing `brief_version`",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_missing_plan_regeneration_and_reapproval(self) -> None:
+        results = self.run_text_mutation(
+            "SKILL.md",
+            "regenerate the dispatch plan against that brief version, and\nrequire approval again",
+            "reuse the original dispatch plan without approval",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_stop_grilling_as_runtime_stop(self) -> None:
+        results = self.run_text_mutation(
+            "SKILL.md",
+            "`deferred`; it does not set",
+            "`stopped`; it also sets",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_missing_canonical_stop_separation(self) -> None:
+        results = self.run_text_mutation(
+            "SKILL.md",
+            "remains an approval or controller decision",
+            "Stopping the interview always stops the round",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_numeric_grill_question_options(self) -> None:
+        results = self.run_text_mutation(
+            "SKILL.md",
+            "Numeric `1/2/3` approval aliases apply only when the",
+            "use numeric `1/2/3` options for every grill question",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_retained_contract_with_packet_launch(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "- create an explorer packet for the grill-me interview",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_retained_contract_with_runtime_entry(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "- grill-me enters the runtime controller during the interview",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_retained_contract_with_post_approval_interview(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "- run the grill-me interview after dispatch approval",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_retained_contract_with_numeric_grill_options(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "- use numeric 1/2/3 options during active grill questions",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_retained_contract_with_stop_invoking_round_stop(
+        self,
+    ) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "- stop grilling invokes canonical Stop and stops the round",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_normative_paragraph_packet_launch(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "Create an explorer packet for the grill-me interview.",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_normative_paragraph_explorer_execution(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "Launch an explorer execution for the interview.",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_normative_paragraph_runtime_entry(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "Enter the runtime controller for the interview.",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_packet_assembly_synonym(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "Build a subagent packet for the grill-me interview.",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_explorer_execution_synonym(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "Execute the grill-me interview as an explorer job.",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_packet_synonym_with_indirect_interview_reference(
+        self,
+    ) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            (
+                "Build a subagent packet and run the grill-me interview "
+                "through it."
+            ),
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_modal_explorer_job_synonym(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "The interview must execute as an explorer job.",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_rejects_normative_paragraph_stale_plan_reuse(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "Reuse the original dispatch plan without approval.",
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_accepts_protective_inline_negations(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "\n".join(
+                [
+                    "- do not create an explorer packet for the grill-me interview",
+                    "- grill-me does not enter the runtime controller",
+                    "- do not run the grill-me interview after dispatch approval",
+                    (
+                        "- do not use numeric 1/2/3 options during active grill "
+                        "questions"
+                    ),
+                    (
+                        "- stop grilling does not invoke canonical Stop or stop "
+                        "the round"
+                    ),
+                    "- do not reuse the original dispatch plan without approval",
+                ]
+            ),
+        )
+        self.assertTrue(all(result.passed for result in results), results)
+
+    def test_accepts_historical_inline_contradiction_prose(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            (
+                "Historical guidance said to create an explorer packet for the "
+                "grill-me interview, which is no longer the protocol."
+            ),
+        )
+        self.assertTrue(all(result.passed for result in results), results)
+
+    def test_accepts_extended_protective_negation(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            "Do not ever create an explorer packet for the grill-me interview.",
+        )
+        self.assertTrue(all(result.passed for result in results), results)
+
+    def test_rejects_unprotected_directive_after_protective_directive(
+        self,
+    ) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            (
+                "Do not create a subagent packet for the interview. "
+                "Build a subagent packet and run the interview through it."
+            ),
+        )
+        self.assert_rule_fails(results, "WWGM006")
+
+    def test_accepts_former_contract_history(self) -> None:
+        results = self.run_append(
+            "SKILL.md",
+            (
+                "The former contract said to create an explorer packet for the "
+                "grill-me interview; that rule is obsolete."
+            ),
+        )
+        self.assertTrue(all(result.passed for result in results), results)
+
     def test_rejects_missing_decision_log(self) -> None:
         results = self.run_text_mutation(
             "references/working-brief-template.md",
@@ -536,8 +870,23 @@ class GrillMeContractValidatorTests(unittest.TestCase):
     def test_rejects_decision_log_without_state(self) -> None:
         results = self.run_text_mutation(
             "references/working-brief-template.md",
+            "- State: open | confirmed | deferred",
+            "- Status: open | confirmed | deferred",
+        )
+        self.assert_rule_fails(results, "WWGM007")
+
+    def test_rejects_old_stopped_decision_state(self) -> None:
+        results = self.run_text_mutation(
+            "references/working-brief-template.md",
+            "- State: open | confirmed | deferred",
             "- State: open | confirmed | stopped",
-            "- Status: open | confirmed | stopped",
+        )
+        self.assert_rule_fails(results, "WWGM007")
+
+    def test_rejects_duplicate_stopped_decision_state(self) -> None:
+        results = self.run_append(
+            "references/working-brief-template.md",
+            "- State: open | confirmed | stopped",
         )
         self.assert_rule_fails(results, "WWGM007")
 
@@ -593,6 +942,67 @@ class GrillMeContractValidatorTests(unittest.TestCase):
             content = path.read_text(encoding="utf-8")
             content = content.replace("- Question:", "- Topic:", 1)
             content += "\n````text\n```\n- Question:\n```\n````\n"
+            path.write_text(content, encoding="utf-8")
+            results = validate_repository(root)
+        self.assert_rule_fails(results, "WWGM007")
+
+    def test_rejects_scaffold_without_decision_log(self) -> None:
+        results = self.run_scaffold_mutation(
+            "## Grill-Me Decision Log",
+            "## Interview Notes",
+        )
+        self.assert_rule_fails(results, "WWGM007")
+
+    def test_rejects_scaffold_old_stopped_decision_state(self) -> None:
+        results = self.run_scaffold_mutation(
+            "- State: open | confirmed | deferred",
+            "- State: open | confirmed | stopped",
+        )
+        self.assert_rule_fails(results, "WWGM007")
+
+    def test_rejects_scaffold_duplicate_stopped_decision_state(self) -> None:
+        results = self.run_scaffold_mutation(
+            "- when the user stops grilling, mark the current unresolved branch `deferred`",
+            (
+                "- when the user stops grilling, mark the current unresolved "
+                "branch `deferred`\n"
+                "- State: open | confirmed | stopped"
+            ),
+        )
+        self.assert_rule_fails(results, "WWGM007")
+
+    def test_rejects_scaffold_without_orchestrator_ownership(self) -> None:
+        results = self.run_scaffold_mutation(
+            "The orchestrator owns this log",
+            "The explorer owns this log",
+        )
+        self.assert_rule_fails(results, "WWGM007")
+
+    def test_rejects_scaffold_without_confirmation_rule(self) -> None:
+        results = self.run_scaffold_mutation(
+            "- do not treat the recommended answer as confirmation",
+            "- recommendations provide context",
+        )
+        self.assert_rule_fails(results, "WWGM007")
+
+    def test_rejects_scaffold_contract_found_only_in_function_docstring(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            path = root / SCAFFOLD_PATH
+            content = path.read_text(encoding="utf-8")
+            content = content.replace(
+                '    return """# Working Brief',
+                '    """# Working Brief',
+                1,
+            )
+            content = content.replace(
+                '"""\n',
+                '"""\n    return "# Working Brief\\n\\n## Interview Notes\\n"\n',
+                1,
+            )
             path.write_text(content, encoding="utf-8")
             results = validate_repository(root)
         self.assert_rule_fails(results, "WWGM007")

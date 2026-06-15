@@ -301,6 +301,31 @@ def render_working_brief(context: RenderContext) -> str:
 - `dispatch_recommendation`:
   - TODO
 
+## Grill-Me Decision Log
+
+The orchestrator owns this log. The `grill-me` explorer remains read-only and is applied inline during planning.
+
+Use one entry per decision:
+
+- Decision ID:
+- State: open | confirmed | deferred
+- Question:
+- User-Confirmed Answer:
+- Recommendation Offered:
+- Rationale Or Repository Evidence:
+- Dependencies Resolved:
+- Dependent Branches Unblocked:
+
+Rules:
+
+- create or update an entry only when `grill-me` is explicitly active
+- keep `State: open` until the user explicitly confirms an answer
+- do not treat the recommended answer as confirmation
+- record repository-resolved facts as evidence without asking the user to decide them
+- use confirmed entries as inputs to later design specs and implementation plans
+- keep round approval and runtime lifecycle state in `dispatch-plan.md`
+- when the user stops grilling, mark the current unresolved branch `deferred`
+
 ## Runtime Preparation
 
 - `required_for_goal_by_section`:

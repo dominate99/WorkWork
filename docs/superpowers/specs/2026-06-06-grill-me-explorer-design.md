@@ -2,7 +2,7 @@
 
 ## Goal
 
-Add `grill-me` as a built-in WorkWork explorer persona for users who explicitly want a plan or design stress-tested through persistent, one-question-at-a-time interviewing.
+Add `grill-me` as a built-in WorkWork explorer persona and planning-time viewpoint for users who explicitly want a plan or design stress-tested through persistent, one-question-at-a-time interviewing.
 
 The persona must reduce unresolved design ambiguity without taking write authority, silently deciding for the user, or changing ordinary explorer behavior.
 
@@ -33,14 +33,14 @@ The absence of `implementation_principles` keeps the persona out of the worker c
 - `template_path: agents/explorer-prompt.md`
 - empty write scope
 
-The persona record describes its investigative viewpoint and selection fit. The explorer role prompt and packet contract continue to own read-only runtime behavior.
+The persona record describes its investigative viewpoint and selection fit. The explorer role prompt defines the read-only viewpoint, but the orchestrator applies it inline during working-brief finalization. A grill-me interview does not assemble a packet, launch an explorer execution, or enter the runtime controller.
 
 ## Conditional Interview Protocol
 
-The ordinary explorer prompt remains concise and evidence-oriented. It activates the following additional protocol only when `subagent_persona` is `grill-me`:
+The ordinary explorer prompt remains concise and evidence-oriented. Its grill-me section defines the additional planning-time viewpoint the orchestrator applies only after an explicit grill-me request:
 
 1. Inspect available code and artifacts before asking anything the repository can answer.
-2. Return one unresolved question at a time to the orchestrator.
+2. Ask one unresolved question at a time through the orchestrator.
 3. Prefer bounded options when they accurately represent the decision.
 4. Include one recommended answer and a concise reason with every question.
 5. Treat the recommendation as advice, never as user approval.
@@ -48,22 +48,22 @@ The ordinary explorer prompt remains concise and evidence-oriented. It activates
 7. Resolve prerequisite decisions before dependent decisions.
 8. Continue until material branches, dependencies, tradeoffs, and risks are resolved.
 9. Allow the user to stop at any time.
-10. End by returning a compact shared-understanding summary for user confirmation.
+10. End with a compact shared-understanding summary for user confirmation.
 
-When repository evidence answers a would-be question, the explorer returns the evidence and conclusion to the orchestrator instead of asking the user to confirm a discoverable fact.
+When repository evidence answers a would-be question, the orchestrator records or reports the evidence instead of asking the user to confirm a discoverable fact.
 
 ## Conversation Ownership
 
-The explorer does not converse with the user directly. The interaction loop is:
+The orchestrator owns the interaction directly during planning:
 
-1. The orchestrator launches or resumes the `grill-me` explorer with the current approved context.
-2. The explorer investigates and returns either repository-resolved evidence or the next unresolved question with its recommendation.
-3. The orchestrator briefly reports repository-resolved evidence when relevant.
-4. The orchestrator asks the user exactly one unresolved question.
+1. The orchestrator applies the `grill-me` viewpoint while constructing or revising the working brief.
+2. It investigates repository-answerable facts before asking the user.
+3. It briefly reports material repository evidence when relevant.
+4. It asks the user exactly one unresolved question with a recommendation and reason.
 5. The user confirms the recommendation, selects another option, supplies a custom answer, or stops.
-6. The orchestrator persists the decision and provides it to the next explorer turn.
+6. The orchestrator persists the decision and advances to the next unblocked branch.
 
-This preserves the existing explorer-to-orchestrator return path and keeps final decision authority with the user.
+If no dispatch plan exists, the interview finishes before the brief is finalized and the plan is created. If a dispatch plan already exists, new dispatch freezes, `plan_state` returns to `revising`, `brief_version` increments, the plan is regenerated against that version, and approval is required again.
 
 ## Artifact Coverage
 
@@ -116,7 +116,7 @@ Add minimal repository validation that checks:
 
 - the `grill-me` built-in persona exists with specialist, non-reviewer, non-worker-capable fields
 - the persona is bound to the existing read-only explorer runtime role
-- the conditional protocol preserves one-question-at-a-time behavior
+- the inline planning protocol preserves one-question-at-a-time behavior
 - each question requires a recommended answer
 - discoverable codebase facts are investigated instead of asked
 - user confirmation is required before closing a decision branch
@@ -129,6 +129,7 @@ Register the validator in `validate_ww_repo.py` and add focused negative fixture
 
 - no standalone `grill-me` skill
 - no direct explorer-to-user channel
+- no grill-me packet assembly, explorer execution, or runtime-controller entry
 - no automatic selection for merely incomplete plans
 - no changes to ordinary explorer behavior
 - no new runtime role
@@ -139,12 +140,13 @@ Register the validator in `validate_ww_repo.py` and add focused negative fixture
 
 ## Acceptance Criteria
 
-- An explicit `grill me` request can select the built-in persona for an explorer packet.
+- An explicit `grill me` request can select the built-in persona as an inline planning viewpoint.
 - Ordinary explorer packets retain their existing concise investigation behavior.
 - The orchestrator asks at most one unresolved grill question per user turn.
 - Every grill question includes a recommended answer and reason.
 - Repository-answerable questions are replaced by investigation and evidence.
 - A decision branch closes only after explicit user confirmation.
 - Confirmed decisions are durably recorded in the working brief.
+- An existing dispatch plan returns to `revising` and is regenerated and reapproved after the interview.
 - The interview ends only after material branches are resolved and the user confirms the shared-understanding summary, unless the user stops early.
 - Repository validation fails when any protected contract element is removed or weakened.

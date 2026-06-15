@@ -149,10 +149,10 @@ Compatibility rules:
 - A persona is worker-capable only after it satisfies both preliminary worker-candidate role eligibility and the requirement to define exactly two `implementation_principles`.
 - Only a fully worker-capable persona may enter the worker selection set.
 - The first `implementation_principles` entry is the hard implementation rule; the second entry is the soft implementation principle.
-- `grill-me` is a built-in specialist persona that may resolve only to `runtime_role: explorer`. Select it only when the user explicitly requests an intensive plan or design interview, a stress test of a plan or design decision tree, or an equivalent one-question-at-a-time challenge about plan or design decisions.
+- `grill-me` is a built-in specialist persona that uses the `runtime_role: explorer` viewpoint inline during planning. Select it only when the user explicitly requests an intensive plan or design interview, a stress test of a plan or design decision tree, or an equivalent one-question-at-a-time challenge about plan or design decisions.
 - A software migration, refactor, architecture, or implementation plan remains eligible, including when the plan proposes code changes, as long as the explicit request is to interview or stress-test its plan or design decision tree.
-- Do not select `grill-me` to perform active implementation execution, debugging, or code modification itself. It must not enter the worker candidate set because it has no `implementation_principles`, and it must not be auto-selected merely because a plan appears incomplete.
-- The `grill-me` persona record supplies selection fit and investigative viewpoint; the explorer role prompt continues to own read-only runtime behavior and the orchestrator continues to own user interaction and decision persistence.
+- Do not select `grill-me` to perform active implementation execution, debugging, or code modification itself. It must not enter the worker candidate set because it has no `implementation_principles`, must not be selected for packet assembly, and must not be auto-selected merely because a plan appears incomplete.
+- The `grill-me` persona record supplies selection fit and an investigative viewpoint. The explorer role prompt defines that read-only viewpoint, while the orchestrator applies it inline and owns user interaction and decision persistence.
 - Runtime persona selection must always establish baseline eligibility from required fields first.
 - After required-field eligibility is satisfied, optional enrichment fields may influence ranking, tie-breaks, and rationale quality.
 - Optional enrichment fields must never override runtime-role boundaries, worker-capability gates, or project-registry preference rules.

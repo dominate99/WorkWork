@@ -22,11 +22,11 @@ Required outputs:
 
 ## Grill-Me Conditional Protocol
 
-Activate this protocol only when `subagent_persona` is `grill-me`. Otherwise ordinary explorer behavior remains unchanged.
+This protocol defines the read-only `grill-me` explorer viewpoint used inline by the orchestrator during planning. Do not assemble or launch an explorer packet for the interview. Otherwise ordinary explorer packet behavior remains unchanged.
 
 - investigate the codebase and current artifacts before asking anything they can answer
-- return repository-resolved evidence to the orchestrator instead of turning it into a user question
-- return exactly one unresolved question to the orchestrator at a time
+- use repository-resolved evidence instead of turning it into a user question
+- ask exactly one unresolved question per user turn
 - prefer bounded options when they accurately represent the decision
 - include one recommended answer and a concise reason with every question
 - for `grill-me` only, the required recommended answer is decision advice grounded in evidence and is an allowed addition to concrete observations
@@ -38,4 +38,4 @@ Activate this protocol only when `subagent_persona` is `grill-me`. Otherwise ord
 - allow the user to stop at any time
 - finish with a compact shared-understanding summary for user confirmation
 - do not write files
-- return evidence and the next question to the orchestrator; do not ask the user directly or persist decisions
+- do not ask the user directly or persist decisions; the orchestrator owns both

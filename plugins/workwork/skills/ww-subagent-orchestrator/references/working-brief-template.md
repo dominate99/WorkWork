@@ -130,12 +130,12 @@ Persona recommendation rules:
 
 ## Grill-Me Decision Log
 
-The orchestrator owns this log. The `grill-me` explorer remains read-only and returns evidence or one unresolved question at a time.
+The orchestrator owns this log. The `grill-me` explorer remains read-only and is applied inline during planning.
 
 Use one entry per decision:
 
 - Decision ID:
-- State: open | confirmed | stopped
+- State: open | confirmed | deferred
 - Question:
 - User-Confirmed Answer:
 - Recommendation Offered:
@@ -151,6 +151,7 @@ Rules:
 - record repository-resolved facts as evidence without asking the user to decide them
 - use confirmed entries as inputs to later design specs and implementation plans
 - keep round approval and runtime lifecycle state in `dispatch-plan.md`
+- when the user stops grilling, mark the current unresolved branch `deferred`
 
 ## Runtime Preparation
 
