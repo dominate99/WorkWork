@@ -1,0 +1,820 @@
+# Dispatch Plan: Verifier And Lane Authority Design
+
+- Date: 2026-06-21
+- Schema Version: 2
+- Plan Revision: 1
+- Working Brief Version: 1
+- Case Slug: task-runtime
+- Round Slug: 2026-06-21-verifier-and-lane-authority-design
+- Case Root: `docs/cases/task-runtime/`
+- Round Root: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/`
+- Plan State: completed
+- Last Approved Revision: 1
+- Rollback Baseline Revision: 1
+- Task Routing: design/ads/product
+- Main Orchestrator: pm-orchestrator
+- Lifecycle Protocol: legacy
+
+## Strict Review Runtime State
+
+```yaml
+strict_review:
+  mode: standard
+  target: none
+  state: idle
+  cycle_count: 0
+```
+
+## Preconditions
+
+- Estimation Complete: true
+- Working Brief Status: ready
+
+> Do not launch any real subagent until the preconditions are satisfied and `Plan State: approved`.
+
+## Source Context
+
+- User Request: `$ww round：verifier and lane authority design。基于已完成的 lifecycle foundation，设计 verifier 权限、worker/reviewer/verifier 身份隔离、verification lane schema、evidence records、baseline/risk-triggered lane selection，以及 model capability profiles。只产出 design spec；不实现 bindings/personas，不改 validator，不实现 hooks、repair、scoring 或 runtime activation。`
+- Working Brief Reference: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/working-brief.md`
+- Approved Runtime Design: `docs/superpowers/specs/2026-06-19-workwork-task-runtime-design.md`
+- Lifecycle Foundation Reference: `plugins/workwork/skills/ww-subagent-orchestrator/references/task-runtime-lifecycle.md`
+- Artifact Registry Reference: `docs/superpowers/artifact-registry.yaml`
+
+## Dispatch Summary
+
+- Goal: design verifier authority, identity isolation, verification lanes and evidence, lane selection, and model capability profiles as the next dormant task-runtime layer
+- Relevant Context: lifecycle foundation now requires formal verify and re-verify phases but deliberately delegates verifier evidence, lane mappings, and model profiles to this round
+- Constraints:
+  - produce one design spec only
+  - preserve worker, reviewer, verifier, orchestrator, and human authority separation
+  - keep model profile separate from persona and runtime role
+  - define baseline and risk-triggered lane selection with durable rationale
+  - do not implement bindings, personas, prompts, packets, validators, routing, hooks, repair, scoring, quality gates, or runtime activation
+- Risks:
+  - self-verification or self-approval through identity reuse
+  - mutable or stale evidence accepted for phase progression
+  - verification and review records collapsing into one authority surface
+  - unsafe command execution hidden behind verifier authority
+  - silent model fallback below the declared capability floor
+  - design scope drifting into later implementation or guard/scoring rounds
+- Reviewer Rule: Every section returns to the orchestrator before human judgment.
+
+## Planned Sections
+
+### Section: Verifier And Lane Authority Design
+
+- Section ID: section-verifier-lane-authority-design
+- Section State: accepted
+- Runtime State: complete
+- Required For Goal: true
+- Draft Author Role: senior-backend-engineer
+- Planned Reviewer Persona: spec-reviewer and secure-software-engineer
+- Planned Reviewer Persona Source: built-in
+- Planned Reviewer Runtime Role: reviewer
+- Planned Reviewer Selection Rationale: contract completeness and authority-isolation safety are independently material, and no eligible project reviewer covers either portable WorkWork concern more strongly
+- Planned Specialist Personas:
+  - Persona ID: senior-backend-engineer
+    - Source: built-in
+    - Runtime Role: worker
+    - Selection Rationale: durable runtime interfaces, identity records, command evidence, and model-resolution contracts make this the strongest eligible drafting persona; built-in fallback is used because no stronger eligible project worker persona covers portable WorkWork runtime architecture
+- Planned Scope:
+  - `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+- Planned Scope rule: every writable file listed here must also appear under `exclusive_write_scope`; `shared_read_scope` is read-only.
+- Planning Rationale: use one authority-first design so verifier permissions constrain lane/evidence schema before selection and model resolution are defined
+- Planned Workflow Bindings:
+  - `superpowers:brainstorming`
+  - `superpowers:requesting-code-review`
+  - `superpowers:verification-before-completion`
+- Planned Worker Mode: plan-first
+- Worker Mode Rationale: resolve coupled authority and schema decisions against approved foundations before drafting the normative artifact
+- Goal Tuning: validation-biased
+- Constraint Interaction Rule: when a decision requires implementation, persona creation, bindings, validator rules, hooks, repair, scoring, or activation, define only the interface boundary and defer behavior to its owning round
+- Planned Review Lanes:
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: review implementation readiness, deterministic authority, schema completeness, compatibility, acceptance criteria, and exclusions; built-in fallback is used because no stronger eligible project reviewer covers portable runtime specification fidelity
+  - Required: true
+  - Lane ID: lane-verifier-authority-isolation-review
+  - Lane Type: other
+  - Reviewer Persona: secure-software-engineer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: current durable lane types do not represent authority-isolation review; inspect self-approval prevention, identity reuse, command privilege, and capability-floor escalation without redesigning the spec; built-in fallback is used because no stronger eligible project reviewer covers portable runtime trust boundaries
+  - Required: true
+- Scope Declarations:
+  - `exclusive_write_scope`:
+    - `path_glob`: `docs/cases/task-runtime/case.md`
+    - `path_glob`: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/working-brief.md`
+    - `path_glob`: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/dispatch-plan.md`
+    - `path_glob`: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - `shared_read_scope`:
+    - `path_glob`: `docs/superpowers/specs/2026-06-19-workwork-task-runtime-design.md`
+    - `path_glob`: `docs/cases/task-runtime/rounds/2026-06-19-task-runtime-lifecycle-foundation-design/**/*`
+    - `path_glob`: `docs/cases/task-runtime/rounds/2026-06-20-task-runtime-lifecycle-foundation-implementation/**/*`
+    - `path_glob`: `plugins/workwork/skills/ww-subagent-orchestrator/SKILL.md`
+    - `path_glob`: `plugins/workwork/skills/ww-subagent-orchestrator/agents/**/*`
+    - `path_glob`: `plugins/workwork/skills/ww-subagent-orchestrator/references/**/*`
+    - `path_glob`: `plugins/workwork/skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md`
+    - `path_glob`: `docs/superpowers/personas/registry.yaml`
+  - `depends_on_sections`: none
+  - `parallel_safe_with_sections`: none
+  - `artifact_mappings`:
+    - `artifact_id`: verifier_lane_authority_design
+      - `artifact_kind`: design_spec
+      - `artifact_path`: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+      - `section_anchors`: authority model, identity isolation, lane schema, evidence, selection, model profiles, acceptance criteria
+- Scope declaration rule: every writable file in `Planned Scope` appears in `exclusive_write_scope`; round-local controller files are separately owned by the orchestrator.
+- Packet Created: true
+
+## Section Runtime Ledger
+
+### Section: Verifier And Lane Authority Design
+
+- Section ID: section-verifier-lane-authority-design
+- Runtime State: complete
+- Active Execution ID:
+- Active Packet ID:
+- Active Agent ID:
+- Active Attempt ID:
+- Active Worker Mode: plan-first
+- Active Persona IDs: senior-backend-engineer, spec-reviewer, secure-software-engineer
+- Active Persona Sources: senior-backend-engineer=built-in, spec-reviewer=built-in, secure-software-engineer=built-in
+- Active Persona Role Bindings: senior-backend-engineer=worker via `agents/worker-prompt.md`; spec-reviewer=reviewer via `agents/reviewer-prompt.md`; secure-software-engineer=reviewer via `agents/reviewer-prompt.md`
+- Mode Change History:
+- Execution Records:
+  - Execution ID: exec-verifier-lane-design-worker-01
+  - Role: senior-backend-engineer
+  - Status: complete
+  - Owned Scope: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Started At: 2026-06-21
+  - Finished At: 2026-06-21
+  - Execution ID: exec-verifier-lane-spec-review-01
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Started At: 2026-06-21
+  - Finished At: 2026-06-21
+  - Execution ID: exec-verifier-lane-spec-review-r2
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md` revision 2
+  - Started At: 2026-06-21
+  - Finished At: 2026-06-21
+  - Execution ID: exec-verifier-lane-spec-review-r3
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md` revision 3
+  - Started At: 2026-06-21
+  - Finished At: 2026-06-21
+  - Execution ID: exec-verifier-lane-spec-review-r4
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of design revision 4
+  - Started At: 2026-06-21
+  - Finished At: 2026-06-21
+  - Execution ID: exec-verifier-lane-spec-review-r5
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of design revision 5
+  - Started At: 2026-06-21
+  - Finished At: 2026-06-21
+  - Execution ID: exec-verifier-lane-spec-review-r6
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of design revision 6
+  - Started At: 2026-06-21
+  - Finished At: 2026-06-21
+  - Execution ID: exec-verifier-lane-spec-review-r7
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of design revision 7
+  - Started At: 2026-06-23
+  - Finished At: 2026-06-23
+  - Execution ID: exec-verifier-lane-spec-review-r8
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of design revision 8
+  - Started At: 2026-06-23
+  - Finished At: 2026-06-23
+  - Execution ID: exec-verifier-lane-spec-review-r9
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of design revision 9
+  - Started At: 2026-06-23
+  - Finished At: 2026-06-23
+  - Execution ID: exec-verifier-lane-spec-review-r10
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of design revision 10
+  - Started At: 2026-06-23
+  - Finished At: 2026-06-23
+  - Execution ID: exec-verifier-lane-spec-review-r11
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of design revision 11
+  - Started At: 2026-06-23
+  - Finished At: 2026-06-23
+  - Execution ID: exec-verifier-lane-spec-review-r12
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of design revision 12
+  - Started At: 2026-06-23
+  - Finished At: 2026-06-23
+  - Execution ID: exec-verifier-lane-spec-review-r13
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of design revision 13
+  - Started At: 2026-06-23
+  - Finished At: 2026-06-23
+  - Execution ID: exec-verifier-lane-spec-review-r14
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of design revision 14
+  - Started At: 2026-06-23
+  - Finished At: 2026-06-23
+  - Execution ID: exec-verifier-lane-spec-review-r15
+  - Role: spec-reviewer
+  - Status: complete
+  - Owned Scope: read-only review of design revision 15
+  - Started At: 2026-06-23
+  - Finished At: 2026-06-23
+  - Execution ID: exec-verifier-lane-authority-review-r15
+  - Role: secure-software-engineer
+  - Status: complete
+  - Owned Scope: read-only authority-isolation review of design revision 15
+  - Started At: 2026-06-23
+  - Finished At: 2026-06-23
+- Packet Records:
+  - Packet ID: packet-verifier-lane-design-worker-01
+  - Execution ID: exec-verifier-lane-design-worker-01
+  - Stage: design
+  - Template Path: agents/worker-prompt.md
+  - Review Target Ref:
+  - Supersedes Attempt ID:
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r1
+  - Execution ID: exec-verifier-lane-spec-review-01
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=1#sha256=bc5d42a80b51a2479f417b1f5320713ce1c233b835352e45156609bd29f981a2`
+  - Supersedes Attempt ID:
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r2
+  - Execution ID: exec-verifier-lane-spec-review-r2
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=2#sha256=f9bca03e75ee41ff4dac130b8b96059a068239510678cf8f1cb173c8659eef11`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r1
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r3
+  - Execution ID: exec-verifier-lane-spec-review-r3
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=3#sha256=86c53769e7b8f2641436d2907d4c76b4720b5b4ff1c595f642e33a0c534b7538`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r2
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r4
+  - Execution ID: exec-verifier-lane-spec-review-r4
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=4#sha256=9e26806a24fed83a6821a195e723dca42e371a4349e486996070d8b2ce0d71d5`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r3
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r5
+  - Execution ID: exec-verifier-lane-spec-review-r5
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=5#sha256=ebaacf554d5a8534622479ad78055a2eae5d8e457a9eb7b21d70166695f5b035`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r4
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r6
+  - Execution ID: exec-verifier-lane-spec-review-r6
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=6#sha256=540cebb0d347f05b00e05d049fc9d57d4ac4dc614a567735921e99fd1ff59014`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r5
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r7
+  - Execution ID: exec-verifier-lane-spec-review-r7
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=7#sha256=5eda317ff1b70bbb7027de7f13ea513a4aadd00df7421bb1e58de04f6ac752f0`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r6
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r8
+  - Execution ID: exec-verifier-lane-spec-review-r8
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=8#sha256=0509de5a1886e9242a9c08c0c5dda5da9984f68b6d3ed480c45e1f6998f7c335`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r7
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r9
+  - Execution ID: exec-verifier-lane-spec-review-r9
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=9#sha256=d318cb83044542a006d066b1907cbe54c82d35d4c34b6064f8b38c9add119b2e`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r8
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r10
+  - Execution ID: exec-verifier-lane-spec-review-r10
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=10#sha256=1d24381112ef5b2c09fcc36706a4fb21de7466f36355db7b24b021964751725e`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r9
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r11
+  - Execution ID: exec-verifier-lane-spec-review-r11
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=11#sha256=a31a05b984ed2e66ec1b397d3a54230a599a26f34cb848ebdd544b6eb6a0f7ea`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r10
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r12
+  - Execution ID: exec-verifier-lane-spec-review-r12
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=12#sha256=9a8573c0e8236958eb2a25caf47f7623fd863352bfd080807ac100f750100122`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r11
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r13
+  - Execution ID: exec-verifier-lane-spec-review-r13
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=13#sha256=bc4e350163f320cda09b12f599d21d9cb1e784fa986866720d12e17058b20969`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r12
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r14
+  - Execution ID: exec-verifier-lane-spec-review-r14
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=14#sha256=dc4bb0a99c7288727753f95bbb7a7c0a09367360636acc4063c9fc33f7ae0f70`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r13
+  - Accepts Late Results: false
+  - Packet ID: packet-verifier-lane-spec-review-r15
+  - Execution ID: exec-verifier-lane-spec-review-r15
+  - Stage: review
+  - Template Path: agents/reviewer-prompt.md
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=15#sha256=3175cbe9583cac1826737f8e37c04379856ecf2c28befb05e8bbe65754c35aab`
+  - Supersedes Attempt ID: attempt-verifier-lane-spec-review-r14
+  - Accepts Late Results: false
+- Attempt Records:
+  - Attempt ID: attempt-verifier-lane-design-worker-01
+  - Packet ID: packet-verifier-lane-design-worker-01
+  - Agent ID: 019eeda4-6214-7531-a7d2-25f65778dc50
+  - Return Status: DONE
+  - Runtime State After Return: review-pending
+  - Launched At: 2026-06-21
+  - Closed At: 2026-06-21
+  - Result Summary: complete verifier and lane authority design persisted with no unresolved worker concerns
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r1
+  - Packet ID: packet-verifier-lane-spec-review-r1
+  - Agent ID: 019eedad-4a35-7471-bc31-8f4d7fada6b2
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-21
+  - Closed At: 2026-06-21
+  - Result Summary: REJECT; one high and four medium implementation-determinism findings require an in-scope design revision
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r2
+  - Packet ID: packet-verifier-lane-spec-review-r2
+  - Agent ID: 019eedb1-68b7-7a41-ac6e-0d15f91fe2fd
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-21
+  - Closed At: 2026-06-21
+  - Result Summary: REJECT; four material determinism gaps remained after revision 2
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r3
+  - Packet ID: packet-verifier-lane-spec-review-r3
+  - Agent ID: 019eedb4-e166-77e0-969b-a7e6adc53eca
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-21
+  - Closed At: 2026-06-21
+  - Result Summary: REJECT; five schema normalization and evidence linkage gaps remained
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r4
+  - Packet ID: packet-verifier-lane-spec-review-r4
+  - Agent ID: 019eedb7-e961-7eb0-bfb4-c6e459ca3533
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-21
+  - Closed At: 2026-06-21
+  - Result Summary: REJECT; five remaining closed-schema and immutable-reference gaps
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r5
+  - Packet ID: packet-verifier-lane-spec-review-r5
+  - Agent ID: 019eedbb-92ca-7cc0-9980-c31100471731
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-21
+  - Closed At: 2026-06-21
+  - Result Summary: REJECT; five remaining capability, requiredness, environment linkage, content identity, and truncation gaps
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r6
+  - Packet ID: packet-verifier-lane-spec-review-r6
+  - Agent ID: 019eedbf-435b-7e11-9c43-0a84de652d81
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-21
+  - Closed At: 2026-06-21
+  - Result Summary: REJECT; five remaining mutable-applicability, launch-identity, profile-identity, aggregate-member evidence, and selector/freshness determinism gaps
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r7
+  - Packet ID: packet-verifier-lane-spec-review-r7
+  - Agent ID: 019ef5af-667e-7b60-837b-108d9b376d87
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-23
+  - Closed At: 2026-06-23
+  - Result Summary: REJECT; four remaining environment-requirement, command-disposition, capability mapping, and BLOCKED lifecycle ambiguity gaps
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r8
+  - Packet ID: packet-verifier-lane-spec-review-r8
+  - Agent ID: 019ef5b4-bb0d-7dd0-b750-9d940bfaa2c8
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-23
+  - Closed At: 2026-06-23
+  - Result Summary: REJECT; three remaining supplemental-command authority, token freshness reclassification, and initial applicability authority ambiguities
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r9
+  - Packet ID: packet-verifier-lane-spec-review-r9
+  - Agent ID: 019ef5b9-7e54-71c1-9e8e-7a765cd1f079
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-23
+  - Closed At: 2026-06-23
+  - Result Summary: REJECT; four remaining max-age anchor, command identity, target schema-version nullability, and profile-aware dedupe gaps
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r10
+  - Packet ID: packet-verifier-lane-spec-review-r10
+  - Agent ID: 019ef5be-2ec1-70a1-9589-8609da21f313
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-23
+  - Closed At: 2026-06-23
+  - Result Summary: REJECT; four remaining multi-environment TTL, aggregate schema-less member, initial applicability acceptance, and split capability ownership gaps
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r11
+  - Packet ID: packet-verifier-lane-spec-review-r11
+  - Agent ID: 019ef5c2-1dd8-7912-bc2d-fbc1f96bf458
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-23
+  - Closed At: 2026-06-23
+  - Result Summary: REJECT; two remaining stale-token recovery and skipped-command evidence representation gaps
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r12
+  - Packet ID: packet-verifier-lane-spec-review-r12
+  - Agent ID: 019ef5c5-49f4-76b2-bc9d-d3d10b8f1751
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-23
+  - Closed At: 2026-06-23
+  - Result Summary: REJECT; two remaining aggregation-key and terminal FAIL lifecycle path gaps
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r13
+  - Packet ID: packet-verifier-lane-spec-review-r13
+  - Agent ID: 019ef5c8-c6ed-7660-9538-3a99cdc45e97
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-23
+  - Closed At: 2026-06-23
+  - Result Summary: REJECT; remaining conflict between required PASS aggregation and terminal all-lanes-returned blocked aggregation
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r14
+  - Packet ID: packet-verifier-lane-spec-review-r14
+  - Agent ID: 019ef5cc-82de-7f60-bc47-9a37c4c1e20e
+  - Return Status: DONE_WITH_CONCERNS
+  - Runtime State After Return: blocked
+  - Launched At: 2026-06-23
+  - Closed At: 2026-06-23
+  - Result Summary: REJECT; two remaining environment TTL anchor and model-resolution invalidation staleness gaps
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-spec-review-r15
+  - Packet ID: packet-verifier-lane-spec-review-r15
+  - Agent ID: 019ef851-7b56-7e60-9e08-42ceea8ffbf9
+  - Return Status: DONE
+  - Runtime State After Return: review-pending
+  - Launched At: 2026-06-23
+  - Closed At: 2026-06-23
+  - Result Summary: PASS; no material findings in spec review for design revision 15
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+  - Attempt ID: attempt-verifier-lane-authority-review-r15
+  - Packet ID: packet-verifier-lane-authority-review-r15
+  - Agent ID: 019ef854-d615-75f0-9588-fd045fba02a8
+  - Return Status: DONE
+  - Runtime State After Return: review-pending
+  - Launched At: 2026-06-23
+  - Closed At: 2026-06-23
+  - Result Summary: PASS; no material authority-isolation findings for design revision 15
+  - Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+- Attempt Count: 17
+- Last Update At: 2026-06-23
+- Next Action: none; round closed after human approval
+- Active Write Scope: design spec only
+- Result Summary: design revision 1 defines verifier authority, identity isolation, lane and evidence records, deterministic baseline and risk-triggered selection, model capability profiles, fallback, staleness, lifecycle integration, recovery, invalid states, and explicit exclusions
+- Canonical Result Artifact Location: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md`
+- Concerns:
+  - preserve dormant legacy protocol
+  - keep later implementation, guards, repair, scoring, validator, and activation work out of scope
+- Blocker Reason:
+- Close State: closed
+- Superseded Attempt IDs:
+- Stale Result Policy: only the active attempt may advance canonical runtime state
+- Reconciliation Rule:
+  - newest active attempt owns `result_artifact_location`
+  - late results may append attempt history but do not replace canonical state unless promoted to active
+
+## Section Review Record
+
+### Section: Verifier And Lane Authority Design
+
+- Section ID: section-verifier-lane-authority-design
+- Review Target Strategy:
+  - Freeze the full design spec revision and use the same immutable hash for independent spec and authority-isolation review packets.
+- Review Lane Records:
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-01
+  - Packet ID: packet-verifier-lane-spec-review-r1
+  - Attempt ID: attempt-verifier-lane-spec-review-r1
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=1#sha256=bc5d42a80b51a2479f417b1f5320713ce1c233b835352e45156609bd29f981a2`
+  - Reviewer Findings: REJECT; missing deterministic FAIL mapping, conflicting task-profile cardinality, unimplementable pre-launch agent-id comparison, unspecified aggregate target serialization, and missing artifact-evidence schema
+  - Orchestrator Synthesis: all five findings are material and within scope; revise the design contract without adding runtime implementation, hooks, repair policy, scoring, validators, personas, or bindings
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r2
+  - Packet ID: packet-verifier-lane-spec-review-r2
+  - Attempt ID: attempt-verifier-lane-spec-review-r2
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=2#sha256=f9bca03e75ee41ff4dac130b8b96059a068239510678cf8f1cb173c8659eef11`
+  - Reviewer Findings: REJECT; outcome timing changed BLOCKED versus FAILED semantics, aggregate target variants were ambiguous, missing artifacts could not populate mandatory observed hashes, and capability floors lacked deterministic comparison
+  - Orchestrator Synthesis: all four findings are material and within scope; revision 3 closes the target union, nullable missing-artifact evidence, capability floor schema and ordering, and meaning-based blocked/failed mapping
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r3
+  - Packet ID: packet-verifier-lane-spec-review-r3
+  - Attempt ID: attempt-verifier-lane-spec-review-r3
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=3#sha256=86c53769e7b8f2641436d2907d4c76b4720b5b4ff1c595f642e33a0c534b7538`
+  - Reviewer Findings: REJECT; evidence requirements lacked closed fulfillment linkage, mixed result precedence was undefined, environment change tokens were not persisted, candidate capability facts lacked provenance, and lane dedupe equality was unspecified
+  - Orchestrator Synthesis: all five findings are material; revision 4 closes requirement records and links, disposition precedence, token persistence and comparison, candidate fact provenance, and canonical dedupe equality
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r4
+  - Packet ID: packet-verifier-lane-spec-review-r4
+  - Attempt ID: attempt-verifier-lane-spec-review-r4
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=4#sha256=9e26806a24fed83a6821a195e723dca42e371a4349e486996070d8b2ce0d71d5`
+  - Reviewer Findings: REJECT; lane lacked frozen target ref, command spec hash was undefined, launch environment facts lacked provenance, environment fingerprints were open, and evidence requirement variants allowed contradictions
+  - Orchestrator Synthesis: all five findings are material; revision 5 adds immutable lane target binding, canonical command hashing, launch environment fact records, closed environment fingerprints, and valid requirement variants
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r5
+  - Packet ID: packet-verifier-lane-spec-review-r5
+  - Attempt ID: attempt-verifier-lane-spec-review-r5
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=5#sha256=ebaacf554d5a8534622479ad78055a2eae5d8e457a9eb7b21d70166695f5b035`
+  - Reviewer Findings: REJECT; capability ownership was undefined, required commands were not derivable, environment requirements lacked evidence records, profile and floor content identity was absent, and truncation metadata could not be persisted
+  - Orchestrator Synthesis: all five findings are material; revision 6 adds fixed capability ownership, command-requirement bijection, environment evidence, immutable profile and floor hashes, and truncation metadata
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r6
+  - Packet ID: packet-verifier-lane-spec-review-r6
+  - Attempt ID: attempt-verifier-lane-spec-review-r6
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=6#sha256=540cebb0d347f05b00e05d049fc9d57d4ac4dc614a567735921e99fd1ff59014`
+  - Reviewer Findings: REJECT; applicability was mutable inside immutable bundles, model resolution lacked launch identity, lane profile binding lacked schema/hash identity, aggregate artifact evidence lacked member references, and target-selector re-expansion conflicted with frozen-target freshness
+  - Orchestrator Synthesis: all five findings are material and within scope; revision 7 moves applicability to append-only records, binds model resolution to execution/packet/attempt and frozen target, adds profile schema/hash to lanes, adds aggregate member evidence references, and makes frozen target refs the only repair-overlap authority
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r7
+  - Packet ID: packet-verifier-lane-spec-review-r7
+  - Attempt ID: attempt-verifier-lane-spec-review-r7
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=7#sha256=5eda317ff1b70bbb7027de7f13ea513a4aadd00df7421bb1e58de04f6ac752f0`
+  - Reviewer Findings: REJECT; environment requirements had competing satisfaction paths, command disposition was not fully mechanical, lane profile/floor mapping was underdetermined, and BLOCKED lane lifecycle handling could follow two event histories
+  - Orchestrator Synthesis: all four findings are material and within scope; revision 8 makes environment evidence the only requirement-satisfaction record, derives command dispositions from command spec facts, adds deterministic default capability mapping with strengthening rules, and separates terminal BLOCKED bundle aggregation from immediate controller blockers
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r8
+  - Packet ID: packet-verifier-lane-spec-review-r8
+  - Attempt ID: attempt-verifier-lane-spec-review-r8
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=8#sha256=0509de5a1886e9242a9c08c0c5dda5da9984f68b6d3ed480c45e1f6998f7c335`
+  - Reviewer Findings: REJECT; supplemental commands lacked a deterministic auxiliary versus required path, token reread failure after prior acceptance lacked durable applicability reclassification, and bundle-owned initial applicability record references were ambiguous
+  - Orchestrator Synthesis: all three findings are material and within scope; revision 9 restricts verifier supplemental commands to auxiliary evidence unless the orchestrator creates a material revision, maps post-acceptance token reread failure to stale applicability, and makes the orchestrator create initial applicability records after bundle return
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r9
+  - Packet ID: packet-verifier-lane-spec-review-r9
+  - Attempt ID: attempt-verifier-lane-spec-review-r9
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=9#sha256=d318cb83044542a006d066b1907cbe54c82d35d4c34b6064f8b38c9add119b2e`
+  - Reviewer Findings: REJECT; max-age staleness lacked an age anchor, command_ref was not explicitly tied to command_id plus command_spec_hash, single-target schema_version nullability conflicted with required fields, and lane dedupe omitted profile identity
+  - Orchestrator Synthesis: all four findings are material and within scope; revision 10 anchors TTL to newest satisfying environment evidence observation, defines command_ref as command_id plus command_spec_hash, permits null schema_version only for schema-less single targets, and includes profile identity in dedupe equality
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r10
+  - Packet ID: packet-verifier-lane-spec-review-r10
+  - Attempt ID: attempt-verifier-lane-spec-review-r10
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=10#sha256=1d24381112ef5b2c09fcc36706a4fb21de7466f36355db7b24b021964751725e`
+  - Reviewer Findings: REJECT; multi-environment TTL used a newest-observation anchor, aggregate members could not represent schema-less artifacts, initial PASS acceptance was circular around applicability, and capability floor evaluation conflicted with fixed ownership
+  - Orchestrator Synthesis: all four findings are material and within scope; revision 11 makes each required environment evidence record independently subject to TTL, permits null aggregate member schema versions only for schema-less artifacts, makes initial current applicability creation atomic during acceptance, and splits floor evaluation by fixed model versus launch-environment ownership
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r11
+  - Packet ID: packet-verifier-lane-spec-review-r11
+  - Attempt ID: attempt-verifier-lane-spec-review-r11
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=11#sha256=a31a05b984ed2e66ec1b397d3a54230a599a26f34cb848ebdd544b6eb6a0f7ea`
+  - Reviewer Findings: REJECT; token-unreadable stale evidence wording allowed reapproval to revive stale evidence, and skipped command evidence required non-null execution timestamps despite no execution
+  - Orchestrator Synthesis: both findings are material and within scope; revision 12 requires rerun/new current evidence or material lane replacement for stale-token recovery, and represents skipped command evidence with null timestamps/output plus mandatory rationale and decision reference
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r12
+  - Packet ID: packet-verifier-lane-spec-review-r12
+  - Attempt ID: attempt-verifier-lane-spec-review-r12
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=12#sha256=9a8573c0e8236958eb2a25caf47f7623fd863352bfd080807ac100f750100122`
+  - Reviewer Findings: REJECT; required lane aggregation used ambiguous same-target wording across lane-specific frozen targets, and terminal FAIL evidence lacked a complete blocked lifecycle path
+  - Orchestrator Synthesis: both findings are material and within scope; revision 13 defines aggregation over each lane's own frozen target plus the approved section verification target set, and routes terminal FAIL or BLOCKED evidence through REQUIRED_LANES_RETURNED to SECTION_BLOCKED_FROM_REVIEW when no complete required PASS set exists
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r13
+  - Packet ID: packet-verifier-lane-spec-review-r13
+  - Attempt ID: attempt-verifier-lane-spec-review-r13
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=13#sha256=bc4e350163f320cda09b12f599d21d9cb1e784fa986866720d12e17058b20969`
+  - Reviewer Findings: REJECT; lane outcome wording conflicted over whether required FAIL/BLOCKED/SKIPPED terminal results remain pending or contribute to REQUIRED_LANES_RETURNED blocked aggregation
+  - Orchestrator Synthesis: the finding is material and within scope; revision 14 separates required PASS aggregation from all-terminal-return aggregation, allowing terminal non-pass results to trigger the blocked review path while never satisfying verification acceptance
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r14
+  - Packet ID: packet-verifier-lane-spec-review-r14
+  - Attempt ID: attempt-verifier-lane-spec-review-r14
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=14#sha256=dc4bb0a99c7288727753f95bbb7a7c0a09367360636acc4063c9fc33f7ae0f70`
+  - Reviewer Findings: REJECT; environment-bound TTL could lack a required environment evidence anchor, and later-discovered below-floor model capability lacked matching applicability reason/staleness trigger
+  - Orchestrator Synthesis: both findings are material and within scope; revision 15 requires environment-bound TTL/token lanes to declare required environment evidence per environment, and adds model-resolution/candidate-facts invalidation to applicability reasons and staleness triggers
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-spec-review
+  - Lane Type: spec-review
+  - Reviewer Persona: spec-reviewer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: implementation-ready contract fidelity is an independent required gate
+  - Execution ID: exec-verifier-lane-spec-review-r15
+  - Packet ID: packet-verifier-lane-spec-review-r15
+  - Attempt ID: attempt-verifier-lane-spec-review-r15
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=15#sha256=3175cbe9583cac1826737f8e37c04379856ecf2c28befb05e8bbe65754c35aab`
+  - Reviewer Findings: PASS; no material findings
+  - Orchestrator Synthesis: spec-review lane passes for revision 15; proceed to independent authority-isolation review against the same frozen revision
+  - Strict Review Outcome: none
+  - Lane ID: lane-verifier-authority-isolation-review
+  - Lane Type: other
+  - Reviewer Persona: secure-software-engineer
+  - Reviewer Source: built-in
+  - Reviewer Runtime Role: reviewer
+  - Reviewer Selection Rationale: authority-isolation risk is independently material and no current durable lane type names it
+  - Execution ID: exec-verifier-lane-authority-review-r15
+  - Packet ID: packet-verifier-lane-authority-review-r15
+  - Attempt ID: attempt-verifier-lane-authority-review-r15
+  - Review Target Ref: `docs/cases/task-runtime/rounds/2026-06-21-verifier-and-lane-authority-design/design-spec.md#artifact-revision=15#sha256=3175cbe9583cac1826737f8e37c04379856ecf2c28befb05e8bbe65754c35aab`
+  - Reviewer Findings: PASS; no material findings
+  - Orchestrator Synthesis: authority-isolation lane passes for revision 15; both required reviewer lanes have passed and the design can now proceed to human judgment
+  - Strict Review Outcome: none
+- Human Decision: Approve
+- Human Decision By: user
+- Human Decision Time: 2026-06-24
+- Revision Notes: design revision 15 accepted after spec-review and authority-isolation review both returned no material findings
+- Rollup Rule:
+  - Approve -> section state becomes `accepted`
+  - Revise -> section state becomes `revision-requested` and plan state becomes `revising`
+  - Stop -> section state becomes `stopped`; top-level plan state follows required-section aggregation
+
+## Ordering And Parallelism
+
+- Blocking work first: section-verifier-lane-authority-design
+- Parallel sections: none
+- Review loop: draft design -> independent spec and authority-isolation findings -> orchestrator synthesis -> human judgment
+
+## Approval Block
+
+- Required Human Choice (rendered labels):
+  - `1. Approve`
+  - `2. Revise`
+  - `3. Stop`
+- Numeric Reply Mapping:
+  - `1` -> `Approve`
+  - `2` -> `Revise`
+  - `3` -> `Stop`
+- Canonical Decision Values: `Approve` | `Revise` | `Stop`
+- Accepted Word Replies: `Approve` | `Revise` | `Stop`
+- Current Choice: Approve
+- Approved By: user
+- Approval Time: 2026-06-21
+- Notes: approval authorizes design-spec drafting and later immutable reviewer packets only
+- Choice Mapping:
+  - Approve -> `Plan State: approved`
+  - Revise -> `Plan State: revising`
+  - Stop -> `Plan State: stopped`
+
+## Revision History
+
+- Revision 1 Created From Brief Version: 1
+- Revision Reason: initial verifier and lane authority design round
+- Supersedes Revision:
+
+## Dispatch Log
+
+- Agents Launched:
+- Retry Events:
+- Close Events:
+  - 2026-06-24: user approved design revision 15; section runtime_state moved to complete and plan_state moved to completed
+- Review Lane Transitions:
+  - 2026-06-21: lane-verifier-authority-spec-review returned REJECT for artifact revision 1 and moved the section from review-pending to blocked
+  - 2026-06-21: approved in-scope revision retry rotated the target to artifact revision 2 and returned the section to review-pending
+  - 2026-06-21: lane-verifier-authority-spec-review returned REJECT for artifact revision 2; revision retry rotated the target to artifact revision 3
+  - 2026-06-21: lane-verifier-authority-spec-review returned REJECT for artifact revision 3; revision retry rotated the target to artifact revision 4
+  - 2026-06-21: lane-verifier-authority-spec-review returned REJECT for artifact revision 4; revision retry rotated the target to artifact revision 5
+  - 2026-06-21: lane-verifier-authority-spec-review returned REJECT for artifact revision 5; revision retry rotated the target to artifact revision 6
+  - 2026-06-21: lane-verifier-authority-spec-review returned REJECT for artifact revision 6; revision retry rotated the target to artifact revision 7
+  - 2026-06-23: lane-verifier-authority-spec-review returned REJECT for artifact revision 7; revision retry rotated the target to artifact revision 8
+  - 2026-06-23: lane-verifier-authority-spec-review returned REJECT for artifact revision 8; revision retry rotated the target to artifact revision 9
+  - 2026-06-23: lane-verifier-authority-spec-review returned REJECT for artifact revision 9; revision retry rotated the target to artifact revision 10
+  - 2026-06-23: lane-verifier-authority-spec-review returned REJECT for artifact revision 10; revision retry rotated the target to artifact revision 11
+  - 2026-06-23: lane-verifier-authority-spec-review returned REJECT for artifact revision 11; revision retry rotated the target to artifact revision 12
+  - 2026-06-23: lane-verifier-authority-spec-review returned REJECT for artifact revision 12; revision retry rotated the target to artifact revision 13
+  - 2026-06-23: lane-verifier-authority-spec-review returned REJECT for artifact revision 13; revision retry rotated the target to artifact revision 14
+  - 2026-06-23: lane-verifier-authority-spec-review returned REJECT for artifact revision 14; revision retry rotated the target to artifact revision 15
+  - 2026-06-23: lane-verifier-authority-spec-review returned PASS for artifact revision 15
+  - 2026-06-23: lane-verifier-authority-isolation-review returned PASS for artifact revision 15
+- Launch Time:
+- Revisions Since Approval: 0
+- Stop State Preserves Files: true
+- No Launch Before Approval: true
+- Result Artifact Location Source: latest active attempt record
