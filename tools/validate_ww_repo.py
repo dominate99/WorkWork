@@ -24,8 +24,13 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def run_check(label: str, command: list[str], as_json: bool) -> dict:
-    effective_command = command + (["--json"] if as_json else [])
+def run_check(
+    label: str,
+    command: list[str],
+    as_json: bool,
+    supports_json: bool = True,
+) -> dict:
+    effective_command = command + (["--json"] if as_json and supports_json else [])
     if not as_json:
         print(f"==> {label}", flush=True)
 
@@ -41,17 +46,26 @@ def run_check(label: str, command: list[str], as_json: bool) -> dict:
         stdout = completed.stdout.strip()
         stderr = completed.stderr.strip()
         error = None
-        if stdout:
-            try:
-                payload = json.loads(stdout)
-            except json.JSONDecodeError as exc:
-                error = f"Invalid JSON from child validator: {exc}"
+        if supports_json:
+            if not stdout:
+                error = stderr or "JSON-capable child validator returned no output."
+            else:
+                try:
+                    payload = json.loads(stdout)
+                except json.JSONDecodeError as exc:
+                    error = f"Invalid JSON from child validator: {exc}"
+                else:
+                    if not isinstance(payload, dict):
+                        error = "Child validator JSON payload must be an object."
+                    elif payload.get("ok") is not True:
+                        error = "Child validator JSON payload did not report ok: true."
         elif completed.returncode != 0 and stderr:
             error = stderr
 
+        ok = completed.returncode == 0 and error is None
         return {
             "label": label,
-            "ok": completed.returncode == 0,
+            "ok": ok,
             "exit_code": completed.returncode,
             "payload": payload,
             "stdout": stdout,
@@ -69,54 +83,77 @@ def run_check(label: str, command: list[str], as_json: bool) -> dict:
     }
 
 
-def main() -> int:
-    args = parse_args()
-    python = sys.executable
-    checks = [
+def build_checks(python: str) -> list[tuple[str, list[str], bool]]:
+    return [
         (
             "SKILL.md frontmatter validation",
             [python, "tools/quick_validate.py", str(SKILL_DIR)],
+            False,
         ),
         (
             "Worker work-mode contract validation",
             [python, "tools/validate_ww_worker_work_mode.py"],
+            True,
         ),
         (
             "Reviewer and explorer role-contract validation",
             [python, "tools/validate_ww_role_contracts.py"],
+            True,
         ),
         (
             "Grill-me inline planning contract validation",
             [python, "tools/validate_ww_grill_me_contracts.py"],
+            True,
         ),
         (
             "Persona runtime-selection recording contract validation",
             [python, "tools/validate_ww_persona_selection_contracts.py"],
+            True,
         ),
         (
             "Runtime persona packet artifact validation",
             [python, "tools/validate_ww_persona_packets.py"],
+            True,
         ),
         (
             "Case-based path identity contract validation",
             [python, "tools/validate_ww_case_path_identity.py"],
+            True,
         ),
         (
             "Case artifact contract validation",
             [python, "tools/validate_ww_case_contracts.py"],
+            True,
         ),
         (
             "Round lifecycle contract validation",
             [python, "tools/validate_ww_round_lifecycle.py"],
+            True,
+        ),
+        (
+            "Case scaffold regression tests",
+            [
+                python,
+                "-m",
+                "unittest",
+                "tools.test_scaffold_ww_case_artifacts",
+                "-v",
+            ],
+            False,
         ),
     ]
 
+
+def main() -> int:
+    args = parse_args()
+    checks = build_checks(sys.executable)
+
     failed = False
     check_results = []
-    for label, command in checks:
-        result = run_check(label, command, args.as_json)
+    for label, command, supports_json in checks:
+        result = run_check(label, command, args.as_json, supports_json)
         check_results.append(result)
-        if result["exit_code"] != 0:
+        if not result["ok"]:
             failed = True
 
     if args.as_json:

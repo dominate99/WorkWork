@@ -1,7 +1,7 @@
 # Dispatch Plan: {{topic}}
 
 - Date: {{date}}
-- Schema Version: 1
+- Schema Version: 2
 - Plan Revision: 1
 - Working Brief Version: {{brief_version}}
 - Case Slug: {{case_slug}}
@@ -13,6 +13,18 @@
 - Rollback Baseline Revision: none
 - Task Routing: {{task_routing}}
 - Main Orchestrator: {{main_orchestrator}}
+- Lifecycle Protocol: legacy | task-runtime-v1
+
+Lifecycle protocol rules:
+
+- `Lifecycle Protocol` is round-owned compatibility metadata and is selected only by an approved dispatch revision.
+- New and ordinary rounds must render `legacy`.
+- Schema version 2 support does not activate `task-runtime-v1`.
+- A `legacy` plan must not render or consult section lifecycle snapshots, lifecycle event histories, or a writable round-level lifecycle phase.
+- Required sections in one active round may not mix protocols.
+- `task-runtime-v1` may be selected only after every activation prerequisite in `references/task-runtime-lifecycle.md` is implemented and approved.
+- Verifier authority, verifier lanes, evidence records, baseline/risk-triggered lane selection, and model capability profile/floor/resolution are defined in `references/task-runtime-verification.md`.
+- Dormant verifier/lane fields must not be treated as lifecycle authority while `Lifecycle Protocol: legacy`.
 
 ## Strict Review Runtime State
 
@@ -186,6 +198,131 @@ Path identity rules:
 - Reconciliation Rule:
   - newest active attempt owns `result_artifact_location`
   - late results may append attempt history when accepted, but they do not replace the canonical location unless the controller promotes that attempt to active
+
+### Section Lifecycle Record: {{section_name}} (`task-runtime-v1` only)
+
+Render this block only when the approved round protocol is `task-runtime-v1`.
+Omit the entire block for `legacy` rounds.
+
+```yaml
+lifecycle:
+  phase: plan | execute | verify | review | fix | re-verify | score | close
+  phase_entered_at: <timestamp>
+  event_head: <event-id-or-null>
+  next_action:
+    code: <canonical-code>
+    detail: <non-authoritative-explanation>
+lifecycle_event_history:
+  - event_id:
+    sequence:
+    section_id:
+    event_type:
+    occurred_at:
+    actor:
+      runtime_role: orchestrator
+      persona_id:
+      execution_id:
+    causation:
+      dispatch_revision:
+      previous_event_id:
+    previous:
+      lifecycle_phase:
+      runtime_state:
+      next_action:
+        code:
+        detail:
+    next:
+      lifecycle_phase:
+      runtime_state:
+      next_action:
+        code:
+        detail:
+    artifact_refs: []
+    evidence_refs: []
+    guard_results: []
+    rationale:
+```
+
+Lifecycle record rules:
+
+- canonical `runtime_state` remains only in the section runtime ledger and must not be duplicated inside `lifecycle`
+- only the orchestrator may append an accepted lifecycle event or change `lifecycle_phase`
+- the event `previous` projection must match the current lifecycle phase, canonical runtime state, and next action before its `next` projection is persisted
+- `next_action.code` is derived from the canonical phase/state table in `references/task-runtime-lifecycle.md`
+- the null event head is valid only for the exact `plan/queued` genesis state
+- `phase_entered_at` changes only when an accepted event changes phase
+- a round lifecycle rollup, when present, is derived and never writable authority
+
+### Section Verification Lanes: {{section_name}} (`task-runtime-v1` only)
+
+Render this block only when the approved round protocol is `task-runtime-v1`.
+Omit the entire block for `legacy` rounds. These records follow
+`references/task-runtime-verification.md`.
+
+```yaml
+worker_lanes: []
+verifier_lanes:
+  - lane_id:
+    lane_type: test-verification | artifact-verification | deployment-verification | configuration-verification
+    runtime_role: verifier
+    required: true
+    selection:
+      sources: []
+      task_profile_ids: []
+      risk_trigger_ids: []
+      rationale:
+      exclusion_ref:
+    target_selector:
+      artifact_ids: []
+      path_globs: []
+      environment_ids: []
+    verification_target_ref:
+      target_id:
+      target_kind: single | aggregate
+      artifact_path:
+      artifact_kind:
+      artifact_revision:
+      schema_version:
+      section_anchor:
+      content_hash:
+      target_set_members: []
+      target_set_hash:
+    verification_commands: []
+    evidence_requirements: []
+    freshness_policy:
+      target_bound: true
+      environment_bound: false
+      max_age_seconds:
+      environment_change_token_id:
+    model_capability_profile:
+    model_capability_profile_schema_version: 1
+    model_capability_profile_hash:
+    minimum_capability_floor:
+    minimum_capability_floor_schema_version: 1
+    minimum_capability_floor_hash:
+    selected_verifier:
+      persona_id:
+      persona_source:
+      selection_rationale:
+    active_execution_id:
+    active_attempt_id:
+    attempt_history: []
+    accepted_outcome_ref:
+reviewer_lanes: []
+evidence_bundles: []
+evidence_applicability_records: []
+model_resolutions: []
+```
+
+Verification lane rules:
+
+- verifier lane records do not own `runtime_state` or `lifecycle_phase`
+- baseline and risk-triggered lane selection must record durable source and rationale
+- every verifier lane must resolve to one frozen `verification_target_ref` before packet creation
+- required lanes pass only through current accepted `PASS` evidence for the exact frozen target
+- stale, wrong-target, identity-conflicted, superseded, skipped, failed, blocked, or below-floor evidence cannot authorize verification acceptance
+- model capability profile, minimum floor, and model resolution are separate from persona identity and concrete model labels
+- `runtime_role: verifier` requires a later approved verifier binding before any packet can be launched
 
 ## Section Review Record
 

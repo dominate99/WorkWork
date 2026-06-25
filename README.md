@@ -109,6 +109,8 @@ The `$ww grill me` trigger explicitly selects this mode. WorkWork investigates r
 - `plugins/workwork/skills/ww-subagent-orchestrator/references/working-brief-template.md`
 - `plugins/workwork/skills/ww-subagent-orchestrator/references/persona-registry.md`
 - `plugins/workwork/skills/ww-subagent-orchestrator/references/subagent-packet-contract.md`
+- `plugins/workwork/skills/ww-subagent-orchestrator/references/task-runtime-lifecycle.md`
+- `plugins/workwork/skills/ww-subagent-orchestrator/references/task-runtime-verification.md`
 - `plugins/workwork/skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md`
 - `docs/superpowers/personas/registry.yaml`
 
@@ -141,9 +143,20 @@ python tools/validate_ww_persona_packets.py --json
 python tools/validate_ww_case_path_identity.py --json
 python tools/validate_ww_case_contracts.py --json
 python tools/validate_ww_round_lifecycle.py --json
+python -m unittest tools.test_scaffold_ww_case_artifacts -v
 ```
 
-The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, grill-me inline planning contract checks, persona runtime-selection recording contract checks, runtime persona packet artifact checks, case-based path identity contract checks, case artifact contract checks, and round lifecycle contract checks. GitHub Actions uses the same repo-local entrypoint.
+The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, grill-me inline planning contract checks, persona runtime-selection recording contract checks, runtime persona packet artifact checks, case-based path identity contract checks, case artifact contract checks, round lifecycle contract checks, and case scaffold regression tests. GitHub Actions uses the same repo-local entrypoint.
+
+Task runtime lifecycle maintenance:
+
+- schema version 2 adds dormant lifecycle protocol support; new scaffolded rounds default to `legacy`
+- treat `plugins/workwork/skills/ww-subagent-orchestrator/references/task-runtime-lifecycle.md` as the normative lifecycle ownership, transition, persistence, migration, and recovery contract
+- treat `plugins/workwork/skills/ww-subagent-orchestrator/references/task-runtime-verification.md` as the dormant verifier authority, lane schema, evidence, lane selection, and model capability contract
+- update `SKILL.md`, the working-brief template, dispatch-plan template, packet contract, scaffold helper, and scaffold tests together when changing lifecycle protocol recording
+- do not select `task-runtime-v1` until verifier binding/runtime behavior, review progression, repair/re-verification, scoring, close-gate capabilities, and validator coverage are implemented and approved
+- do not treat dormant verifier fields or references as active lifecycle authority while a round uses `Lifecycle Protocol: legacy`
+- dedicated lifecycle validator rules and negative fixtures belong to a later validator-expansion round
 
 Persona taxonomy changes:
 
@@ -166,7 +179,7 @@ python tools/scaffold_ww_case_artifacts.py `
   --with-implementation-plan
 ```
 
-The scaffolding helper is the default initializer for new `$ww/$www` case rounds under `docs/cases/...`. It creates `working-brief.md` and `dispatch-plan.md` by default, updates `case.md`, and can optionally create `design-spec.md` and `implementation-plan.md`. It writes placeholder content only; maintainers still need to complete the round artifacts before approval.
+The scaffolding helper is the default initializer for new `$ww/$www` case rounds under `docs/cases/...`. It creates schema-version-2 `working-brief.md` and `dispatch-plan.md` files with a dormant `legacy` lifecycle protocol by default, updates `case.md`, and can optionally create `design-spec.md` and `implementation-plan.md`. It writes placeholder content only; maintainers still need to complete the round artifacts before approval.
 
 ## Summary
 

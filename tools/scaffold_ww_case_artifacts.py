@@ -218,7 +218,7 @@ def render_working_brief(context: RenderContext) -> str:
 
 ## Artifact Metadata
 
-- `schema_version`: 1
+- `schema_version`: 2
 - `brief_version`: 1
 - `brief_status`: draft
 - `topic_slug`: {context.topic_slug}
@@ -233,6 +233,7 @@ def render_working_brief(context: RenderContext) -> str:
 ## Round Intent
 
 - `quality_mode`: {context.quality_mode}
+- `lifecycle_protocol_recommendation`: legacy
 
 ## Gate State
 
@@ -351,7 +352,7 @@ def render_dispatch_plan(context: RenderContext) -> str:
     return f"""# Dispatch Plan: {context.title}
 
 - Date: {context.current_date}
-- Schema Version: 1
+- Schema Version: 2
 - Plan Revision: 1
 - Working Brief Version: 1
 - Case Slug: {context.case_slug}
@@ -363,6 +364,7 @@ def render_dispatch_plan(context: RenderContext) -> str:
 - Rollback Baseline Revision: none
 - Task Routing: {context.task_routing}
 - Main Orchestrator: {context.orchestrator}
+- Lifecycle Protocol: legacy
 
 ## Strict Review Runtime State
 

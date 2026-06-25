@@ -12,6 +12,8 @@ Create a packet only after:
 - `source_dispatch_plan`
 - `source_plan_revision`
 - `source_section_id`
+- `source_dispatch_schema_version`
+- `source_lifecycle_protocol`
 - `orchestrator_type`
 - `stage`
 - `execution_id`
@@ -41,6 +43,19 @@ Create a packet only after:
 - `execution_binding`
 - `requires_human_judgment`
 
+Lifecycle source rules:
+
+- `source_dispatch_schema_version` records the persisted source dispatch schema before normalization
+- schema version `0` or `1` sources without lifecycle fields normalize deterministically to `legacy`; schema version `2` sources must persist an explicit protocol
+- `source_lifecycle_protocol` must exactly copy the normalized approved dispatch plan protocol
+- packets from `legacy` rounds omit `source_lifecycle_snapshot` and must not infer a phase from legacy fields
+- packets from `task-runtime-v1` rounds additionally require `source_lifecycle_snapshot` copied from the source section at packet creation time
+- `source_lifecycle_snapshot` contains an immutable copy of the source section's `lifecycle` block plus its separately copied canonical `runtime_state`
+- the copied `lifecycle` block contains `phase`, `phase_entered_at`, `event_head`, and derived `next_action`; it does not gain a second runtime-state field
+- packet lifecycle data is read-only source context; packets never own phase transitions or append lifecycle events
+- packet creation must halt when source protocol, section snapshot, and runtime ledger disagree
+- packets from future verifier stages additionally require verifier lane source data from `task-runtime-verification.md`; legacy packets must not infer verifier authority from dormant fields
+
 Reviewer packets additionally require:
 
 - `review_target_ref`
@@ -55,6 +70,23 @@ Worker packets additionally require:
 - `goal_tuning`
 - `constraint_precedence_note`
 - `implementation_principles[]`
+
+Future verifier packets additionally require, after a separately approved
+verifier binding exists:
+
+- `source_verifier_lane`
+- `authority_subject`
+- `verification_target_ref`
+- `verification_commands[]`
+- `evidence_requirements[]`
+- `freshness_policy`
+- `model_capability_profile`
+- `minimum_capability_floor`
+- `model_resolution`
+
+These fields are dormant contract fields until `task-runtime-v1` activation.
+They do not authorize verifier packet creation while the source protocol is
+`legacy` or while no approved verifier role binding exists.
 
 `implementation_principles[]` contract:
 
@@ -78,10 +110,13 @@ Worker packets additionally require:
 `persona_binding` contract:
 
 - `runtime_role` must be exactly one of `orchestrator`, `worker`, `reviewer`, or `explorer`
+- active legacy `runtime_role` values are `orchestrator`, `worker`, `reviewer`, and `explorer`
+- future `task-runtime-v1` verifier packets require `runtime_role: verifier` only after a separately approved verifier role binding exists
 - `template_path` must point to the matching role prompt asset
 - worker packets use `agents/worker-prompt.md`
 - reviewer packets use `agents/reviewer-prompt.md`
 - explorer packets use `agents/explorer-prompt.md`
+- verifier packets must not bind to worker, reviewer, explorer, or orchestrator prompt assets
 - role prompt behavior and persona records remain separate concepts
 
 ## Execution Binding
@@ -194,13 +229,46 @@ Revision rules:
 - `close_policy: close after findings are handed back`
 - `requires_human_judgment: false`
 
+## Future Verifier Packet Defaults (`task-runtime-v1` only)
+
+This section is dormant. It describes the packet shape needed after a later
+approved round adds verifier role binding and runtime activation.
+
+- `task_mode: verify`
+- `runtime_role: verifier`
+- `agent_type: verifier`
+- `context_mode: curated-only`
+- `fork_context: false`
+- `write_scope: evidence outputs only`
+- `retry_policy: relaunch with new attempt_id after orchestrator decision`
+- `close_policy: return lane evidence to orchestrator for acceptance`
+- `requires_human_judgment: false`
+- `expected_return_status[]`: `PASS`, `FAIL`, `BLOCKED`, or `SKIPPED`
+
+Verifier packets must copy:
+
+- the approved verifier lane record
+- authority subject identity
+- frozen `verification_target_ref`
+- command refs and evidence requirements
+- freshness policy
+- selected verifier source and rationale
+- model capability profile and floor hashes
+- model resolution record
+
+Verifier packets must not mutate target artifacts, repair failures, create
+reviewer findings, accept lane evidence, change lifecycle phase, or approve
+close.
+
 ## Reviewer Packet Example
 
 ```text
-schema_version: 1
+schema_version: 2
 source_dispatch_plan: docs/legacy/superpowers/dispatch-plans/2026-05-06-topic.md
 source_plan_revision: 1
 source_section_id: section-core-runtime-contracts
+source_dispatch_schema_version: 1
+source_lifecycle_protocol: legacy
 orchestrator_type: staff-engineer-orchestrator
 stage: review
 execution_id: exec-core-runtime-review-01
@@ -246,7 +314,7 @@ review_target_ref:
   artifact_path: references/subagent-packet-contract.md
   artifact_kind: markdown
   artifact_revision: hash-abc123
-  schema_version: 1
+  schema_version: 2
   section_anchor: required-fields
   content_hash: hash-abc123
 review_type: code-quality
@@ -258,10 +326,12 @@ requires_human_judgment: true
 ## Worker Packet Example
 
 ```text
-schema_version: 1
+schema_version: 2
 source_dispatch_plan: docs/legacy/superpowers/dispatch-plans/2026-05-16-worker-persona-enforcement.md
 source_plan_revision: 2
 source_section_id: section-worker-persona-enforcement
+source_dispatch_schema_version: 1
+source_lifecycle_protocol: legacy
 orchestrator_type: staff-engineer-orchestrator
 stage: implement
 execution_id: exec-worker-persona-enforcement-01

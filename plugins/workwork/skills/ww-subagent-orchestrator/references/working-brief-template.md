@@ -4,7 +4,7 @@ Use this template after estimation and before any persona dispatch.
 
 ## Artifact Metadata
 
-- `schema_version`
+- `schema_version: 2`
 - `brief_version`
 - `brief_status`
 - `topic_slug`
@@ -19,6 +19,14 @@ Use this template after estimation and before any persona dispatch.
 ## Round Intent
 
 - `quality_mode: standard | strict`
+- `lifecycle_protocol_recommendation: legacy | task-runtime-v1`
+
+Lifecycle recommendation rules:
+
+- the working brief records analysis and recommendation only; it does not own the active lifecycle protocol
+- default the recommendation to `legacy`
+- recommend `task-runtime-v1` only when the round intends explicit activation and every mandatory capability in `task-runtime-lifecycle.md` and `task-runtime-verification.md` is available
+- the approved dispatch plan owns the final round protocol
 
 ## Gate State
 
@@ -97,6 +105,7 @@ Artifact-layout rules:
 - `constraint_override_notes_by_section`
 - `workflow_bindings_by_stage`
 - `dispatch_recommendation`
+- `verification_authority_notes` when a future `task-runtime-v1` round will need formal verifier lanes
 
 `candidate_persona_sources` should record:
 
@@ -158,6 +167,17 @@ Rules:
 - `required_for_goal_by_section`
 - `review_target_strategy`
 - `controller_semantics_notes`
+- `verification_lane_preparation` when `lifecycle_protocol_recommendation: task-runtime-v1`
+
+`verification_lane_preparation` is dormant planning analysis unless the approved
+dispatch plan selects `task-runtime-v1`. When present, it should record:
+
+- candidate baseline verifier lanes by task profile
+- candidate risk-triggered verifier lanes with rationale
+- expected target selector inputs
+- expected evidence kinds: command, artifact, and/or environment
+- expected model capability profile and minimum floor
+- explicit note that legacy rounds do not use these records as lifecycle authority
 
 ## Rules
 
@@ -173,3 +193,4 @@ Rules:
 - Persist the working brief before dispatch-plan creation.
 - No packet creation until the referenced dispatch plan is in `approved` state.
 - If the user requests `Revise`, update the working brief only if the analysis changed, then issue a new brief version for the next dispatch plan revision.
+- Formal verifier lane planning follows `task-runtime-verification.md` and remains dormant unless the approved dispatch plan selects `task-runtime-v1`.

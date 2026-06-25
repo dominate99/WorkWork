@@ -53,6 +53,11 @@ Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad
 - `passed` and `blocked` apply to the current target only. Starting a different strict-review target does not inherit the previous target's terminal gate result.
 - `runtime_state` is the single authoritative post-launch section state. `close_state` is derived from it and must never act as a parallel state machine.
 - `failed` and `stopped` are distinct. User stop must not be conflated with execution failure.
+- The current write schema is version `2`. New and ordinary rounds persist round-owned `lifecycle_protocol: legacy` unless an approved activation round proves every mandatory `task-runtime-v1` capability.
+- `legacy` rounds must not persist or consult lifecycle snapshots, lifecycle events, or a writable round-level lifecycle phase.
+- `task-runtime-v1` lifecycle ownership, phase compatibility, transitions, persistence, migration, and recovery are defined in `references/task-runtime-lifecycle.md`.
+- `task-runtime-v1` verifier authority, verifier lane schema, evidence records, baseline/risk-triggered lane selection, and model capability profile/floor/resolution are defined in `references/task-runtime-verification.md`.
+- `lifecycle_phase` never replaces `runtime_state`: the orchestrator alone advances section phase through legal lifecycle events, while `runtime_state` remains the canonical operational state.
 
 ## Required Stage Order
 
@@ -178,6 +183,7 @@ Working brief persistence rules:
 
 Schema compatibility rules:
 
+- the current write schema is `schema_version: 2`
 - pre-versioned artifacts are treated as `schema_version: 0`
 - normalize persisted artifacts on load before planning or launch decisions
 - write only the current schema version back to disk
@@ -190,6 +196,18 @@ Cross-artifact compatibility rules:
 - if a persisted working brief or dispatch plan cannot be normalized to the current schema version, halt launch and request revision instead of dispatching with a mixed schema set
 - packet creation may only reference fields that exist in the normalized persisted working brief and dispatch plan
 - if registry fallback is used, the target must resolve to a persisted `artifact_path` plus optional `section_anchor` before it can be treated as parallel-safe or review-target-eligible
+
+Lifecycle compatibility rules:
+
+- the working brief may record `lifecycle_protocol_recommendation`, but only the approved dispatch plan owns `lifecycle_protocol`
+- new and ordinary rounds default to `legacy`
+- schema version `2` support is dormant and does not activate `task-runtime-v1`
+- schema version `0` or `1` dispatch plans without lifecycle fields normalize in memory to `lifecycle_protocol: legacy`; schema version `2` dispatch plans must persist the field explicitly
+- `legacy` dispatch plans do not render section lifecycle snapshots or event histories
+- do not select `task-runtime-v1` until verifier authority, required verification lanes, review progression, repair and re-verification, score production, and close-gate handling are implemented, verified end to end, and approved; contracts alone are insufficient
+- when `task-runtime-v1` is eventually active, follow `references/task-runtime-lifecycle.md` exactly; no task profile may rename phases, complete outside `close`, or create a second phase owner
+- when formal verification is eventually active, follow `references/task-runtime-verification.md` exactly; worker self-checks and reviewer findings never substitute for accepted verifier lane evidence
+- dormant verifier fields in templates, references, packets, or planning notes must not be consumed as lifecycle authority while `lifecycle_protocol: legacy`
 
 State crosswalk:
 
@@ -350,6 +368,7 @@ Every packet must encode:
 
 Create reviewer packets only after the reviewed artifact snapshot is stable enough to generate `review_target_ref`.
 Worker prompts consume packet state; they must not re-derive `work_mode` from the working brief.
+Future verifier packets are defined by `references/task-runtime-verification.md` and `references/subagent-packet-contract.md`, but they are not launchable until a later approved round adds verifier role binding, runtime behavior, validator coverage, and `task-runtime-v1` activation.
 
 Persisted packet artifacts under `docs/cases/**/packets/*.md` are repository-validation inputs. Packet source-dispatch and reviewer-target paths must stay repository-relative. Packet validation must cross-check role prompt bindings from `persona_binding.runtime_role`, cross-check worker `implementation_principles` directly against the selected persona definition, verify full-file reviewer target hash fallbacks against the referenced artifact, and preserve valid explicit-revision excerpt target identities. When an approved dispatch plan explicitly persists prompt-path or worker-principle launch snapshots, validate those snapshots as additional evidence. Generic dispatch plans do not need to duplicate those launch snapshots merely to satisfy packet validation.
 
@@ -373,6 +392,7 @@ The dispatch plan is the canonical runtime state for the dispatch round. The dis
 - track `Active Worker Mode` plus `Mode Change History` when worker execution is active
 - keep active execution pointers plus execution history
 - record `required_for_goal` so top-level aggregation can distinguish `failed` from `stopped`
+- when `Lifecycle Protocol: task-runtime-v1`, persist verifier lane, evidence, applicability, and model-resolution records according to `references/task-runtime-verification.md`; omit those authority records for `legacy` rounds
 
 Dispatch-plan validation rules are mandatory before the approval block is rendered:
 
@@ -381,6 +401,7 @@ Dispatch-plan validation rules are mandatory before the approval block is render
 - deprecated state fields such as `Review Status` must not appear in new dispatch plans
 - pre-approval plans must preserve the durable review-lane outcome fields and review-target structure, including `Strict Review Outcome` when applicable; once a stable reviewed artifact snapshot exists, the concrete durable record keyed by `Review Target Ref` and artifact revision must persist
 - `task_mode` must not be reused as `worker mode`
+- dormant verifier/lane fields must not appear as active lifecycle authority in `legacy` rounds
 
 If any of these validation rules fail, the dispatch plan remains in `draft` or `revising`, the orchestrator must correct the persisted plan, and the plan must not be shown for approval yet.
 
@@ -660,4 +681,6 @@ If a section enters `revision-requested`, the global plan state returns to `revi
 - `references/case-template.md`
 - `references/persona-registry.md`
 - `references/subagent-packet-contract.md`
+- `references/task-runtime-lifecycle.md`
+- `references/task-runtime-verification.md`
 - `assets/dispatch-plan-template.md`
