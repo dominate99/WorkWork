@@ -56,10 +56,10 @@ execution_binding:
 review_target_ref:
   artifact_path: tools/validate_ww_repo.py
   artifact_kind: python_tool
-  artifact_revision: sha256:bff5847ddc7e1171d41baf7820c01e30e45a9c34b2a278a0aee8ba36d424a0d0
+  artifact_revision: sha256:e946bd9ce25709aaa9645c42e3c1fb42e4cfd7a3e8007600ff1b063bd0d25236
   schema_version: 2
   section_anchor: full-file revision 2 repo validation entrypoint
-  content_hash: sha256:bff5847ddc7e1171d41baf7820c01e30e45a9c34b2a278a0aee8ba36d424a0d0
+  content_hash: sha256:e946bd9ce25709aaa9645c42e3c1fb42e4cfd7a3e8007600ff1b063bd0d25236
 review_type: code-quality-review
 pass_condition: no material correctness, CI coverage, JSON aggregation, recursion, or controller-state finding remains
 reject_condition: any material unexecuted test, invalid JSON aggregation, recursive suite behavior, stale active pointer, or regression gap remains

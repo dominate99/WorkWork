@@ -143,10 +143,12 @@ python tools/validate_ww_persona_packets.py --json
 python tools/validate_ww_case_path_identity.py --json
 python tools/validate_ww_case_contracts.py --json
 python tools/validate_ww_round_lifecycle.py --json
+python tools/validate_ww_verifier_authority_contracts.py --json
 python -m unittest tools.test_scaffold_ww_case_artifacts -v
+python -m unittest tools.test_validate_ww_verifier_authority_contracts -v
 ```
 
-The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, grill-me inline planning contract checks, persona runtime-selection recording contract checks, runtime persona packet artifact checks, case-based path identity contract checks, case artifact contract checks, round lifecycle contract checks, and case scaffold regression tests. GitHub Actions uses the same repo-local entrypoint.
+The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, grill-me inline planning contract checks, persona runtime-selection recording contract checks, runtime persona packet artifact checks, case-based path identity contract checks, case artifact contract checks, round lifecycle contract checks, dormant verifier/lane authority contract checks, and case scaffold regression tests. GitHub Actions uses the same repo-local entrypoint.
 
 Task runtime lifecycle maintenance:
 

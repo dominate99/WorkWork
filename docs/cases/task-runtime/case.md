@@ -2,7 +2,7 @@
 
 - Status: active
 - Canonical Root: `docs/cases/task-runtime/`
-- Current Round: `2026-06-24-verifier-lane-authority-implementation-foundation`
+- Current Round: `2026-06-25-verifier-lane-authority-validator-expansion`
 - Goal: evolve WorkWork into an invocation-scoped task runtime through bounded design, implementation, validation, and dogfood rounds
 - Legacy Status: pre-cutover artifacts are archived under `docs/legacy/superpowers/`
 
@@ -15,6 +15,8 @@
 - `2026-06-21-verifier-and-lane-authority-design`
 
 - `2026-06-24-verifier-lane-authority-implementation-foundation`
+
+- `2026-06-25-verifier-lane-authority-validator-expansion`
 
 ## Notes
 
