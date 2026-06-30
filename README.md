@@ -161,6 +161,7 @@ Task runtime lifecycle maintenance:
 - do not select `task-runtime-v1` until verifier binding/runtime behavior, review progression, repair/re-verification, scoring, close-gate capabilities, and validator coverage are implemented and approved
 - do not treat dormant verifier fields or references as active lifecycle authority while a round uses `Lifecycle Protocol: legacy`
 - do not treat dormant missing-capability fields or references as active lifecycle authority while a round uses `Lifecycle Protocol: legacy`
+- keep `tools/validate_ww_missing_capability_contracts.py` and its regression fixtures aligned with the dormant missing-capability reference, template block, working-brief preparation notes, packet source-context fields, and legacy non-authority guard
 - dedicated lifecycle validator rules and negative fixtures belong to a later validator-expansion round
 
 Persona taxonomy changes:

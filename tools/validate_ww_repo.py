@@ -136,6 +136,11 @@ def build_checks(python: str) -> list[tuple[str, list[str], bool]]:
             True,
         ),
         (
+            "Missing-capability contract validation",
+            [python, "tools/validate_ww_missing_capability_contracts.py"],
+            True,
+        ),
+        (
             "Case scaffold regression tests",
             [
                 python,

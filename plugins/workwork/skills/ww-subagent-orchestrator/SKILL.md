@@ -211,6 +211,7 @@ Lifecycle compatibility rules:
 - when missing capability guards and gates are eventually active, follow `references/task-runtime-missing-capabilities.md` exactly; hooks, score records, repair records, close gates, final judgment, recovery requirements, and checkpoints strengthen lifecycle guards but never own `lifecycle_phase` or `runtime_state`
 - dormant verifier fields in templates, references, packets, or planning notes must not be consumed as lifecycle authority while `lifecycle_protocol: legacy`
 - dormant missing-capability fields in templates, references, packets, or planning notes must not be consumed as lifecycle authority while `lifecycle_protocol: legacy`
+- repository validation must keep dormant missing-capability reference linkage, dispatch template record families, working-brief preparation notes, packet source-context fields, and legacy non-authority guards aligned with `references/task-runtime-missing-capabilities.md`
 
 State crosswalk:
 
