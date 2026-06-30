@@ -57,6 +57,7 @@ Use this skill to turn `$ww` into a disciplined orchestration flow instead of ad
 - `legacy` rounds must not persist or consult lifecycle snapshots, lifecycle events, or a writable round-level lifecycle phase.
 - `task-runtime-v1` lifecycle ownership, phase compatibility, transitions, persistence, migration, and recovery are defined in `references/task-runtime-lifecycle.md`.
 - `task-runtime-v1` verifier authority, verifier lane schema, evidence records, baseline/risk-triggered lane selection, and model capability profile/floor/resolution are defined in `references/task-runtime-verification.md`.
+- `task-runtime-v1` missing capability records for internal hooks, quality gates/scoring, repair authorization/re-verification, close gates, final human judgment, recovery requirements, and checkpoints are defined in `references/task-runtime-missing-capabilities.md`.
 - `lifecycle_phase` never replaces `runtime_state`: the orchestrator alone advances section phase through legal lifecycle events, while `runtime_state` remains the canonical operational state.
 
 ## Required Stage Order
@@ -207,7 +208,9 @@ Lifecycle compatibility rules:
 - do not select `task-runtime-v1` until verifier authority, required verification lanes, review progression, repair and re-verification, score production, and close-gate handling are implemented, verified end to end, and approved; contracts alone are insufficient
 - when `task-runtime-v1` is eventually active, follow `references/task-runtime-lifecycle.md` exactly; no task profile may rename phases, complete outside `close`, or create a second phase owner
 - when formal verification is eventually active, follow `references/task-runtime-verification.md` exactly; worker self-checks and reviewer findings never substitute for accepted verifier lane evidence
+- when missing capability guards and gates are eventually active, follow `references/task-runtime-missing-capabilities.md` exactly; hooks, score records, repair records, close gates, final judgment, recovery requirements, and checkpoints strengthen lifecycle guards but never own `lifecycle_phase` or `runtime_state`
 - dormant verifier fields in templates, references, packets, or planning notes must not be consumed as lifecycle authority while `lifecycle_protocol: legacy`
+- dormant missing-capability fields in templates, references, packets, or planning notes must not be consumed as lifecycle authority while `lifecycle_protocol: legacy`
 
 State crosswalk:
 
@@ -369,6 +372,7 @@ Every packet must encode:
 Create reviewer packets only after the reviewed artifact snapshot is stable enough to generate `review_target_ref`.
 Worker prompts consume packet state; they must not re-derive `work_mode` from the working brief.
 Future verifier packets are defined by `references/task-runtime-verification.md` and `references/subagent-packet-contract.md`, but they are not launchable until a later approved round adds verifier role binding, runtime behavior, validator coverage, and `task-runtime-v1` activation.
+Future task-runtime packet source snapshots may also reference missing-capability guard and gate record IDs from `references/task-runtime-missing-capabilities.md`, but those references are source context only and do not authorize packet assembly or phase advancement.
 
 Persisted packet artifacts under `docs/cases/**/packets/*.md` are repository-validation inputs. Packet source-dispatch and reviewer-target paths must stay repository-relative. Packet validation must cross-check role prompt bindings from `persona_binding.runtime_role`, cross-check worker `implementation_principles` directly against the selected persona definition, verify full-file reviewer target hash fallbacks against the referenced artifact, and preserve valid explicit-revision excerpt target identities. When an approved dispatch plan explicitly persists prompt-path or worker-principle launch snapshots, validate those snapshots as additional evidence. Generic dispatch plans do not need to duplicate those launch snapshots merely to satisfy packet validation.
 
@@ -393,6 +397,7 @@ The dispatch plan is the canonical runtime state for the dispatch round. The dis
 - keep active execution pointers plus execution history
 - record `required_for_goal` so top-level aggregation can distinguish `failed` from `stopped`
 - when `Lifecycle Protocol: task-runtime-v1`, persist verifier lane, evidence, applicability, and model-resolution records according to `references/task-runtime-verification.md`; omit those authority records for `legacy` rounds
+- when `Lifecycle Protocol: task-runtime-v1`, persist internal hook, quality gate, score, repair, re-verification, close gate, final judgment, recovery, and checkpoint records according to `references/task-runtime-missing-capabilities.md`; omit those authority records for `legacy` rounds
 
 Dispatch-plan validation rules are mandatory before the approval block is rendered:
 
@@ -401,7 +406,7 @@ Dispatch-plan validation rules are mandatory before the approval block is render
 - deprecated state fields such as `Review Status` must not appear in new dispatch plans
 - pre-approval plans must preserve the durable review-lane outcome fields and review-target structure, including `Strict Review Outcome` when applicable; once a stable reviewed artifact snapshot exists, the concrete durable record keyed by `Review Target Ref` and artifact revision must persist
 - `task_mode` must not be reused as `worker mode`
-- dormant verifier/lane fields must not appear as active lifecycle authority in `legacy` rounds
+- dormant verifier/lane and missing-capability fields must not appear as active lifecycle authority in `legacy` rounds
 
 If any of these validation rules fail, the dispatch plan remains in `draft` or `revising`, the orchestrator must correct the persisted plan, and the plan must not be shown for approval yet.
 
@@ -683,4 +688,5 @@ If a section enters `revision-requested`, the global plan state returns to `revi
 - `references/subagent-packet-contract.md`
 - `references/task-runtime-lifecycle.md`
 - `references/task-runtime-verification.md`
+- `references/task-runtime-missing-capabilities.md`
 - `assets/dispatch-plan-template.md`

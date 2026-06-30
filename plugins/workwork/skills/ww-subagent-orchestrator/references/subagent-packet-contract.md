@@ -55,6 +55,7 @@ Lifecycle source rules:
 - packet lifecycle data is read-only source context; packets never own phase transitions or append lifecycle events
 - packet creation must halt when source protocol, section snapshot, and runtime ledger disagree
 - packets from future verifier stages additionally require verifier lane source data from `task-runtime-verification.md`; legacy packets must not infer verifier authority from dormant fields
+- packets from future `task-runtime-v1` rounds may additionally copy missing-capability source references from `task-runtime-missing-capabilities.md`; legacy packets must not infer hook, score, repair, close-gate, final-judgment, recovery, or checkpoint authority from dormant fields
 
 Reviewer packets additionally require:
 
@@ -87,6 +88,24 @@ verifier binding exists:
 These fields are dormant contract fields until `task-runtime-v1` activation.
 They do not authorize verifier packet creation while the source protocol is
 `legacy` or while no approved verifier role binding exists.
+
+Future task-runtime packets may additionally carry, after a separately approved
+activation round implements the corresponding runtime behavior:
+
+- `source_internal_hook_refs[]`
+- `source_quality_gate_ref`
+- `source_score_ref`
+- `source_repair_ref`
+- `source_reverification_requirement_ref`
+- `source_close_gate_ref`
+- `source_final_judgment_ref`
+- `source_recovery_requirement_ref`
+- `source_checkpoint_ref`
+
+These fields are dormant source-context fields until `task-runtime-v1`
+activation. They do not authorize packet creation, target mutation, evidence
+acceptance, scoring, repair, close, final judgment, lifecycle phase changes, or
+runtime-state changes while the source protocol is `legacy`.
 
 `implementation_principles[]` contract:
 
@@ -255,6 +274,8 @@ Verifier packets must copy:
 - selected verifier source and rationale
 - model capability profile and floor hashes
 - model resolution record
+- applicable missing-capability source refs when the approved `task-runtime-v1`
+  dispatch plan records them for the verifier stage
 
 Verifier packets must not mutate target artifacts, repair failures, create
 reviewer findings, accept lane evidence, change lifecycle phase, or approve

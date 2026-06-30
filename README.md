@@ -111,6 +111,7 @@ The `$ww grill me` trigger explicitly selects this mode. WorkWork investigates r
 - `plugins/workwork/skills/ww-subagent-orchestrator/references/subagent-packet-contract.md`
 - `plugins/workwork/skills/ww-subagent-orchestrator/references/task-runtime-lifecycle.md`
 - `plugins/workwork/skills/ww-subagent-orchestrator/references/task-runtime-verification.md`
+- `plugins/workwork/skills/ww-subagent-orchestrator/references/task-runtime-missing-capabilities.md`
 - `plugins/workwork/skills/ww-subagent-orchestrator/assets/dispatch-plan-template.md`
 - `docs/superpowers/personas/registry.yaml`
 
@@ -155,9 +156,11 @@ Task runtime lifecycle maintenance:
 - schema version 2 adds dormant lifecycle protocol support; new scaffolded rounds default to `legacy`
 - treat `plugins/workwork/skills/ww-subagent-orchestrator/references/task-runtime-lifecycle.md` as the normative lifecycle ownership, transition, persistence, migration, and recovery contract
 - treat `plugins/workwork/skills/ww-subagent-orchestrator/references/task-runtime-verification.md` as the dormant verifier authority, lane schema, evidence, lane selection, and model capability contract
+- treat `plugins/workwork/skills/ww-subagent-orchestrator/references/task-runtime-missing-capabilities.md` as the dormant internal hook, quality gate/scoring, repair/re-verification, close gate, final human judgment, recovery requirement, and checkpoint contract
 - update `SKILL.md`, the working-brief template, dispatch-plan template, packet contract, scaffold helper, and scaffold tests together when changing lifecycle protocol recording
 - do not select `task-runtime-v1` until verifier binding/runtime behavior, review progression, repair/re-verification, scoring, close-gate capabilities, and validator coverage are implemented and approved
 - do not treat dormant verifier fields or references as active lifecycle authority while a round uses `Lifecycle Protocol: legacy`
+- do not treat dormant missing-capability fields or references as active lifecycle authority while a round uses `Lifecycle Protocol: legacy`
 - dedicated lifecycle validator rules and negative fixtures belong to a later validator-expansion round
 
 Persona taxonomy changes:

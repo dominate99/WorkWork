@@ -24,7 +24,8 @@ Lifecycle protocol rules:
 - Required sections in one active round may not mix protocols.
 - `task-runtime-v1` may be selected only after every activation prerequisite in `references/task-runtime-lifecycle.md` is implemented and approved.
 - Verifier authority, verifier lanes, evidence records, baseline/risk-triggered lane selection, and model capability profile/floor/resolution are defined in `references/task-runtime-verification.md`.
-- Dormant verifier/lane fields must not be treated as lifecycle authority while `Lifecycle Protocol: legacy`.
+- Internal hooks, quality gates/scoring, repair authorization/re-verification, close gates, final human judgment, recovery requirements, and checkpoints are defined in `references/task-runtime-missing-capabilities.md`.
+- Dormant verifier/lane and missing-capability fields must not be treated as lifecycle authority while `Lifecycle Protocol: legacy`.
 
 ## Strict Review Runtime State
 
@@ -323,6 +324,37 @@ Verification lane rules:
 - stale, wrong-target, identity-conflicted, superseded, skipped, failed, blocked, or below-floor evidence cannot authorize verification acceptance
 - model capability profile, minimum floor, and model resolution are separate from persona identity and concrete model labels
 - `runtime_role: verifier` requires a later approved verifier binding before any packet can be launched
+
+### Section Missing Capability Records: {{section_name}} (`task-runtime-v1` only)
+
+Render this block only when the approved round protocol is `task-runtime-v1`.
+Omit the entire block for `legacy` rounds. These records follow
+`references/task-runtime-missing-capabilities.md`.
+
+```yaml
+internal_hook_records: []
+quality_gate_records: []
+score_records: []
+repair_records: []
+review_synthesis_records: []
+reverification_requirements: []
+close_gate_records: []
+final_judgment_records: []
+recovery_requirement_records: []
+checkpoint_records: []
+```
+
+Missing capability record rules:
+
+- these records are section-scoped guard, gate, recovery, or decision records; they do not own `runtime_state`, `lifecycle_phase`, `plan_state`, or `section_state`
+- internal hooks are invocation-scoped WorkWork guard points, not operating-system hooks, git hooks, background daemons, scheduled tasks, or passive listeners
+- quality gates and score records summarize accepted evidence but cannot override non-waivable hard blockers
+- repair records require explicit authorization and a stable pre-repair target; repaired targets require fresh re-verification before returning to review, score, or close
+- review synthesis records must reject stale reviewer targets as coverage for the current target lineage
+- close gates package verification, review, repair, score, blocker, and waiver state before final judgment; they recommend close but do not approve it
+- final judgment records must preserve the user decision and cannot relabel missing, stale, wrong-target, below-floor, or failed verifier evidence as valid PASS evidence
+- recovery requirements and checkpoints are resume aids; they must not override lifecycle snapshots or event history
+- legacy rounds must omit this entire authority block
 
 ## Section Review Record
 

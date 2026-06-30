@@ -25,7 +25,7 @@ Lifecycle recommendation rules:
 
 - the working brief records analysis and recommendation only; it does not own the active lifecycle protocol
 - default the recommendation to `legacy`
-- recommend `task-runtime-v1` only when the round intends explicit activation and every mandatory capability in `task-runtime-lifecycle.md` and `task-runtime-verification.md` is available
+- recommend `task-runtime-v1` only when the round intends explicit activation and every mandatory capability in `task-runtime-lifecycle.md`, `task-runtime-verification.md`, and `task-runtime-missing-capabilities.md` is available
 - the approved dispatch plan owns the final round protocol
 
 ## Gate State
@@ -106,6 +106,7 @@ Artifact-layout rules:
 - `workflow_bindings_by_stage`
 - `dispatch_recommendation`
 - `verification_authority_notes` when a future `task-runtime-v1` round will need formal verifier lanes
+- `missing_capability_preparation` when a future `task-runtime-v1` round will need internal hooks, quality gates/scoring, repair/re-verification, close gates, final human judgment, recovery requirements, or checkpoints
 
 `candidate_persona_sources` should record:
 
@@ -179,6 +180,18 @@ dispatch plan selects `task-runtime-v1`. When present, it should record:
 - expected model capability profile and minimum floor
 - explicit note that legacy rounds do not use these records as lifecycle authority
 
+`missing_capability_preparation` is dormant planning analysis unless the approved
+dispatch plan selects `task-runtime-v1`. When present, it should record:
+
+- expected internal hooks by lifecycle phase
+- expected quality gate profile and hard blockers
+- expected score dimensions and required evidence inputs
+- expected repair authorization triggers and target-lineage rules
+- expected re-verification requirements after repair
+- expected close-gate inputs and final human judgment package
+- expected recovery requirement and checkpoint triggers
+- explicit note that legacy rounds do not use these records as lifecycle authority
+
 ## Rules
 
 - Recommended personas are provisional until dispatch approval.
@@ -194,3 +207,4 @@ dispatch plan selects `task-runtime-v1`. When present, it should record:
 - No packet creation until the referenced dispatch plan is in `approved` state.
 - If the user requests `Revise`, update the working brief only if the analysis changed, then issue a new brief version for the next dispatch plan revision.
 - Formal verifier lane planning follows `task-runtime-verification.md` and remains dormant unless the approved dispatch plan selects `task-runtime-v1`.
+- Missing capability planning follows `task-runtime-missing-capabilities.md` and remains dormant unless the approved dispatch plan selects `task-runtime-v1`.
