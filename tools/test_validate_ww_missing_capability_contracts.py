@@ -262,6 +262,82 @@ class MissingCapabilityContractValidatorTests(unittest.TestCase):
             results = validate_repository(root)
         self.assert_rule_fails(results, "WWMC007")
 
+    def test_rejects_legacy_dispatch_with_heading_only_missing_capability_block(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            path = (
+                root
+                / "docs/cases/example/rounds/2026-06-01-example/dispatch-plan.md"
+            )
+            path.write_text(
+                path.read_text(encoding="utf-8")
+                + "\n### Section Missing Capability Records\n\n"
+                + "This heading is reserved for task-runtime-v1 authority records.\n",
+                encoding="utf-8",
+            )
+            results = validate_repository(root)
+        self.assert_rule_fails(results, "WWMC007")
+
+    def test_rejects_legacy_dispatch_with_single_record_family_assignment(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            path = (
+                root
+                / "docs/cases/example/rounds/2026-06-01-example/dispatch-plan.md"
+            )
+            path.write_text(
+                path.read_text(encoding="utf-8")
+                + "\n```yaml\ninternal_hook_records: []\n```\n",
+                encoding="utf-8",
+            )
+            results = validate_repository(root)
+        self.assert_rule_fails(results, "WWMC007")
+
+    def test_rejects_legacy_dispatch_with_multiple_record_family_assignments(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            path = (
+                root
+                / "docs/cases/example/rounds/2026-06-01-example/dispatch-plan.md"
+            )
+            path.write_text(
+                path.read_text(encoding="utf-8")
+                + "\n```yaml\ninternal_hook_records: []\nclose_gate_records: []\n```\n",
+                encoding="utf-8",
+            )
+            results = validate_repository(root)
+        self.assert_rule_fails(results, "WWMC007")
+
+    def test_allows_legacy_dispatch_prose_with_raw_record_family_names(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            make_valid_repo(root)
+            path = (
+                root
+                / "docs/cases/example/rounds/2026-06-01-example/dispatch-plan.md"
+            )
+            path.write_text(
+                path.read_text(encoding="utf-8")
+                + "\n## Historical Notes\n\n"
+                + "A later task-runtime-v1 plan may discuss `internal_hook_records:` "
+                + "and `close_gate_records:` as reference field names, but this "
+                + "legacy plan does not assign those fields.\n",
+                encoding="utf-8",
+            )
+            results = validate_repository(root)
+        self.assertTrue(all(result.passed for result in results), results)
+
     def test_cli_json_failure_schema(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)

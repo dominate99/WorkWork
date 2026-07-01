@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -31,6 +32,12 @@ RECORD_FAMILIES = [
     "recovery_requirement_records",
     "checkpoint_records",
 ]
+
+RECORD_FAMILY_ASSIGNMENT_RE = re.compile(
+    r"(?im)^\s*(?:-\s*)?(?:"
+    + "|".join(re.escape(record) for record in RECORD_FAMILIES)
+    + r")\s*:"
+)
 
 SOURCE_CONTEXT_FIELDS = [
     "`source_internal_hook_refs[]`",
@@ -133,7 +140,6 @@ def legacy_dispatch_authority_violations(repo_root: Path) -> list[Path]:
         "## section missing capability records",
         "### section missing capability records",
     ]
-    record_markers = [f"{record}:" for record in RECORD_FAMILIES]
     for path in docs_root.rglob("dispatch-plan.md"):
         text = path.read_text(encoding="utf-8")
         if "Lifecycle Protocol: legacy" not in text:
@@ -142,10 +148,7 @@ def legacy_dispatch_authority_violations(repo_root: Path) -> list[Path]:
         if any(marker in normalized_text for marker in block_markers):
             violations.append(path.relative_to(repo_root))
             continue
-        matched_records = sum(
-            1 for marker in record_markers if normalize(marker) in normalized_text
-        )
-        if matched_records >= 2:
+        if RECORD_FAMILY_ASSIGNMENT_RE.search(text):
             violations.append(path.relative_to(repo_root))
     return violations
 
