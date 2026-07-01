@@ -144,12 +144,14 @@ python tools/validate_ww_persona_packets.py --json
 python tools/validate_ww_case_path_identity.py --json
 python tools/validate_ww_case_contracts.py --json
 python tools/validate_ww_round_lifecycle.py --json
+python tools/validate_ww_lifecycle_reference_contracts.py --json
 python tools/validate_ww_verifier_authority_contracts.py --json
 python -m unittest tools.test_scaffold_ww_case_artifacts -v
+python -m unittest tools.test_validate_ww_lifecycle_reference_contracts -v
 python -m unittest tools.test_validate_ww_verifier_authority_contracts -v
 ```
 
-The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, grill-me inline planning contract checks, persona runtime-selection recording contract checks, runtime persona packet artifact checks, case-based path identity contract checks, case artifact contract checks, round lifecycle contract checks, dormant verifier/lane authority contract checks, and case scaffold regression tests. GitHub Actions uses the same repo-local entrypoint.
+The repo-level validator runs packaged skill frontmatter checks, worker `work_mode` contract checks, reviewer/explorer role-contract checks, grill-me inline planning contract checks, persona runtime-selection recording contract checks, runtime persona packet artifact checks, case-based path identity contract checks, case artifact contract checks, round lifecycle contract checks, dormant lifecycle reference contract checks, dormant verifier/lane authority contract checks, dormant missing-capability contract checks, and case scaffold regression tests. GitHub Actions uses the same repo-local entrypoint.
 
 Task runtime lifecycle maintenance:
 
@@ -162,7 +164,7 @@ Task runtime lifecycle maintenance:
 - do not treat dormant verifier fields or references as active lifecycle authority while a round uses `Lifecycle Protocol: legacy`
 - do not treat dormant missing-capability fields or references as active lifecycle authority while a round uses `Lifecycle Protocol: legacy`
 - keep `tools/validate_ww_missing_capability_contracts.py` and its regression fixtures aligned with the dormant missing-capability reference, template block, working-brief preparation notes, packet source-context fields, and legacy non-authority guard
-- dedicated lifecycle validator rules and negative fixtures belong to a later validator-expansion round
+- keep `tools/validate_ww_lifecycle_reference_contracts.py` and its regression fixtures aligned with the dormant lifecycle reference, template block, working-brief recommendation notes, packet lifecycle source-context fields, and legacy non-authority guard
 
 Persona taxonomy changes:
 

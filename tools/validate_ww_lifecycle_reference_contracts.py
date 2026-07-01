@@ -1,0 +1,349 @@
+from __future__ import annotations
+
+import argparse
+import json
+import re
+from dataclasses import dataclass
+from pathlib import Path
+
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+SKILL_ROOT = Path("plugins/workwork/skills/ww-subagent-orchestrator")
+TARGETS = {
+    "skill": SKILL_ROOT / "SKILL.md",
+    "readme": Path("README.md"),
+    "dispatch_template": SKILL_ROOT / "assets/dispatch-plan-template.md",
+    "working_brief": SKILL_ROOT / "references/working-brief-template.md",
+    "packet_contract": SKILL_ROOT / "references/subagent-packet-contract.md",
+    "lifecycle_reference": SKILL_ROOT / "references/task-runtime-lifecycle.md",
+}
+
+LIFECYCLE_AUTHORITY_FIELDS = [
+    "lifecycle",
+    "lifecycle_snapshot",
+    "source_lifecycle_snapshot",
+    "lifecycle_event_history",
+    "lifecycle_events",
+    "event_history",
+    "lifecycle_phase",
+]
+
+LIFECYCLE_AUTHORITY_ASSIGNMENT_RE = re.compile(
+    r"(?im)^\s*(?:-\s*)?(?:"
+    + "|".join(re.escape(field) for field in LIFECYCLE_AUTHORITY_FIELDS)
+    + r")\s*:"
+)
+
+
+@dataclass
+class RuleResult:
+    rule_id: str
+    passed: bool
+    file: str
+    section: str
+    message: str
+
+    def to_dict(self) -> dict:
+        return {
+            "rule_id": self.rule_id,
+            "passed": self.passed,
+            "file": self.file,
+            "section": self.section,
+            "message": self.message,
+        }
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Validate dormant WorkWork lifecycle reference contract surfaces."
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        dest="as_json",
+        help="Emit machine-readable JSON output.",
+    )
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=REPO_ROOT,
+        help="Repository root to validate. Defaults to the current WorkWork checkout.",
+    )
+    return parser.parse_args()
+
+
+def normalize(text: str) -> str:
+    return " ".join(text.split()).casefold()
+
+
+def contains_all(text: str, fragments: list[str]) -> bool:
+    value = normalize(text)
+    return all(normalize(fragment) in value for fragment in fragments)
+
+
+def result(
+    rule_id: str,
+    passed: bool,
+    path: Path,
+    section: str,
+    message: str,
+) -> RuleResult:
+    return RuleResult(
+        rule_id=rule_id,
+        passed=passed,
+        file=path.as_posix(),
+        section=section,
+        message="ok" if passed else message,
+    )
+
+
+def read_required_texts(repo_root: Path) -> tuple[dict[str, str], str]:
+    texts: dict[str, str] = {}
+    for name, relative in TARGETS.items():
+        path = repo_root / relative
+        if not path.is_file():
+            if name == "lifecycle_reference":
+                return texts, "Missing `references/task-runtime-lifecycle.md`."
+            return texts, f"Missing required contract file `{relative.as_posix()}`."
+        texts[name] = path.read_text(encoding="utf-8")
+    return texts, ""
+
+
+def legacy_dispatch_authority_violations(repo_root: Path) -> list[Path]:
+    docs_root = repo_root / "docs" / "cases"
+    if not docs_root.exists():
+        return []
+    violations: list[Path] = []
+    block_markers = [
+        "## section lifecycle record",
+        "### section lifecycle record",
+    ]
+    for path in docs_root.rglob("dispatch-plan.md"):
+        text = path.read_text(encoding="utf-8")
+        if "Lifecycle Protocol: legacy" not in text:
+            continue
+        normalized_text = normalize(text)
+        if any(marker in normalized_text for marker in block_markers):
+            violations.append(path.relative_to(repo_root))
+            continue
+        if LIFECYCLE_AUTHORITY_ASSIGNMENT_RE.search(text):
+            violations.append(path.relative_to(repo_root))
+    return violations
+
+
+def validate_repository(repo_root: Path = REPO_ROOT) -> list[RuleResult]:
+    repo_root = repo_root.resolve()
+    texts, load_error = read_required_texts(repo_root)
+    reference_path = TARGETS["lifecycle_reference"]
+    if load_error:
+        return [
+            result(
+                "WWLC001",
+                False,
+                reference_path,
+                "Dormant Lifecycle Reference",
+                load_error,
+            )
+        ]
+
+    reference_fragments = [
+        "# Task Runtime Lifecycle Contract",
+        "dormant",
+        "lifecycle_phase",
+        "runtime_state",
+        "State Ownership",
+        "Canonical Phase Vocabulary",
+        "Snapshot And Event Persistence",
+        "Legacy Migration",
+        "Invalid States",
+        "compatibility",
+        "transition",
+        "migration",
+        "recovery",
+    ]
+    skill_fragments = [
+        "references/task-runtime-lifecycle.md",
+        "lifecycle ownership",
+        "phase compatibility",
+        "transitions",
+        "persistence",
+        "migration",
+        "recovery",
+        "lifecycle_phase",
+        "never replaces",
+        "runtime_state",
+        "must not persist or consult lifecycle snapshots",
+    ]
+    readme_fragments = [
+        "references/task-runtime-lifecycle.md",
+        "normative lifecycle ownership",
+        "transition",
+        "persistence",
+        "migration",
+        "recovery contract",
+        "do not select `task-runtime-v1` until",
+    ]
+    dispatch_fragments = [
+        "Section Lifecycle Record",
+        "`task-runtime-v1` only",
+        "Render this block only when the approved round protocol is `task-runtime-v1`",
+        "Omit the entire block for `legacy` rounds",
+        "lifecycle:",
+        "lifecycle_phase:",
+        "lifecycle_event_history:",
+        "canonical `runtime_state` remains only in the section runtime ledger",
+        "only the orchestrator may append an accepted lifecycle event or change `lifecycle_phase`",
+        "references/task-runtime-lifecycle.md",
+        "legacy rounds must omit this entire authority block",
+    ]
+    packet_fragments = [
+        "packets from `legacy` rounds omit `source_lifecycle_snapshot`",
+        "must not infer a phase from legacy fields",
+        "packets from `task-runtime-v1` rounds additionally require `source_lifecycle_snapshot`",
+        "`source_lifecycle_snapshot` contains an immutable copy",
+        "canonical `runtime_state`",
+        "packet lifecycle data is read-only source context",
+        "packets never own phase transitions or append lifecycle events",
+    ]
+    brief_fragments = [
+        "lifecycle_protocol_recommendation",
+        "legacy | task-runtime-v1",
+        "recommend `task-runtime-v1` only when",
+        "task-runtime-lifecycle.md",
+        "default the recommendation to `legacy`",
+    ]
+    legacy_violations = legacy_dispatch_authority_violations(repo_root)
+
+    return [
+        result(
+            "WWLC001",
+            contains_all(texts["lifecycle_reference"], reference_fragments),
+            reference_path,
+            "Dormant Lifecycle Reference",
+            (
+                "`task-runtime-lifecycle.md` must exist and define the dormant "
+                "lifecycle ownership, phase/state, transition, persistence, "
+                "migration, recovery, and invalid-state contract."
+            ),
+        ),
+        result(
+            "WWLC002",
+            contains_all(texts["skill"], skill_fragments),
+            TARGETS["skill"],
+            "SKILL Reference Linkage",
+            (
+                "SKILL.md must link to task-runtime-lifecycle and state the "
+                "legacy lifecycle snapshot/event/phase non-authority boundary."
+            ),
+        ),
+        result(
+            "WWLC003",
+            contains_all(texts["readme"], readme_fragments),
+            TARGETS["readme"],
+            "README Guidance",
+            (
+                "README.md must document the lifecycle reference and the "
+                "task-runtime-v1 activation boundary."
+            ),
+        ),
+        result(
+            "WWLC004",
+            contains_all(texts["dispatch_template"], dispatch_fragments),
+            TARGETS["dispatch_template"],
+            "Dispatch Template Lifecycle Block",
+            (
+                "Dispatch plan template must carry the dormant task-runtime-v1 "
+                "lifecycle record block, source reference, runtime_state "
+                "separation, and legacy omission rule."
+            ),
+        ),
+        result(
+            "WWLC005",
+            contains_all(texts["packet_contract"], packet_fragments),
+            TARGETS["packet_contract"],
+            "Packet Contract Lifecycle Source Context",
+            (
+                "Packet contract must include lifecycle snapshot source-context "
+                "rules and mark lifecycle source context read-only/non-owning."
+            ),
+        ),
+        result(
+            "WWLC006",
+            contains_all(texts["working_brief"], brief_fragments),
+            TARGETS["working_brief"],
+            "Working Brief Lifecycle Recommendation",
+            (
+                "Working brief template must record lifecycle protocol "
+                "recommendation guidance without creating lifecycle authority."
+            ),
+        ),
+        result(
+            "WWLC007",
+            not legacy_violations,
+            Path("docs/cases"),
+            "Legacy Round Non-Authority",
+            (
+                "Legacy dispatch plans must not render active lifecycle record "
+                f"blocks or YAML-like lifecycle authority fields: "
+                f"{', '.join(path.as_posix() for path in legacy_violations)}"
+            ),
+        ),
+    ]
+
+
+def emit_human(results: list[RuleResult]) -> None:
+    failures = [result for result in results if not result.passed]
+    if not failures:
+        print(f"PASS: {len(results)} rules checked")
+        return
+
+    print(f"FAIL: {len(failures)} rule violations")
+    print()
+    for failure in failures:
+        print(f"[{failure.rule_id}] {failure.file}")
+        print(f"Section: {failure.section}")
+        print(failure.message)
+        print()
+
+
+def emit_json(results: list[RuleResult]) -> None:
+    failures = sum(1 for result in results if not result.passed)
+    payload = {
+        "ok": failures == 0,
+        "rule_failures": failures,
+        "results": [result.to_dict() for result in results],
+    }
+    print(json.dumps(payload, indent=2))
+
+
+def main() -> int:
+    args = parse_args()
+    try:
+        results = validate_repository(args.repo_root)
+    except Exception as exc:  # pragma: no cover - operational safeguard
+        if args.as_json:
+            print(
+                json.dumps(
+                    {
+                        "ok": False,
+                        "rule_failures": 0,
+                        "results": [],
+                        "error": str(exc),
+                    },
+                    indent=2,
+                )
+            )
+        else:
+            print(f"ERROR: {exc}")
+        return 2
+
+    if args.as_json:
+        emit_json(results)
+    else:
+        emit_human(results)
+
+    return 0 if all(result.passed for result in results) else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -2,7 +2,7 @@
 
 - Status: active
 - Canonical Root: `docs/cases/task-runtime/`
-- Current Round: `2026-07-01-missing-capability-legacy-guard-validator-hardening`
+- Current Round: `2026-07-01-task-runtime-v1-lifecycle-reference-validator-foundation`
 - Goal: evolve WorkWork into an invocation-scoped task runtime through bounded design, implementation, validation, and dogfood rounds
 - Legacy Status: pre-cutover artifacts are archived under `docs/legacy/superpowers/`
 
@@ -31,6 +31,10 @@
 - `2026-06-30-task-runtime-v1-missing-capability-validator-followup-dogfood-audit`
 
 - `2026-07-01-missing-capability-legacy-guard-validator-hardening`
+
+- `2026-07-01-task-runtime-v1-activation-gate-validator-design`
+
+- `2026-07-01-task-runtime-v1-lifecycle-reference-validator-foundation`
 
 ## Notes
 

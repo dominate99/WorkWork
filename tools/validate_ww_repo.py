@@ -131,6 +131,11 @@ def build_checks(python: str) -> list[tuple[str, list[str], bool]]:
             True,
         ),
         (
+            "Lifecycle reference contract validation",
+            [python, "tools/validate_ww_lifecycle_reference_contracts.py"],
+            True,
+        ),
+        (
             "Verifier/lane authority contract validation",
             [python, "tools/validate_ww_verifier_authority_contracts.py"],
             True,
